@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">简词</string>
+
+    <!-- menu侧滑菜单列表 -->	
+    <string name="center">个人中心</string>
+    <string name="home">首页</string>
+    <string name="wordbook">单词本</string>
+    <string name="BBS">社区</string>
+    <string name="settings">设置</string>
+    
+    <!-- word表的列 -->
+    <string name="word">word</string>
+    <string name="phonetic">phonetic_symbol</string>
+    <string name="definition">definition</string>
+    
+</resources>

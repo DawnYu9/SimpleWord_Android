@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="AppBaseTheme">
+    </style>
+    
+    <style name="CustomActionBarTheme" parent="@android:style/Theme.Holo.Light">  
+        <item name="android:actionBarStyle">@style/MyActionBar</item>  
+        <item name="android:homeAsUpIndicator">@drawable/menu</item>
+    </style>  
+  
+    <style name="MyActionBar" parent="@android:style/Widget.Holo.Light.ActionBar">  
+        <item name="android:background">#f4842d</item>  
+        <item name="android:titleTextStyle">@style/MyActionBarTitleText</item>
+    </style>
+    <style name="MyActionBarTitleText" parent="@android:style/TextAppearance.Holo.Widget.ActionBar.Title">  
+        <item name="android:textColor">@color/white</item>  
+    </style>  
+</resources>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string-array name="menu">  
+		<item>@string/center</item>  
+		<item>@string/home</item>  
+		<item>@string/wordbook</item>  
+		<item>@string/BBS</item>  
+		<item>@string/settings</item>  
+	</string-array>  
+	
+</resources>
