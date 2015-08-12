@@ -46,7 +46,7 @@ public class MainFragment extends Fragment implements OnClickListener{
 	 */
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
-		mView=inflater.inflate(R.layout.fg_main,container, false);  
+		mView=inflater.inflate(R.layout.menu_item_fg_main,container, false);  
 		getActivity().setTitle(R.string.app_name);
 		
 		dbHelper = new WordsDbHelper(mContext, MainActivity.DB_NAME, null, 1);
@@ -55,7 +55,7 @@ public class MainFragment extends Fragment implements OnClickListener{
 		btn.setOnClickListener(this);
 		
 		tv = (TextView)mView.findViewById(R.id.text);
-		
+		getActivity().getActionBar().setDisplayShowCustomEnabled(false);
 		return mView; 
 	}
 	@Override
@@ -73,13 +73,13 @@ public class MainFragment extends Fragment implements OnClickListener{
 		}
 		cursor.close();
 		tv.setText(sb.toString());*/
-		WordsDB.initWordsDB(mContext);
-		WordsDB.setWordRandom();
+//		WordsDB.initWordsDB(mContext);
+//		WordsDB.setWordRandom();
 		StringBuilder sb = new StringBuilder();
-		for ( int i = 0; i < WordsDB.counts; i++){
+//		for ( int i = 0; i < WordsDB.counts; i++){
 			WordsClass wordsClass = WordsDB.getWordRandom();
 			sb.append(wordsClass.toString() + "\n");
-		}
+//		}
 		tv.setText(sb.toString());
 /*		ArrayList<WordsClass> wordlist = WordsDB.getAllWords();
 		StringBuilder sb = new StringBuilder();

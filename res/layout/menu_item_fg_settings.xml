@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <!-- 设置显示单词的排序方式 -->
+    <LinearLayout 
+        android:layout_width="match_parent"
+	    android:layout_height="wrap_content">
+	    <TextView 
+	        android:text="@string/setting_word_get_mode"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="left"/>
+	    <Spinner
+	        android:id="@+id/spinner_word_get_mode"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="right"
+	        />
+	</LinearLayout>
+</LinearLayout>

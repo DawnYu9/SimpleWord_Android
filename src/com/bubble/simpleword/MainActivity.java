@@ -15,10 +15,11 @@ import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.WindowManager;
 
-import com.bubble.simpleword.R;
 import com.bubble.simpleword.db.DBManager;
+import com.bubble.simpleword.db.WordsClass;
+import com.bubble.simpleword.db.WordsDB;
 import com.bubble.simpleword.menu.MainFragment;
-import com.bubble.simpleword.menu.MenuFragment;
+import com.bubble.simpleword.menu.SlidingMenuFragment;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
 
@@ -32,7 +33,7 @@ public class MainActivity extends SlidingFragmentActivity {
 	public DBManager dbManager;
 	private Fragment contentFragment;
 	SlidingMenu sm;
-	
+	ActionBar mActionBar;
 	SQLiteDatabase db;
 	public static final String DB_NAME = "simpleword.db"; //保存的数据库文件名
     public static final String PACKAGE_NAME = "com.bubble.simpleword";
@@ -41,7 +42,7 @@ public class MainActivity extends SlidingFragmentActivity {
             + Environment.getDataDirectory().getAbsolutePath() + File.separator
             + PACKAGE_NAME + File.separator
             + FOLDER_NAME ;  //在手机里存放数据库的位置
-    
+    public static WordsClass word ;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -49,12 +50,15 @@ public class MainActivity extends SlidingFragmentActivity {
 		sm = getSlidingMenu();
 		initSlidingMenu(savedInstanceState);
 		
-		ActionBar mActionBar = getActionBar();
+		mActionBar = getActionBar();
 		mActionBar.setDisplayHomeAsUpEnabled(true);//显示返回按钮
 		mActionBar.setDisplayShowHomeEnabled(false);//不显示应用图标
 		
 		loadDatabase();	//加载SD卡数据库
 		
+		WordsDB.initWordsDB(this);
+		WordsDB.setWordRandom();
+		word = WordsDB.getWordRandom();
 	}
 
 	private void initSlidingMenu(Bundle savedInstanceState){	
@@ -63,11 +67,11 @@ public class MainActivity extends SlidingFragmentActivity {
 		if (contentFragment == null)
 			contentFragment = new MainFragment(this);	
 		
-		setContentView(R.layout.frame_content);
+		setContentView(R.layout.main_frame_content);
 		getFragmentManager().beginTransaction().replace(R.id.content_frame, contentFragment).commit();
 
-		setBehindContentView(R.layout.frame_menu);
-		getFragmentManager().beginTransaction().replace(R.id.menu_frame, new MenuFragment()).commit();
+		setBehindContentView(R.layout.main_frame_menu);
+		getFragmentManager().beginTransaction().replace(R.id.menu_frame, new SlidingMenuFragment()).commit();
 
 		sm.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
 		sm.setTouchModeBehind(SlidingMenu.TOUCHMODE_MARGIN);

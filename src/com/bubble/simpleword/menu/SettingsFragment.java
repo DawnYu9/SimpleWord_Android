@@ -28,8 +28,10 @@ public class SettingsFragment extends Fragment {
 	}
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
-		View view=inflater.inflate(R.layout.fg_settings,container, false);  
+		View view=inflater.inflate(R.layout.menu_item_fg_settings,container, false);  
 		getActivity().setTitle(R.string.settings);
+		getActivity().getActionBar().setDisplayShowCustomEnabled(false);
+		
 		return view; 
 	}
 }

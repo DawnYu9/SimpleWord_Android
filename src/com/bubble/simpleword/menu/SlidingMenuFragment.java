@@ -21,18 +21,18 @@ import com.bubble.simpleword.R;
  * @author bubble
  * @date 2015-8-2
  */
-public class MenuFragment extends ListFragment {
+public class SlidingMenuFragment extends ListFragment {
 
 	/**
 	 * <p>Title: </p>
 	 * <p>Description: </p>
 	 */
-	public MenuFragment() {
+	public SlidingMenuFragment() {
 		// TODO Auto-generated constructor stub
 	}
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view=inflater.inflate(R.layout.menu_list,container, false);  
+		View view=inflater.inflate(R.layout.menu_listview,container, false);  
         return view;
 	}
 
