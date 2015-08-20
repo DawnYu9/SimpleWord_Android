@@ -1,4 +1,4 @@
-package com.bubble.simpleword.db;
+package com.bubble.simpleword.wordbook;
 
 import org.litepal.crud.DataSupport;
 

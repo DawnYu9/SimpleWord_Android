@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.bubble.simpleword.R;
-import com.bubble.simpleword.db.WordsClass;
 
 /**
  * <p>Title: MyAdapter</p>

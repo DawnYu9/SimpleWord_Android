@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import com.bubble.simpleword.MainActivity;
+import com.bubble.simpleword.wordbook.WordsClass;
 
 
 /**
@@ -25,24 +25,31 @@ public class WordsDB {
     private static WordsDbHelper wordsDbHelper;
     
     public static int counts;
-    private static Cursor cursor;
-    private static Cursor cursorRandom;
-    private static Cursor cursorInOrder;
-    private static Cursor cursorReverseOrder;
+    public static Cursor cursor;
     
-    public static WordsClass wordClass;
+    public static WordsClass wordClass; //the current word
     
     public final static String TABLE_NAME = "Words";
     public final static String COLUMN_WORD = "word";
     public final static String COLUMN_PHONETIC = "phonetic_symbol";
     public final static String COLUMN_DEFINITION = "definition";
-    public static String word;  
-    public static String phonetic_symbol;  
-    public static String definition;  
+    public static String wordWord;  
+    public static String wordPhonetic;  
+    public static String wordDefinition;  
     
+    //"db.query"'s parameter: "orderby"
     private final static String ORDERBY_RANDOM = "RANDOM()"; //整体随机重新排序，未改变原数据库数据顺序
     private final static String ORDERBY_IN_ORDER = "word"; 
     private final static String ORDERBY_REVERSE_ORDER = "word desc"; 
+    
+    public static int MODE_GET_WORD ;
+    private final static int MODE_GET_WORD_RANDOM = 0 ;
+    private final static int MODE_GET_WORD_IN_ORDER = 1;
+    private final static int MODE_GET_WORD_REVERSE_ORDER = 2;
+    
+    static boolean isRandom = false;
+    static boolean isInOrder = false;
+    static boolean isReverseOrder = false;
     
     /**
      * <p>Title: initWordsDB</p>
@@ -56,8 +63,24 @@ public class WordsDB {
 		wordsDbHelper = new WordsDbHelper(mContext, MainActivity.DB_NAME, null, 1);
 		db = wordsDbHelper.getWritableDatabase();
 		cursor = db.query(TABLE_NAME, null, null, null, null, null, null);
+		cursor.moveToFirst();
 		counts = cursor.getCount();
-		Log.i("Words表的行数counts", Integer.toString(counts));
+//		Log.i("Words表的行数counts", Integer.toString(counts));
+    }
+    /**
+     * <p>Title: initWordsDB</p>
+     * <p>Description: </p>
+     * @param context
+     * @param position
+     * @author bubble
+     * @date 2015-8-20 上午12:32:56
+     */
+    public static void initWordsDB(Context context, int position){
+    	mContext = context;
+    	wordsDbHelper = new WordsDbHelper(mContext, MainActivity.DB_NAME, null, 1);
+    	db = wordsDbHelper.getWritableDatabase();
+    	cursor = db.query(TABLE_NAME, null, null, null, null, null, null);
+    	cursor.moveToPosition(position);
     }
 
 	public static void addWord(){
@@ -96,28 +119,32 @@ public class WordsDB {
     }
 	
 	/**
+	 * <p>Title: getWord</p>
+	 * <p>Description: </p>
+	 * @return
+	 * @author bubble
+	 * @date 2015-8-18 上午11:17:59
+	 */
+	public static WordsClass getWord(){
+		getWordOrderBy(cursor);
+		cursor.moveToNext();
+		return wordClass;
+	}
+	
+	/**
 	 * <p>Title: setWordRandom</p>
 	 * <p>Description: </p>
 	 * @author bubble
 	 * @date 2015-8-8
 	 */
 	public static void setWordRandom(){
-		cursorRandom = setWordOrderBy(cursorRandom, ORDERBY_RANDOM);
-		cursorRandom.moveToFirst();
+		if ( ! isRandom ) {
+			MODE_GET_WORD = MODE_GET_WORD_RANDOM;
+			cursor = setWordOrderBy(cursor, ORDERBY_RANDOM);
+			cursor.moveToFirst();
+			setWordModeFlag(MODE_GET_WORD);
+		}
 	}
-	/**
-	 * <p>Title: getWordRandom</p>
-	 * <p>Description: </p>
-	 * @return
-	 * @author bubble
-	 * @date 2015-8-8
-	 */
-	public static WordsClass getWordRandom(){
-		getWordOrderBy(cursorRandom);
-		cursorRandom.moveToNext();
-        return wordClass;
-	}
-	
 	
 	/**
 	 * <p>Title: setWordInOrder</p>
@@ -126,20 +153,12 @@ public class WordsDB {
 	 * @date 2015-8-8
 	 */
 	public static void setWordInOrder(){
-		cursorInOrder = setWordOrderBy(cursorInOrder, ORDERBY_IN_ORDER);
-		cursorInOrder.moveToFirst();
-	}
-	/**
-	 * <p>Title: getWordInOrder</p>
-	 * <p>Description: </p>
-	 * @return
-	 * @author bubble
-	 * @date 2015-8-8
-	 */
-	public static WordsClass getWordInOrder(){
-		getWordOrderBy(cursorInOrder);
-        cursorInOrder.moveToNext();
-        return wordClass;
+		if ( ! isInOrder) {
+			MODE_GET_WORD = MODE_GET_WORD_IN_ORDER;
+			cursor = setWordOrderBy(cursor, ORDERBY_IN_ORDER);
+			cursor.moveToFirst();
+			setWordModeFlag(MODE_GET_WORD);
+		}
 	}
 	
 	/**
@@ -149,20 +168,40 @@ public class WordsDB {
 	 * @date 2015-8-8
 	 */
 	public static void setWordReverseOrder(){
-		cursorReverseOrder = setWordOrderBy(cursorReverseOrder,ORDERBY_REVERSE_ORDER);
-		cursorReverseOrder.moveToFirst();
+		if ( ! isReverseOrder ) {
+			MODE_GET_WORD = MODE_GET_WORD_REVERSE_ORDER;
+			cursor = setWordOrderBy(cursor,ORDERBY_REVERSE_ORDER);
+			cursor.moveToFirst();
+			setWordModeFlag(MODE_GET_WORD);
+		}
 	}
+	
 	/**
-	 * <p>Title: getWordReverseOrder</p>
-	 * <p>Description: </p>
-	 * @return
+	 * <p>Title: setWordModeFlag</p>
+	 * <p>Description: change the state of get_word_mode's flags </p>
 	 * @author bubble
-	 * @date 2015-8-8
+	 * @date 2015-8-19 下午9:52:19
 	 */
-	public static WordsClass getWordReverseOrder(){
-		getWordOrderBy(cursorReverseOrder);
-        cursorReverseOrder.moveToNext();
-        return wordClass;
+	public static void setWordModeFlag(int i) {
+		switch (i) {
+		case MODE_GET_WORD_RANDOM:
+			isRandom = true;
+			isInOrder = false;
+			isReverseOrder = false;
+			break;
+		case MODE_GET_WORD_IN_ORDER:
+			isInOrder = true;
+			isRandom = false;
+			isReverseOrder = false;
+			break;
+		case MODE_GET_WORD_REVERSE_ORDER:
+			isReverseOrder = true;
+			isInOrder = false;
+			isRandom = false;
+			break;
+		default:
+			break;
+		}
 	}
 	
 	/**
@@ -203,12 +242,12 @@ public class WordsDB {
 	 */
 	public static void setWordClass(Cursor cur){
 		wordClass = new WordsClass();  
-		word = cur.getString(cur.getColumnIndex(COLUMN_WORD));  
-		phonetic_symbol = cur.getString(cur.getColumnIndex(COLUMN_PHONETIC));  
-		definition = cur.getString(cur.getColumnIndex(COLUMN_DEFINITION));  
-		wordClass.setWord(word);  
-		wordClass.setPhonetic_symbol(phonetic_symbol);  
-		wordClass.setDefinition(definition);
+		wordWord = cur.getString(cur.getColumnIndex(COLUMN_WORD));  
+		wordPhonetic = cur.getString(cur.getColumnIndex(COLUMN_PHONETIC));  
+		wordDefinition = cur.getString(cur.getColumnIndex(COLUMN_DEFINITION));  
+		wordClass.setWord(wordWord);  
+		wordClass.setPhonetic_symbol(wordPhonetic);  
+		wordClass.setDefinition(wordDefinition);
 	}
 	 
 	/**
@@ -225,4 +264,39 @@ public class WordsDB {
 		else
 			return true;
 	}
+	/**
+	 * <p>Title: isCursorValid</p>
+	 * <p>Description: </p>
+	 * @return
+	 * @author bubble
+	 * @date 2015-8-20 上午1:12:13
+	 */
+	public static boolean isCursorValid(){
+		if ( cursor == null || cursor.isAfterLast() || cursor.isBeforeFirst())
+			return false;
+		else
+			return true;
+	}
+	
+	/**
+	 * <p>Title: getCursorPosition</p>
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-8-19 下午10:41:21
+	 */
+	public static int getCursorPosition() {
+		return cursor.getPosition();
+	}
+	
+	/**
+	 * <p>Title: setCursorPosition</p>
+	 * <p>Description: </p>
+	 * @param position
+	 * @author bubble
+	 * @date 2015-8-19 下午10:42:32
+	 */
+	public static void setCursorPosition(int position) {
+		cursor.moveToPosition(position);
+	}
+	
 }

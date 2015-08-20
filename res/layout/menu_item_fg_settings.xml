@@ -5,19 +5,25 @@
     android:orientation="vertical" >
 
     <!-- 设置显示单词的排序方式 -->
-    <LinearLayout 
+    <RelativeLayout 
         android:layout_width="match_parent"
-	    android:layout_height="wrap_content">
+	    android:layout_height="wrap_content"
+	    >
 	    <TextView 
 	        android:text="@string/setting_word_get_mode"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
-	        android:layout_gravity="left"/>
+	        android:layout_alignParentLeft="true"
+	        />
+        
 	    <Spinner
 	        android:id="@+id/spinner_word_get_mode"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
-	        android:layout_gravity="right"
+	        android:entries="@array/word_get_mode"
+	        android:layout_alignParentRight="true"
+	        android:spinnerMode="dropdown"
 	        />
-	</LinearLayout>
+
+	</RelativeLayout>
 </LinearLayout>

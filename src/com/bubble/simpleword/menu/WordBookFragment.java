@@ -21,8 +21,9 @@ import android.widget.Toast;
 
 import com.bubble.simpleword.MainActivity;
 import com.bubble.simpleword.R;
-import com.bubble.simpleword.db.WordsClass;
+import com.bubble.simpleword.db.WordsDB;
 import com.bubble.simpleword.wordbook.WordCardAdapter;
+import com.bubble.simpleword.wordbook.WordsClass;
 
 /**
  * <p>Title: WordBiikFragment</p>
@@ -77,7 +78,7 @@ public class WordBookFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
 		view=inflater.inflate(R.layout.wordbook_recycler_view,container, false); 
 		activity = getActivity();
-		word = MainActivity.word;
+		word = WordsDB.wordClass;
 		wordsList.add(word);  
 //		actionBar.setTitle(R.string.wordbook);	//set all fragments's actionbar title
 		getActivity().setTitle(R.string.wordbook);	//set one fragment's actionbar title
@@ -161,8 +162,8 @@ public class WordBookFragment extends Fragment {
     private class SpinnerItemSelectedListener implements OnItemSelectedListener {  
           
         @Override  
-        public void onItemSelected(AdapterView<?> arg0, View view, int position,long arg3) {  
-             String str= arg0.getItemAtPosition(position).toString();  
+        public void onItemSelected(AdapterView<?> parent, View view, int position,long id) {  
+             String str= parent.getItemAtPosition(position).toString();  
              Toast.makeText(activity, "你点击的是:"+str, 2000).show();   
         }  
           

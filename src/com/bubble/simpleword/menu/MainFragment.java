@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -13,9 +14,9 @@ import android.widget.TextView;
 
 import com.bubble.simpleword.MainActivity;
 import com.bubble.simpleword.R;
-import com.bubble.simpleword.db.WordsClass;
 import com.bubble.simpleword.db.WordsDB;
 import com.bubble.simpleword.db.WordsDbHelper;
+import com.bubble.simpleword.wordbook.WordsClass;
 
 /**
  * <p>Title: MainFragment</p>
@@ -61,32 +62,12 @@ public class MainFragment extends Fragment implements OnClickListener{
 	@Override
 	public void onClick(View v) {
 		db = dbHelper.getWritableDatabase();
-/*		Cursor cursor = db.query("Words", null, null, null, null, null, null);
+		
 		StringBuilder sb = new StringBuilder();
-		if ( cursor.moveToFirst() ) {
-			do {
-				String word = cursor.getString(cursor.getColumnIndex(mContext.getString((R.string.word))));
-				String phonetic = cursor.getString(cursor.getColumnIndex(mContext.getString((R.string.phonetic))));
-				String definition = cursor.getString(cursor.getColumnIndex(mContext.getString((R.string.definition))));
-				sb.append(word + phonetic + definition + "\n");
-			} while ( cursor.moveToNext() );
-		}
-		cursor.close();
-		tv.setText(sb.toString());*/
-//		WordsDB.initWordsDB(mContext);
-//		WordsDB.setWordRandom();
-		StringBuilder sb = new StringBuilder();
-//		for ( int i = 0; i < WordsDB.counts; i++){
-			WordsClass wordsClass = WordsDB.getWordRandom();
-			sb.append(wordsClass.toString() + "\n");
-//		}
+		WordsClass wordsClass = WordsDB.getWord();
+		Log.i("正序", wordsClass.toString());
+		sb.append(wordsClass.toString() + "\n");
 		tv.setText(sb.toString());
-/*		ArrayList<WordsClass> wordlist = WordsDB.getAllWords();
-		StringBuilder sb = new StringBuilder();
-		for (WordsClass w : wordlist) {
-			sb.append(w.toString() + "\n");
-		}
-		tv.setText(sb.toString());*/
 	}
 	/**
 	 * @author bubble
