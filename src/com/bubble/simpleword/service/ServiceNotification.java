@@ -1,6 +1,7 @@
 package com.bubble.simpleword.service;
 
 import android.app.AlarmManager;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -27,10 +28,11 @@ import com.bubble.simpleword.db.WordsDB;
 public class ServiceNotification extends Service {
 	NotificationCompat.Builder mBuilder;
 	NotificationManager mNotificationManager;
+	Notification notification;
 	Intent resultIntent;
 	TaskStackBuilder stackBuilder;
 	PendingIntent resultPendingIntent;
-	
+	int notifyID = 1;
 	private static AlarmManager am;
     private static PendingIntent pendingIntent;
 	/**
@@ -69,10 +71,12 @@ public class ServiceNotification extends Service {
 	 */
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		mBuilder.setTicker(WordsDB.wordClass.toString())	//popup in Status Bar
+		mBuilder
 			.setContentText(WordsDB.wordClass.toString())
-			.setWhen(System.currentTimeMillis());
-		startForeground(1, mBuilder.build());
+			.setWhen(System.currentTimeMillis())
+			.setTicker(WordsDB.wordClass.toString());	//popup in Status Bar
+		mNotificationManager.notify(notifyID, notification);	//update data
+		startForeground(notifyID, mBuilder.build());	//display in "ongoing"
 		Log.d("通知栏单词", WordsDB.wordClass.toString());
 		return super.onStartCommand(intent, flags, startId);
 	}
@@ -87,6 +91,7 @@ public class ServiceNotification extends Service {
 		mBuilder = new NotificationCompat.Builder(this)
 		        .setSmallIcon(R.drawable.menu)
 		        .setContentTitle("当前word");
+		notification = mBuilder.build();
 		resultIntent = new Intent(this, MainActivity.class);
 		stackBuilder = TaskStackBuilder.create(this);
 		stackBuilder.addParentStack(MainActivity.class);
@@ -94,7 +99,7 @@ public class ServiceNotification extends Service {
 		resultPendingIntent = stackBuilder.getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT);
 		mBuilder.setContentIntent(resultPendingIntent);
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-		startForeground(1, mBuilder.build());
+		startForeground(notifyID, notification);
 	}
 	
 }

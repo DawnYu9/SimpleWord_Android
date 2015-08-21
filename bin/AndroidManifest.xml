@@ -24,7 +24,7 @@
             </intent-filter>
         </activity>
         
-        <service android:name="com.bubble.simpleword.service.NotificationService" />
+        <service android:name="com.bubble.simpleword.service.ServiceNotification" />
             
     </application>
 
