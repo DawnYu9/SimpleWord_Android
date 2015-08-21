@@ -10,14 +10,14 @@
 	    android:layout_height="wrap_content"
 	    >
 	    <TextView 
-	        android:text="@string/setting_word_get_mode"
+	        android:text="@string/setting_spinner_word_sort_mode"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:layout_alignParentLeft="true"
 	        />
         
 	    <Spinner
-	        android:id="@+id/spinner_word_get_mode"
+	        android:id="@+id/setting_spinner_word_sort_mode"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:entries="@array/word_get_mode"
@@ -26,4 +26,76 @@
 	        />
 
 	</RelativeLayout>
+	
+    <!-- 设置是否自动定时更新单词 -->
+    <RelativeLayout 
+        android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+        >
+		<TextView 
+	        android:text="自动更新单词"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentLeft="true"
+	        />
+
+		<Switch
+		    android:id="@+id/switch1"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_alignParentRight="true"
+		    android:layout_alignParentTop="true"
+		    android:text="Switch" />
+
+    </RelativeLayout>
+    
+    <!-- 设置自动更新单词的时间间隔 -->
+    <RelativeLayout 
+        android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    >
+        <TextView 
+	        android:text="单词自动更新的时间间隔"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentLeft="true"
+	        />
+
+        <EditText
+            android:id="@+id/editText1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:ems="10"
+            android:inputType="number" >
+
+            <requestFocus />
+        </EditText>
+
+    </RelativeLayout>
+    
+    <!-- 设置是否开启通知栏单词 -->
+    <RelativeLayout 
+        android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    >
+	    <TextView 
+	        android:text="@string/setting_switch_notification_word"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentLeft="true"
+	        />
+
+	    <Switch
+	        android:id="@+id/setting_switch_notification_word"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentRight="true"
+	        android:textOn="@string/switch_on"
+	        android:textOff="@string/switch_off"
+	        />
+
+	</RelativeLayout>
+
 </LinearLayout>

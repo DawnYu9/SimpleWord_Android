@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.bubble.simpleword.MainActivity;
 import com.bubble.simpleword.wordbook.WordsClass;
@@ -47,9 +48,12 @@ public class WordsDB {
     private final static int MODE_GET_WORD_IN_ORDER = 1;
     private final static int MODE_GET_WORD_REVERSE_ORDER = 2;
     
-    static boolean isRandom = false;
-    static boolean isInOrder = false;
-    static boolean isReverseOrder = false;
+    public static boolean isInOrder = true;
+    public static boolean isReverseOrder = false;
+    public static boolean isRandom = false;
+    public static final String IS_INORDER = "isInOrder";
+    public static final String IS_REVERSEORDER = "isReverseOrder";
+    public static final String IS_RANDOM = "isRandom";
     
     /**
      * <p>Title: initWordsDB</p>
@@ -80,6 +84,16 @@ public class WordsDB {
     	wordsDbHelper = new WordsDbHelper(mContext, MainActivity.DB_NAME, null, 1);
     	db = wordsDbHelper.getWritableDatabase();
     	cursor = db.query(TABLE_NAME, null, null, null, null, null, null);
+    	if ( isInOrder ) {
+    		isInOrder = false;
+    		setWordInOrder();
+    	} else if ( isReverseOrder ) {
+    		isReverseOrder = false;
+    		setWordReverseOrder();
+    	} else if ( isRandom ) {
+    		isRandom = false;
+    		setWordRandom();
+    	}
     	cursor.moveToPosition(position);
     }
 
@@ -126,9 +140,43 @@ public class WordsDB {
 	 * @date 2015-8-18 上午11:17:59
 	 */
 	public static WordsClass getWord(){
-		getWordOrderBy(cursor);
-		cursor.moveToNext();
-		return wordClass;
+		if ( ! isCursorValid(cursor) ) {
+			if ( wordClass != null ) {
+				cursor.moveToNext();
+				return wordClass;
+			} else {
+				cursor.moveToLast();
+				return getWord();
+			}
+		} else {
+			setWordClass(cursor);
+			cursor.moveToNext();
+			return wordClass;
+		}
+	}
+	/**
+	 * <p>Title: getWord</p>
+	 * <p>Description: </p>
+	 * @param position
+	 * @return
+	 * @author bubble
+	 * @date 2015-8-20 上午11:04:55
+	 */
+	public static WordsClass getWord(int position){
+		cursor.moveToPosition(position);
+		if ( ! isCursorValid(cursor) ) {
+			if ( wordClass != null ) {
+				cursor.moveToNext();
+				return wordClass;
+			} else {
+				cursor.moveToLast();
+				return getWord();
+			}
+		} else {
+			setWordClass(cursor);
+			cursor.moveToNext();
+			return wordClass;
+		}
 	}
 	
 	/**
@@ -153,7 +201,7 @@ public class WordsDB {
 	 * @date 2015-8-8
 	 */
 	public static void setWordInOrder(){
-		if ( ! isInOrder) {
+		if ( ! isInOrder ) {
 			MODE_GET_WORD = MODE_GET_WORD_IN_ORDER;
 			cursor = setWordOrderBy(cursor, ORDERBY_IN_ORDER);
 			cursor.moveToFirst();
@@ -225,13 +273,19 @@ public class WordsDB {
 	 * @author bubble
 	 * @date 2015-8-9
 	 */
-	private static WordsClass getWordOrderBy(Cursor cur){
-		if ( ! isCursorValid(cur) )
-			return null;
-		
-		setWordClass(cur);
-		return wordClass;
-	}
+/*	private static WordsClass getWordOrderBy(Cursor cur){
+		if ( ! isCursorValid(cur) ) {
+			if ( wordClass != null ) {
+				return wordClass;
+			} else {
+				cursor.moveToLast();
+				return getWordOrderBy(cursor);
+			}
+		} else {
+			setWordClass(cur);
+			return wordClass;
+		}
+	}*/
 	
 	/**
 	 * <p>Title: setWordClass</p>
@@ -259,10 +313,13 @@ public class WordsDB {
 	 * @date 2015-8-9
 	 */
 	public static boolean isCursorValid(Cursor cursor){
-		if ( cursor == null || cursor.isAfterLast() || cursor.isBeforeFirst())
+		if ( cursor == null || cursor.isAfterLast() || cursor.isBeforeFirst()) {
+			Log.i("isCursorValid", "false");
 			return false;
-		else
+		} else {
+			Log.i("isCursorValid", "true");
 			return true;
+		}
 	}
 	/**
 	 * <p>Title: isCursorValid</p>
@@ -272,7 +329,7 @@ public class WordsDB {
 	 * @date 2015-8-20 上午1:12:13
 	 */
 	public static boolean isCursorValid(){
-		if ( cursor == null || cursor.isAfterLast() || cursor.isBeforeFirst())
+		if ( cursor == null || cursor.isAfterLast() || cursor.isBeforeFirst()) 
 			return false;
 		else
 			return true;

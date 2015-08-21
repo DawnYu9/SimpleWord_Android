@@ -14,13 +14,20 @@
     <string name="word">word</string>
     <string name="phonetic">phonetic_symbol</string>
     <string name="definition">definition</string>
-    
+
+<!-- 设置菜单 -->
     <!-- 显示单词的排序方式 -->
-    <string name="setting_word_get_mode">设置单词的显示顺序</string>
+    <string name="setting_spinner_word_sort_mode">单词排序</string>
     <string-array name="word_get_mode" >  
 	    <item>正序</item>  
 	    <item>逆序</item>  
 	    <item>随机</item>  
 	</string-array>  
+	
+    <!-- 是否开启通知栏单词 -->
+    <string name="setting_switch_notification_word">是否开启通知栏单词</string>
+    <string name="switch_on">开</string>
+    <string name="switch_off">关</string>
+    
     
 </resources>

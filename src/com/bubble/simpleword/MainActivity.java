@@ -13,6 +13,7 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
@@ -50,17 +51,17 @@ public class MainActivity extends SlidingFragmentActivity {
     
     SharedPreferences pref;
     Editor editor;
-    public static final String PREFS_NAME = "SimpleWord_Prefs_File";  
+    public static final String PREFS_FILE_NAME = "SimpleWord_Prefs_File";  
     public static final String IS_FIRST_START = "is_first_start";  
     public static Boolean isFirstStart;
     
     Cursor cursor;
-    int cursorIndex = 0;
+    public static int cursorIndex = 0;
     public static final String CURSOR_INDEX = "cursor_index";
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+		Log.i("onCreate", "开始");
 		sm = getSlidingMenu();
 		initSlidingMenu(savedInstanceState);
 		
@@ -70,22 +71,14 @@ public class MainActivity extends SlidingFragmentActivity {
 		
 		loadDatabase();	//load SDcard's database
 		
-		pref = this.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);  
+		pref = this.getSharedPreferences(PREFS_FILE_NAME, MODE_PRIVATE);  
 		editor = pref.edit();
 
 		isFirstStart = pref.getBoolean(IS_FIRST_START, true);
+		
 		Log.i("isFirstStart", Boolean.toString(isFirstStart));
-		//judge if it's the first time to start the app
-		//if "true",change the flag "IS_FIRST_START" to "false"
-		if ( isFirstStart ) {
-			editor.putBoolean(IS_FIRST_START, false);
-			editor.commit();
-			
-			initWords();
-		} else {
-			cursorIndex = pref.getInt(CURSOR_INDEX, 0);
-			initWords(cursorIndex);
-		}
+		Log.i("cursorIndex", Integer.toString(cursorIndex));
+		Log.i("onCreate", "结束");
 	}
 
 	/**
@@ -96,8 +89,62 @@ public class MainActivity extends SlidingFragmentActivity {
 	@Override
 	protected void onStart() {
 		super.onStart();
-		cursorIndex = pref.getInt(CURSOR_INDEX, 0);
-		initWords(cursorIndex);
+		Log.i("onStart", "开始");
+//		cursorIndex = pref.getInt(CURSOR_INDEX, 0);
+//		initWords(cursorIndex);
+		
+		
+		Log.i("onStart", "结束");
+	}
+	
+	/**
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-8-20 上午10:34:12
+	 */
+	@Override
+	protected void onResume() {
+		super.onResume();
+		Log.i("onResume", "开始");
+		//judge if it's the first time to start the app
+		//if "true",change the flag "IS_FIRST_START" to "false"
+		if ( isFirstStart ) {
+			editor.putBoolean(IS_FIRST_START, false);
+			editor.commit();
+			initWords();
+		} else {
+			WordsDB.isInOrder = pref.getBoolean(WordsDB.IS_INORDER, true);
+			WordsDB.isReverseOrder = pref.getBoolean(WordsDB.IS_REVERSEORDER, false);
+			WordsDB.isRandom = pref.getBoolean(WordsDB.IS_RANDOM, false);
+			cursorIndex = pref.getInt(CURSOR_INDEX, 0);
+			initWords(cursorIndex);
+		}
+		
+		Log.i("onResume", "结束");
+	}
+	
+	/**
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-8-20 上午10:35:07
+	 */
+	@Override
+	protected void onPause() {
+		super.onPause();
+		Log.i("onPause", "开始");
+		Log.i("onPause", "结束");
+	}
+	
+	/**
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-8-20 上午10:35:16
+	 */
+	@Override
+	protected void onRestart() {
+		super.onRestart();
+		Log.i("onRestart", "开始");
+		Log.i("onRestart", "结束");
 	}
 	
 	/**
@@ -109,9 +156,6 @@ public class MainActivity extends SlidingFragmentActivity {
 	private void initWords(){
 		WordsDB.initWordsDB(this);
 		WordsDB.setWordInOrder();	//if it is the first time to start the app, the default mode to get word is "in order"
-		if ( WordsDB.wordClass == null ) {
-			WordsDB.getWord();
-		}
 	}
 	/**
 	 * <p>Title: initWords</p>
@@ -122,10 +166,7 @@ public class MainActivity extends SlidingFragmentActivity {
 	 */
 	private void initWords(int position){
 		WordsDB.initWordsDB(this, position);
-		WordsDB.setWordInOrder();	//if it is the first time to start the app, the default mode to get word is "in order"
-		if ( WordsDB.wordClass == null ) {
-			WordsDB.getWord();
-		}
+//		}
 	}
 	/**
 	 * <p>Title: initSlidingMenu</p>
@@ -240,10 +281,15 @@ public class MainActivity extends SlidingFragmentActivity {
 	@Override
 	protected void onStop() {
 		super.onStop();
-		
+		Log.i("onStop", "开始");
 		cursorIndex = WordsDB.getCursorPosition();
 		editor.putInt(CURSOR_INDEX, cursorIndex);
+		editor.putBoolean(WordsDB.IS_INORDER, WordsDB.isInOrder);
+		editor.putBoolean(WordsDB.IS_REVERSEORDER, WordsDB.isReverseOrder);
+		editor.putBoolean(WordsDB.IS_RANDOM, WordsDB.isRandom);
 		editor.commit();
+		Log.i("cursorIndex", Integer.toString(cursorIndex));
+		Log.i("onStop", "结束");
 	}
 
 	
@@ -255,5 +301,17 @@ public class MainActivity extends SlidingFragmentActivity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+		Log.i("onDestroy", "开始");
+		Log.i("onDestroy", "结束");
+	}
+	
+	/**
+	 * <p>Description: save temporary data</p>
+	 * @author bubble
+	 * @date 2015-8-20 下午12:58:39
+	 */
+	@Override
+	public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+		super.onSaveInstanceState(outState, outPersistentState);
 	}
 }

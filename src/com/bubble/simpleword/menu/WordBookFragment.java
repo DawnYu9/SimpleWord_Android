@@ -79,6 +79,8 @@ public class WordBookFragment extends Fragment {
 		view=inflater.inflate(R.layout.wordbook_recycler_view,container, false); 
 		activity = getActivity();
 		word = WordsDB.wordClass;
+		if ( word == null )
+			word = WordsDB.getWord();
 		wordsList.add(word);  
 //		actionBar.setTitle(R.string.wordbook);	//set all fragments's actionbar title
 		getActivity().setTitle(R.string.wordbook);	//set one fragment's actionbar title
@@ -98,9 +100,7 @@ public class WordBookFragment extends Fragment {
         mRecyclerView.setAdapter(wordCardAdapter); 
 		return view; 
 	}
-	/** 
-     * 初始化下拉列表 
-     */  
+	 
     private void initSpinner()  
     {  
 //        View actionbarLayout = LayoutInflater.from(activity).inflate(R.layout.wordbook_actionbar, null);  

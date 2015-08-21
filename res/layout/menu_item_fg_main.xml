@@ -29,7 +29,7 @@
 	    android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:layout_weight="0"
-		android:text="创建数据库"/>
+		android:text="下一个"/>
     <TextView 
         android:id="@+id/text"
 		android:layout_width="match_parent"
