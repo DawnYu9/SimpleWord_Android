@@ -23,7 +23,8 @@ import android.widget.Switch;
 
 import com.bubble.simpleword.R;
 import com.bubble.simpleword.db.WordsDB;
-import com.bubble.simpleword.service.ServiceNotification;
+import com.bubble.simpleword.service.ServiceNotiWord;
+import com.bubble.simpleword.service.ServiceUpdateWord;
 
 /**
  * <p>Title: SettingsFragment</p>
@@ -45,6 +46,7 @@ public class SettingsFragment extends Fragment {
 	
 	Intent intentService;
 	PendingIntent pendingIntentService;
+	boolean isSwitchOn = false;
 	
 	/**
 	 * spinner selected position
@@ -52,15 +54,15 @@ public class SettingsFragment extends Fragment {
 	int spinnerSelection;
 	
 	//“开启通知栏单词”开关
-	Switch switchNotiWord;
+	public static Switch switchNotiWord;
 	boolean isSwitchOnNotiWord;
 	public static final String SWITCH_NOTI_WORD = "switch_noti_word";
 	Intent intentNotiService;
 	PendingIntent pendingIntentNotiService;
 	
 	//“自动更新单词”开关
-	Switch switchUpdateWord;
-	boolean isSwitchOnUpdateWord;
+	public static Switch switchUpdateWord;
+//	public static boolean isSwitchOnUpdateWord = false;
 	public static final String SWITCH_UPDATE_WORD = "switch_update_word";
 	Intent intentUpdateWordService;
 	PendingIntent pendingIntentUpdateWordService;
@@ -75,7 +77,13 @@ public class SettingsFragment extends Fragment {
     /**
      * the interval of updating data regularly
      */
-    int minute = 1;
+    int second = 30;
+    
+    /**
+     * the time to update word in advance in terms of second
+     */
+    final int TIME_ADVANCED_SECOND = 1;
+    
     long interval;
     long firstWake;
 	/**
@@ -161,26 +169,8 @@ public class SettingsFragment extends Fragment {
 	 */
 	private void initSwitchNotiWord(View view) {
 		switchNotiWord = (Switch)view.findViewById(R.id.setting_switch_noti_word); 
-		
-		isSwitchOnNotiWord = prefSettings.getBoolean(SWITCH_NOTI_WORD, false);
-		switchNotiWord.setChecked(isSwitchOnNotiWord);
-		
-		switchNotiWord.setOnCheckedChangeListener(new OnCheckedChangeListener(){
-            public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
-                if (isChecked) {
-                	// switch on，开启通知栏单词
-                	prefEditorSettings.putBoolean(SWITCH_NOTI_WORD, true);
-                	intentNotiService = new Intent(mContext, ServiceNotification.class);
-                	pendingIntentNotiService = PendingIntent.getService(mContext, 0, intentNotiService, 0);
-                	startPendingIntent(pendingIntentNotiService);
-                } else {
-                	//switch off，关闭通知栏单词
-                	prefEditorSettings.putBoolean(SWITCH_NOTI_WORD, false);
-                	stopPendingIntent(pendingIntentNotiService);
-                }
-                prefEditorSettings.commit();
-            }
-        });
+		switchNotiWord.setTag(SWITCH_NOTI_WORD);
+		switchNotiWord = initSwitch(switchNotiWord, SWITCH_NOTI_WORD, ServiceNotiWord.class);
 	}
 
 	/**
@@ -191,8 +181,9 @@ public class SettingsFragment extends Fragment {
 	 */
 	private void initSwitchUpdateWord(View view) {
 		switchUpdateWord = (Switch)view.findViewById(R.id.setting_switch_update_word);
+		switchUpdateWord.setTag(SWITCH_UPDATE_WORD);
 		//测试：通知栏单词
-		initSwitch(switchNotiWord, SWITCH_NOTI_WORD, isSwitchOnNotiWord, ServiceNotification.class);
+		switchUpdateWord = initSwitch(switchUpdateWord, SWITCH_UPDATE_WORD, ServiceUpdateWord.class);
 	}
 
 	/**
@@ -205,18 +196,33 @@ public class SettingsFragment extends Fragment {
 	 * @author bubble
 	 * @date 2015-8-21 下午4:06:46
 	 */
-	private void initSwitch(Switch s, final String prefString, boolean isSwitchOn, final Class<?> cls) {
+	private Switch initSwitch(final Switch s, final String prefString, final Class<?> cls) {
 		isSwitchOn = prefSettings.getBoolean(prefString, false);
 		s.setChecked(isSwitchOn);
 		
 		s.setOnCheckedChangeListener(new OnCheckedChangeListener(){
             public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
+            	intentService = new Intent(mContext, cls);
+            	pendingIntentService = PendingIntent.getService(mContext, 0, intentService, 0);
                 if (isChecked) {
                 	// switch on
                 	prefEditorSettings.putBoolean(prefString, true);
-                	intentService = new Intent(mContext, cls);
-                	pendingIntentService = PendingIntent.getService(mContext, 0, intentService, 0);
-                	startPendingIntent(pendingIntentService);
+                	if ( s.getTag() != null ) {
+	                	String tag = s.getTag().toString();
+	                	switch (tag) {
+	                	case SWITCH_NOTI_WORD:
+	                		initAlarmManager();
+	                		startPendingIntent(pendingIntentService);
+	                		break;
+	                	case SWITCH_UPDATE_WORD:
+	                		initAlarmManager();
+	                		firstWake = firstWake - TIME_ADVANCED_SECOND;//update words ahead of 
+	                		startPendingIntent(pendingIntentService);
+	                		break;
+	                	default:
+	                		break;
+	                	}
+                	}
                 } else {
                 	//switch off
                 	prefEditorSettings.putBoolean(prefString, false);
@@ -225,6 +231,7 @@ public class SettingsFragment extends Fragment {
                 prefEditorSettings.commit();
             }
         });
+		return s;
 	}
 	
 	/**
@@ -235,16 +242,20 @@ public class SettingsFragment extends Fragment {
      * @date 2015-8-21 
      */
     public void startPendingIntent(PendingIntent pendingIntent) {
-    	
-    	am = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
-    	
-    	interval = DateUtils.MINUTE_IN_MILLIS * minute;// minutes分钟一次
-    	
-    	firstWake = System.currentTimeMillis() + interval;
-    	
     	am.setRepeating(AlarmManager.RTC, firstWake, interval, pendingIntent);
     	
     }
+	/**
+	 * <p>Title: initAlarmManager</p>
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-8-21 下午10:55:21
+	 */
+	private void initAlarmManager() {
+		am = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
+    	interval = DateUtils.SECOND_IN_MILLIS * second;
+    	firstWake = System.currentTimeMillis() + interval;
+	}
 
     /**
      * <p>Title: stopPendingIntent</p>
@@ -254,11 +265,8 @@ public class SettingsFragment extends Fragment {
      * @date 2015-8-21
      */
     public static void stopPendingIntent(PendingIntent pendingIntent) {
-
         if (pendingIntent != null) {
-
             pendingIntent.cancel();
-
         }
     }
 }

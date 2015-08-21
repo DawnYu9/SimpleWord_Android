@@ -15,6 +15,7 @@ import android.util.Log;
 import com.bubble.simpleword.MainActivity;
 import com.bubble.simpleword.R;
 import com.bubble.simpleword.db.WordsDB;
+import com.bubble.simpleword.menu.SettingsFragment;
 
 /**
  * <p>Title: NotificationService</p>
@@ -25,7 +26,7 @@ import com.bubble.simpleword.db.WordsDB;
  * @author bubble
  * @date 2015-8-20 下午5:40:23
  */
-public class ServiceNotification extends Service {
+public class ServiceNotiWord extends Service {
 	NotificationCompat.Builder mBuilder;
 	NotificationManager mNotificationManager;
 	Notification notification;
@@ -35,11 +36,13 @@ public class ServiceNotification extends Service {
 	int notifyID = 1;
 	private static AlarmManager am;
     private static PendingIntent pendingIntent;
+    
+    Intent intentServiseUpdateWord;
 	/**
 	 * <p>Title: </p>
 	 * <p>Description: </p>
 	 */
-	public ServiceNotification() {
+	public ServiceNotiWord() {
 	}
 
 	/**
@@ -71,6 +74,10 @@ public class ServiceNotification extends Service {
 	 */
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
+		if ( WordsDB.wordClass == null ) {
+			WordsDB.getWord();
+		}
+		
 		mBuilder
 			.setContentText(WordsDB.wordClass.toString())
 			.setWhen(System.currentTimeMillis())
