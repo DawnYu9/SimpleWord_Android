@@ -25,7 +25,7 @@
 	</string-array>  
 	
     <!-- 是否开启通知栏单词 -->
-    <string name="setting_switch_noti_word">是否开启通知栏单词</string>
+    <string name="setting_switch_pop_noti_word">是否开启通知栏单词</string>
     <string name="switch_on">开</string>
     <string name="switch_off">关</string>
     

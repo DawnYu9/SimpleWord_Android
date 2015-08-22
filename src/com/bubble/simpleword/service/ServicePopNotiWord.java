@@ -26,7 +26,7 @@ import com.bubble.simpleword.menu.SettingsFragment;
  * @author bubble
  * @date 2015-8-20 下午5:40:23
  */
-public class ServiceNotiWord extends Service {
+public class ServicePopNotiWord extends Service {
 	NotificationCompat.Builder mBuilder;
 	NotificationManager mNotificationManager;
 	Notification notification;
@@ -42,7 +42,7 @@ public class ServiceNotiWord extends Service {
 	 * <p>Title: </p>
 	 * <p>Description: </p>
 	 */
-	public ServiceNotiWord() {
+	public ServicePopNotiWord() {
 	}
 
 	/**
@@ -99,6 +99,7 @@ public class ServiceNotiWord extends Service {
 		        .setSmallIcon(R.drawable.menu)
 		        .setContentTitle("当前word");
 		notification = mBuilder.build();
+		
 		resultIntent = new Intent(this, MainActivity.class);
 		stackBuilder = TaskStackBuilder.create(this);
 		stackBuilder.addParentStack(MainActivity.class);

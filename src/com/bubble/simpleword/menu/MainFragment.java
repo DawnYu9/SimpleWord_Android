@@ -17,7 +17,7 @@ import com.bubble.simpleword.MainActivity;
 import com.bubble.simpleword.R;
 import com.bubble.simpleword.db.WordsDB;
 import com.bubble.simpleword.db.WordsDbHelper;
-import com.bubble.simpleword.service.ServiceNotiWord;
+import com.bubble.simpleword.service.ServicePopNotiWord;
 import com.bubble.simpleword.wordbook.WordsClass;
 
 /**
@@ -100,7 +100,7 @@ public class MainFragment extends Fragment implements OnClickListener{
 		    (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
 		// mId allows you to update the notification later on.
 		mNotificationManager.notify(1, mBuilder.build());*/
-		Intent intent = new Intent(getActivity() ,ServiceNotiWord.class);
+		Intent intent = new Intent(getActivity() ,ServicePopNotiWord.class);
 		getActivity().startService(intent);
 	}
 	/**

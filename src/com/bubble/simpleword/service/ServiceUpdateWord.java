@@ -32,8 +32,7 @@ public class ServiceUpdateWord extends Service {
 	 */
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-//		UpdateWord();
-		WordsDB.getWord();
+		UpdateWord();
 		Log.d("更新单词", WordsDB.wordClass.toString());
 		return super.onStartCommand(intent, flags, startId);
 	}
@@ -54,6 +53,6 @@ public class ServiceUpdateWord extends Service {
 	 * @date 2015-8-21 上午10:15:52
 	 */
 	private void UpdateWord() {
-//		WordsDB.getWord();
+		WordsDB.getWord();
 	}
 }

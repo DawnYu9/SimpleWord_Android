@@ -3,8 +3,11 @@ package com.bubble.simpleword;
 import java.io.File;
 
 import android.app.ActionBar;
+import android.app.AlarmManager;
 import android.app.Fragment;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
@@ -14,6 +17,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.PersistableBundle;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
@@ -23,7 +27,11 @@ import android.view.WindowManager;
 import com.bubble.simpleword.db.DBManager;
 import com.bubble.simpleword.db.WordsDB;
 import com.bubble.simpleword.menu.MainFragment;
+import com.bubble.simpleword.menu.SettingsFragment;
 import com.bubble.simpleword.menu.SlidingMenuFragment;
+import com.bubble.simpleword.service.ServicePopNotiWord;
+import com.bubble.simpleword.service.ServiceUpdateWord;
+import com.bubble.simpleword.util.Util;
 import com.bubble.simpleword.wordbook.WordsClass;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
@@ -35,6 +43,9 @@ import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
  * @date 2015-8-2
  */
 public class MainActivity extends SlidingFragmentActivity {
+	int spinnerWordSortSelection;
+	static final String KEY_FILE_NAME_SETTINGS = SettingsFragment.KEY_FILE_NAME_SETTINGS;
+	SharedPreferences prefSettings;
 	public DBManager dbManager;
 	private Fragment contentFragment;
 	SlidingMenu sm;
@@ -76,6 +87,10 @@ public class MainActivity extends SlidingFragmentActivity {
 
 		isFirstStart = pref.getBoolean(IS_FIRST_START, true);
 		
+		prefSettings = getSharedPreferences(KEY_FILE_NAME_SETTINGS, Context.MODE_PRIVATE);
+		
+		initSwitch();
+		
 		Log.i("isFirstStart", Boolean.toString(isFirstStart));
 		Log.i("cursorIndex", Integer.toString(cursorIndex));
 		Log.i("onCreate", "结束");
@@ -90,10 +105,6 @@ public class MainActivity extends SlidingFragmentActivity {
 	protected void onStart() {
 		super.onStart();
 		Log.i("onStart", "开始");
-//		cursorIndex = pref.getInt(CURSOR_INDEX, 0);
-//		initWords(cursorIndex);
-		
-		
 		Log.i("onStart", "结束");
 	}
 	
@@ -106,19 +117,8 @@ public class MainActivity extends SlidingFragmentActivity {
 	protected void onResume() {
 		super.onResume();
 		Log.i("onResume", "开始");
-		//judge if it's the first time to start the app
-		//if "true",change the flag "IS_FIRST_START" to "false"
-		if ( isFirstStart ) {
-			editor.putBoolean(IS_FIRST_START, false);
-			editor.commit();
-			initWords();
-		} else {
-			WordsDB.isInOrder = pref.getBoolean(WordsDB.IS_INORDER, true);
-			WordsDB.isReverseOrder = pref.getBoolean(WordsDB.IS_REVERSEORDER, false);
-			WordsDB.isRandom = pref.getBoolean(WordsDB.IS_RANDOM, false);
-			cursorIndex = pref.getInt(CURSOR_INDEX, 0);
-			initWords(cursorIndex);
-		}
+//		initSettings();
+		initWordsDB(isFirstStart);
 		
 		Log.i("onResume", "结束");
 	}
@@ -148,15 +148,87 @@ public class MainActivity extends SlidingFragmentActivity {
 	}
 	
 	/**
+	 * <p>Title: initSettings</p>
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-8-22 上午10:19:07
+	 */
+//	private void initSettings() {
+//		initWordsDB(isFirstStart);
+//	}
+
+	/**
 	 * <p>Title: initWords</p>
 	 * <p>Description: </p>
 	 * @author bubble
 	 * @date 2015-8-6
 	 */
-	private void initWords(){
-		WordsDB.initWordsDB(this);
-		WordsDB.setWordInOrder();	//if it is the first time to start the app, the default mode to get word is "in order"
+	private void initWordsDB(boolean isFirstStart){
+		if ( isFirstStart ) {
+			WordsDB.initWordsDB(this);
+			WordsDB.setWordInOrder();	//if it is the first time to start the app, the default mode to get word is "in order"
+		} else {
+			WordsDB.isInOrder = pref.getBoolean(WordsDB.IS_INORDER, true);
+			WordsDB.isReverseOrder = pref.getBoolean(WordsDB.IS_REVERSEORDER, false);
+			WordsDB.isRandom = pref.getBoolean(WordsDB.IS_RANDOM, false);
+			cursorIndex = pref.getInt(CURSOR_INDEX, 0);
+//			initWords(cursorIndex);
+			WordsDB.initWordsDB(this, cursorIndex);
+		}
 	}
+	
+	/**
+	 * <p>Title: initSwitch</p>
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-8-22 上午10:07:04
+	 */
+	Intent intentService;
+	PendingIntent pendingIntentService;
+	int hour;
+	int minute;
+	int second;
+	private void initSwitch() {
+		if ( isSwitchOn(SettingsFragment.KEY_SWITCH_POP_NOTI_WORD) ) {
+			intentService = new Intent(this, ServicePopNotiWord.class);
+			pendingIntentService = PendingIntent.getService(this, 0, intentService, 0);
+			hour = Util.getPrefStr2Int(prefSettings, SettingsFragment.KEY_POP_NOTI_WORD_INTERVAL_HOUR, SettingsFragment.INTERVAL_00);
+			minute = Util.getPrefStr2Int(prefSettings, SettingsFragment.KEY_POP_NOTI_WORD_INTERVAL_MINUTE, SettingsFragment.INTERVAL_00);
+			second = Util.getPrefStr2Int(prefSettings, SettingsFragment.KEY_POP_NOTI_WORD_INTERVAL_SECOND, SettingsFragment.INTERVAL_30);
+			startPendingIntent(pendingIntentService, hour, minute, second, 1);
+		}
+		if ( isSwitchOn(SettingsFragment.KEY_SWITCH_UPDATE_WORD) ) {
+			intentService = new Intent(this, ServiceUpdateWord.class);
+			pendingIntentService = PendingIntent.getService(this, 0, intentService, 0);
+			hour = Util.getPrefStr2Int(prefSettings, SettingsFragment.KEY_UPDATE_WORD_INTERVAL_HOUR, SettingsFragment.INTERVAL_00);
+			minute = Util.getPrefStr2Int(prefSettings, SettingsFragment.KEY_UPDATE_WORD_INTERVAL_MINUTE, SettingsFragment.INTERVAL_00);
+			second = Util.getPrefStr2Int(prefSettings, SettingsFragment.KEY_UPDATE_WORD_INTERVAL_SECOND, SettingsFragment.INTERVAL_30);
+			startPendingIntent(pendingIntentService, hour, minute, second, 0);
+		}
+	}
+	
+	
+	/**
+	 * <p>Title: isSwitchOn</p>
+	 * <p>Description: </p>
+	 * @param keySwitch
+	 * @author bubble
+	 * @date 2015-8-22 上午10:27:48
+	 */
+
+	private boolean isSwitchOn(String keySwitch) {
+		return prefSettings.getBoolean(keySwitch, false);
+	}
+    public void startPendingIntent(PendingIntent pendingIntent, int hour,int minute, int second,long delayTime) {
+		long alarmInterval = DateUtils.HOUR_IN_MILLIS * hour 
+    		+ DateUtils.MINUTE_IN_MILLIS * minute
+    		+ DateUtils.SECOND_IN_MILLIS * second;
+    	
+    	long alarmFirstWake = System.currentTimeMillis() + delayTime;
+    	AlarmManager am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+    	am.setRepeating(AlarmManager.RTC, alarmFirstWake, alarmInterval, pendingIntent);
+    }
+	
 	/**
 	 * <p>Title: initWords</p>
 	 * <p>Description: </p>
@@ -164,10 +236,10 @@ public class MainActivity extends SlidingFragmentActivity {
 	 * @author bubble
 	 * @date 2015-8-20
 	 */
-	private void initWords(int position){
-		WordsDB.initWordsDB(this, position);
+//	private void initWords(int position){
+//		WordsDB.initWordsDB(this, position);
 //		}
-	}
+//	}
 	/**
 	 * <p>Title: initSlidingMenu</p>
 	 * <p>Description: </p>
@@ -282,6 +354,10 @@ public class MainActivity extends SlidingFragmentActivity {
 	protected void onStop() {
 		super.onStop();
 		Log.i("onStop", "开始");
+		if ( isFirstStart ) {
+			editor.putBoolean(IS_FIRST_START, false);
+			editor.commit();
+		}
 		cursorIndex = WordsDB.getCursorPosition();
 		editor.putInt(CURSOR_INDEX, cursorIndex);
 		editor.putBoolean(WordsDB.IS_INORDER, WordsDB.isInOrder);
