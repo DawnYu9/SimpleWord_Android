@@ -66,8 +66,8 @@ public class SettingsFragment extends Fragment {
 	SharedPreferences.Editor prefEditorSettings;
 	public static final String KEY_FILE_NAME_SETTINGS = "SimpleWord_Settings_File";
 	
-	Intent intentService;
-	PendingIntent pendingIntentService;
+	Intent intent;
+	PendingIntent pendingIntent;
 	boolean isSwitchOn = false;
 	
 	/** widgets **/
@@ -81,8 +81,8 @@ public class SettingsFragment extends Fragment {
 	public static Switch switchPopNotiWord;
 	boolean isSwitchOnNotiWord;
 	public static final String KEY_SWITCH_POP_NOTI_WORD = "KEY_SWITCH_POP_NOTI_WORD";
-	Intent intentNotiService;
-	PendingIntent pendingIntentNotiService;
+	Intent intentServicePopNotiWord;
+//	PendingIntent pendingIntentNotiService;
 	
 	//EditTexts : "the interval to pop the notification word"
 	EditText edtPopNotiWordIntervalHour;
@@ -98,8 +98,8 @@ public class SettingsFragment extends Fragment {
 	//Switch : "auto update word"
 	public static Switch switchUpdateWord;
 	public static final String KEY_SWITCH_UPDATE_WORD = "KEY_SWITCH_UPDATE_WORD";
-	Intent intentUpdateWordService;
-	PendingIntent pendingIntentUpdateWordService;
+	Intent intentServiceUpdateWord;
+//	PendingIntent pendingIntentUpdateWordService;
 	
 	
 	//EditTexts : "the interval of auto updating word" 
@@ -264,8 +264,8 @@ public class SettingsFragment extends Fragment {
 		
 		s.setOnCheckedChangeListener(new OnCheckedChangeListener(){
             public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
-            	intentService = new Intent(mContext, cls);
-            	pendingIntentService = PendingIntent.getService(mContext, 0, intentService, 0);
+            	intent = new Intent(mContext, cls);
+            	pendingIntent = PendingIntent.getService(mContext, 0, intent, 0);
             	tag = s.getTag().toString();
                 if (isChecked) {
                 	prefEditorSettings.putBoolean(prefString, true);
@@ -273,12 +273,14 @@ public class SettingsFragment extends Fragment {
                 	if ( s.getTag() != null ) {
 	                	switch (tag) {
 	                	case KEY_SWITCH_POP_NOTI_WORD:
+	                		intentServicePopNotiWord = intent;
 	                		setEdtIntervalEditable(tag);
-	                		startPendingIntent(tag,pendingIntentService, 1);
+	                		startPendingIntent(tag,pendingIntent, 1);
 	                		break;
 	                	case KEY_SWITCH_UPDATE_WORD:
+	                		intentServiceUpdateWord = intent;
 	                		setEdtIntervalEditable(tag);
-	                		startPendingIntent(tag,pendingIntentService,0);//update should before others
+	                		startPendingIntent(tag,pendingIntent,0);//update should before others
 	                		break;
 	                	default:
 	                		break;
@@ -297,7 +299,7 @@ public class SettingsFragment extends Fragment {
 	                		prefEditorSettings.putBoolean(prefString, false);
 	                		prefEditorSettings.commit();
 	                		setEdtIntervalEditable(tag);
-	                		stopPendingIntent(pendingIntentService);
+	                		stopPendingIntent(pendingIntent,prefString);
 	                		break;
 	                	default:
 	                		break;
@@ -348,9 +350,19 @@ public class SettingsFragment extends Fragment {
      * @author bubble
      * @date 2015-8-21
      */
-    public static void stopPendingIntent(PendingIntent pendingIntent) {
+    public void stopPendingIntent(PendingIntent pendingIntent, String keySwitch) {
         if (pendingIntent != null) {
             pendingIntent.cancel();
+        }
+        switch (keySwitch) {
+        case KEY_SWITCH_POP_NOTI_WORD:
+        	if ( intentServicePopNotiWord != null)
+        		mContext.stopService(intentServicePopNotiWord);
+        	break;
+        case KEY_SWITCH_UPDATE_WORD:
+        	if ( intentServiceUpdateWord != null)
+        		mContext.stopService(intentServiceUpdateWord);
+        	break;
         }
     }
 
