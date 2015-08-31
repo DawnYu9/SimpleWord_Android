@@ -21,7 +21,7 @@ import android.widget.Toast;
 
 import com.bubble.simpleword.MainActivity;
 import com.bubble.simpleword.R;
-import com.bubble.simpleword.db.WordsDB;
+import com.bubble.simpleword.db.WordsManager;
 import com.bubble.simpleword.wordbook.WordCardAdapter;
 import com.bubble.simpleword.wordbook.WordsClass;
 
@@ -78,9 +78,9 @@ public class WordBookFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
 		view=inflater.inflate(R.layout.wordbook_recycler_view,container, false); 
 		activity = getActivity();
-		word = WordsDB.wordClass;
+		word = WordsManager.wordClass;
 		if ( word == null )
-			word = WordsDB.getWord();
+			word = WordsManager.getWord();
 		wordsList.add(word);  
 //		actionBar.setTitle(R.string.wordbook);	//set all fragments's actionbar title
 		getActivity().setTitle(R.string.wordbook);	//set one fragment's actionbar title

@@ -15,8 +15,9 @@ import android.widget.TextView;
 
 import com.bubble.simpleword.MainActivity;
 import com.bubble.simpleword.R;
-import com.bubble.simpleword.db.WordsDB;
+import com.bubble.simpleword.db.WordsManager;
 import com.bubble.simpleword.db.WordsDbHelper;
+import com.bubble.simpleword.service.ServiceFloatWord;
 import com.bubble.simpleword.service.ServicePopNotiWord;
 import com.bubble.simpleword.wordbook.WordsClass;
 
@@ -66,42 +67,18 @@ public class MainFragment extends Fragment implements OnClickListener{
 		db = dbHelper.getWritableDatabase();
 		
 		StringBuilder sb = new StringBuilder();
-		Log.i("cursor", Integer.toString(WordsDB.getCursorPosition()));
+		Log.i("cursor", Integer.toString(WordsManager.getCursorPosition()));
 		Log.i("cursorIndex", Integer.toString(MainActivity.cursorIndex));
-		WordsClass wordsClass = WordsDB.getWord();
+		WordsClass wordsClass = WordsManager.getWord();
 		Log.i("正序", wordsClass.toString());
 		sb.append(wordsClass.toString() + "\n");
 		tv.setText(sb.toString());
 		
-		//状态栏通知
-/*		NotificationCompat.Builder mBuilder =
-		        new NotificationCompat.Builder(getActivity())
-		        .setSmallIcon(R.drawable.menu)
-		        .setContentTitle("当前word")
-		        .setContentText(sb.toString())
-		        .setOngoing(true);*/
-		// Creates an explicit intent for an Activity in your app
-/*		Intent resultIntent = new Intent(getActivity(), MainActivity.class);
-
-		// The stack builder object will contain an artificial back stack for the
-		// started Activity.
-		// This ensures that navigating backward from the Activity leads out of
-		// your application to the Home screen.
-		TaskStackBuilder stackBuilder = TaskStackBuilder.create(getActivity());
-		// Adds the back stack for the Intent (but not the Intent itself)
-		stackBuilder.addParentStack(MainActivity.class);
-		// Adds the Intent that starts the Activity to the top of the stack
-		stackBuilder.addNextIntent(resultIntent);
-		PendingIntent resultPendingIntent =
-		        stackBuilder.getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT
-		        );
-		mBuilder.setContentIntent(resultPendingIntent);*/
-/*		NotificationManager mNotificationManager =
-		    (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
-		// mId allows you to update the notification later on.
-		mNotificationManager.notify(1, mBuilder.build());*/
-		Intent intent = new Intent(getActivity() ,ServicePopNotiWord.class);
-		getActivity().startService(intent);
+		Intent intent1 = new Intent(getActivity() ,ServicePopNotiWord.class);
+		getActivity().startService(intent1);
+		
+		Intent intent2 = new Intent(getActivity(), ServiceFloatWord.class);  
+		getActivity().startService(intent2);  
 	}
 	/**
 	 * @author bubble

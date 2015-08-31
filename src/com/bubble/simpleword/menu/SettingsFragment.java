@@ -6,6 +6,7 @@ import android.app.Fragment;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
@@ -27,10 +28,15 @@ import android.widget.Spinner;
 import android.widget.Switch;
 
 import com.bubble.simpleword.R;
-import com.bubble.simpleword.db.WordsDB;
+import com.bubble.simpleword.broadcast.BroadcastReceiverFloatWord;
+import com.bubble.simpleword.broadcast.BroadcastReceiverPopNotiWord;
+import com.bubble.simpleword.broadcast.BroadcastReceiverUpdateWord;
+import com.bubble.simpleword.db.WordsManager;
+import com.bubble.simpleword.service.ServiceFloatWord;
 import com.bubble.simpleword.service.ServicePopNotiWord;
 import com.bubble.simpleword.service.ServiceUpdateWord;
 import com.bubble.simpleword.util.Util;
+import com.bubble.simpleword.view.MyWindowManager;
 
 /**
  * <p>Title: SettingsFragment</p>
@@ -43,72 +49,83 @@ import com.bubble.simpleword.util.Util;
  */
 public class SettingsFragment extends Fragment {
 	/**
-	 * 临时存储EditText的内容
-	 * temporarily store EditText's content
+	 * store EditText's content temporarily
 	 */
-	String edtString;
+	private String edtString;
 	/**
-	 * temporarily store widget's tag ,and also the key when use SharedPreferences
+	 * store widget's tag ,and also the key when use SharedPreferences temporarily
 	 */
-	String tag;
+	private String tag;
 	/**
-	 * temporarily store a boolean value
+	 * store a boolean value temporarily
 	 */
-	boolean b;
+	private boolean b;
 	
-	InputMethodManager inputMethodManager;
+	private InputMethodManager inputMethodManager;
 	
-	Context mContext;
-	Activity mActivity;
-	View mView;
+	private Context mContext;
+	private Activity mActivity;
+	private View mView;
 	
 	public static SharedPreferences prefSettings;
-	SharedPreferences.Editor prefEditorSettings;
+	private SharedPreferences.Editor prefEditorSettings;
 	public static final String KEY_FILE_NAME_SETTINGS = "SimpleWord_Settings_File";
 	
-	Intent intent;
-	PendingIntent pendingIntent;
-	boolean isSwitchOn = false;
+	private Intent intentBroadcast;
+	private PendingIntent pendingIntent;
+	private boolean isSwitchOn = false;
 	
 	/** widgets **/
 	
 	//Spinner : "select the word's sort"
-	int spinnerWordSortSelection;
-	Spinner spinnerWordsort;
+	private int spinnerWordSortSelection;
+	private Spinner spinnerWordsort;
 	public static final String KEY_SPINNER_SELECTION_WODE_MODE = "KEY_SPINNER_SELECTION_WODE_MODE";
 
-	//Switch : "display word in status bar's notification"
+	//Switch : "display word in status bar's notification,and pop up the notification"
 	public static Switch switchPopNotiWord;
-	boolean isSwitchOnNotiWord;
+	private boolean isSwitchOnNotiWord;
 	public static final String KEY_SWITCH_POP_NOTI_WORD = "KEY_SWITCH_POP_NOTI_WORD";
-	Intent intentServicePopNotiWord;
-//	PendingIntent pendingIntentNotiService;
+	private Intent intentServicePopNotiWord;
+	//	PendingIntent pendingIntentNotiService;
+	private final String ACTION_BROADCAST_POP_NOTI_WORD = "com.bubble.simpleword.BROADCAST_POP_NOTI_WORD";
+	private BroadcastReceiverPopNotiWord broadcastReceiverPopNotiWord;
 	
 	//EditTexts : "the interval to pop the notification word"
-	EditText edtPopNotiWordIntervalHour;
-	EditText edtPopNotiWordIntervalMinute;
-	EditText edtPopNotiWordIntervalSecond;
-	int intPopNotiWordIntervalHour = 0;
-	int intPopNotiWordIntervalMinute = 0;
-	int intPopNotiWordIntervalSecond = 30;
+	private EditText edtPopNotiWordIntervalHour;
+	private EditText edtPopNotiWordIntervalMinute;
+	private EditText edtPopNotiWordIntervalSecond;
+	private int intPopNotiWordIntervalHour = 0;
+	private int intPopNotiWordIntervalMinute = 0;
+	private int intPopNotiWordIntervalSecond = 30;
 	public static final String KEY_POP_NOTI_WORD_INTERVAL_HOUR = "KEY_POP_NOTI_WORD_INTERVAL_HOUR";
 	public static final String KEY_POP_NOTI_WORD_INTERVAL_MINUTE = "KEY_POP_NOTI_WORD_INTERVAL_MINUTE";
 	public static final String KEY_POP_NOTI_WORD_INTERVAL_SECOND = "KEY_POP_NOTI_WORD_INTERVAL_SECOND";
 	
+
+	//Switch : "display word in float window"
+	public static Switch switchFloatWord;
+	public static final String KEY_SWITCH_FLOAT_WORD = "KEY_SWITCH_FLOAT_WORD";
+	public final String ACTION_BROADCAST_FLOAT_WORD = "com.bubble.simpleword.BROADCAST_FLOAT_WORD";
+	private Intent intentServiceFloatWord;
+	private PendingIntent pendingIntentFloatWordService;
+	private BroadcastReceiverFloatWord broadcastReceiverFloatWord;
+	
 	//Switch : "auto update word"
 	public static Switch switchUpdateWord;
 	public static final String KEY_SWITCH_UPDATE_WORD = "KEY_SWITCH_UPDATE_WORD";
-	Intent intentServiceUpdateWord;
+	private Intent intentServiceUpdateWord;
 //	PendingIntent pendingIntentUpdateWordService;
-	
+	public final String ACTION_BROADCAST_UPDATE_WORD = "com.bubble.simpleword.BROADCAST_UPDATE_WORD";
+	private BroadcastReceiverUpdateWord broadcastReceiverUpdateWord;
 	
 	//EditTexts : "the interval of auto updating word" 
-	EditText edtUpdateWordIntervalHour;
-	EditText edtUpdateWordIntervalMinute;
-	EditText edtUpdateWordIntervalSecond;
-	int intUpdateWordIntervalHour = 0;
-	int intUpdateWordIntervalMinute = 0;
-	int intUpdateWordIntervalSecond = 30;
+	private EditText edtUpdateWordIntervalHour;
+	private EditText edtUpdateWordIntervalMinute;
+	private EditText edtUpdateWordIntervalSecond;
+	private int intUpdateWordIntervalHour = 0;
+	private int intUpdateWordIntervalMinute = 0;
+	private int intUpdateWordIntervalSecond = 30;
 	public static final String KEY_UPDATE_WORD_INTERVAL_HOUR = "KEY_UPDATE_WORD_INTERVAL_HOUR";
 	public static final String KEY_UPDATE_WORD_INTERVAL_MINUTE = "KEY_UPDATE_WORD_INTERVAL_MINUTE";
 	public static final String KEY_UPDATE_WORD_INTERVAL_SECOND = "KEY_UPDATE_WORD_INTERVAL_SECOND";
@@ -121,12 +138,9 @@ public class SettingsFragment extends Fragment {
 	/**
 	 * the interval of updating data regularly
 	 */
-	long alarmInterval;
-	long alarmFirstWake;
+	private long alarmInterval;
+	private long alarmFirstWake;
 	
-	//Switch : "display word in float window"
-	Intent intentFloatWindowService;
-	PendingIntent pendingIntentFloatWindowService;
 	
 
     
@@ -165,6 +179,8 @@ public class SettingsFragment extends Fragment {
 		
 		initSwitchPopNotiWord(mView);
 		
+		initSwitchFloatWord(mView);
+		
 		initSwitchUpdateWord(mView);
 		
 	}
@@ -194,13 +210,13 @@ public class SettingsFragment extends Fragment {
 		    	String str= parent.getItemAtPosition(position).toString();		        
 		    	switch (str){
 		    	case "正序":
-	    			WordsDB.setWordInOrder();
+	    			WordsManager.setWordInOrder();
 		    		break;
 		    	case "逆序":
-	    			WordsDB.setWordReverseOrder();
+	    			WordsManager.setWordReverseOrder();
 		    		break;
 		    	case "随机":
-	    			WordsDB.setWordRandom();
+	    			WordsManager.setWordRandom();
 		    		break;
 		    	default:
 		    		break;
@@ -208,7 +224,7 @@ public class SettingsFragment extends Fragment {
 		    	
 		    	prefEditorSettings.putInt(KEY_SPINNER_SELECTION_WODE_MODE, position);
 		    	prefEditorSettings.commit();
-		    	Log.i("MODE_GET_WORD", Integer.toString(WordsDB.MODE_GET_WORD));
+		    	Log.i("MODE_GET_WORD", Integer.toString(WordsManager.MODE_GET_WORD));
 		    }
 		    @Override
 		    public void onNothingSelected(AdapterView<?> parent) {
@@ -227,12 +243,24 @@ public class SettingsFragment extends Fragment {
 		switchPopNotiWord = (Switch)view.findViewById(R.id.setting_switch_pop_noti_word); 
 		switchPopNotiWord.setTag(KEY_SWITCH_POP_NOTI_WORD);
 
-		initIntervalPopNotiWord(mView);
+		initEdtIntervalPopNotiWord(mView);
 		
-		switchPopNotiWord = initSwitch(switchPopNotiWord, KEY_SWITCH_POP_NOTI_WORD, ServicePopNotiWord.class);
+		switchPopNotiWord = initSwitch(switchPopNotiWord, KEY_SWITCH_POP_NOTI_WORD, BroadcastReceiverPopNotiWord.class);
 	}
 
-	
+	/**
+	 * <p>Title: initSwitchFloatWord</p>
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-8-30 下午2:18:01
+	 */
+	private void initSwitchFloatWord(View view) {
+		switchFloatWord = (Switch)view.findViewById(R.id.setting_switch_float_word); 
+		switchFloatWord.setTag(KEY_SWITCH_FLOAT_WORD);
+		
+		switchFloatWord = initSwitch(switchFloatWord, KEY_SWITCH_FLOAT_WORD, BroadcastReceiverFloatWord.class);
+		
+	}
 	/**
 	 * <p>Title: initSwitchUpdateWord</p>
 	 * <p>Description: </p>
@@ -243,9 +271,9 @@ public class SettingsFragment extends Fragment {
 		switchUpdateWord = (Switch)view.findViewById(R.id.setting_switch_update_word);
 		switchUpdateWord.setTag(KEY_SWITCH_UPDATE_WORD);
 		
-		initIntervalUpdateWord(mView);
+		initEdtIntervalUpdateWord(mView);
 		
-		switchUpdateWord = initSwitch(switchUpdateWord, KEY_SWITCH_UPDATE_WORD, ServiceUpdateWord.class);
+		switchUpdateWord = initSwitch(switchUpdateWord, KEY_SWITCH_UPDATE_WORD, BroadcastReceiverUpdateWord.class);
 	}
 
 	/**
@@ -254,47 +282,79 @@ public class SettingsFragment extends Fragment {
 	 * @param s Switch
 	 * @param prefString the name of the key preference to retrieve.
 	 * @param isSwitchOn the status of the switch:true is on,false is off
-	 * @param cls the class to intent to,eg:MainActivity.class
+	 * @param broadcastReceiverCls the class to intent to,eg:MainActivity.class
 	 * @author bubble
 	 * @date 2015-8-21 下午4:06:46
 	 */
-	private Switch initSwitch(final Switch s, final String prefString, final Class<?> cls) {
+	private Switch initSwitch(final Switch s, final String prefString, final Class<?> broadcastReceiverCls) {
 		isSwitchOn = prefSettings.getBoolean(prefString, false);
 		s.setChecked(isSwitchOn);
 		
 		s.setOnCheckedChangeListener(new OnCheckedChangeListener(){
             public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
-            	intent = new Intent(mContext, cls);
-            	pendingIntent = PendingIntent.getService(mContext, 0, intent, 0);
-            	tag = s.getTag().toString();
-                if (isChecked) {
-                	prefEditorSettings.putBoolean(prefString, true);
-                	prefEditorSettings.commit();
-                	if ( s.getTag() != null ) {
+            	if ( s.getTag() != null ) {
+	            	tag = s.getTag().toString();
+	            	switch (tag) {
+	            	case KEY_SWITCH_POP_NOTI_WORD:
+	            		intentBroadcast = new Intent(ACTION_BROADCAST_POP_NOTI_WORD);
+	            		break;
+	            	case KEY_SWITCH_FLOAT_WORD:
+	            		intentBroadcast = new Intent(ACTION_BROADCAST_FLOAT_WORD);
+	            		break;
+	            	case KEY_SWITCH_UPDATE_WORD:
+	            		intentBroadcast = new Intent(ACTION_BROADCAST_UPDATE_WORD);
+	            		break;
+	            	default:
+	            		break;
+	            	}
+	            	pendingIntent = PendingIntent.getBroadcast(mContext, 0, intentBroadcast, 0);
+	            	
+	                if (isChecked) {
+	                	prefEditorSettings.putBoolean(prefString, true);
+	                	prefEditorSettings.commit();
 	                	switch (tag) {
 	                	case KEY_SWITCH_POP_NOTI_WORD:
-	                		intentServicePopNotiWord = intent;
+	                		if ( intentServicePopNotiWord == null)
+	                    		intentServicePopNotiWord = new Intent(mContext,ServicePopNotiWord.class);
+	                		if ( broadcastReceiverPopNotiWord == null ) {
+	                			broadcastReceiverPopNotiWord = new BroadcastReceiverPopNotiWord();
+		                		IntentFilter filterPopNotiWord = new IntentFilter();
+		                        filterPopNotiWord.addAction(ACTION_BROADCAST_POP_NOTI_WORD);   
+		                        mContext.registerReceiver(broadcastReceiverPopNotiWord, filterPopNotiWord);
+	                		}
 	                		setEdtIntervalEditable(tag);
 	                		startPendingIntent(tag,pendingIntent, 1);
 	                		break;
+	                	case KEY_SWITCH_FLOAT_WORD:
+	                		if ( intentServiceFloatWord == null)
+	                			intentServiceFloatWord = new Intent(mContext,ServiceFloatWord.class);
+	                		if ( broadcastReceiverFloatWord == null ) {
+	                			broadcastReceiverFloatWord = new BroadcastReceiverFloatWord();
+	                			IntentFilter filterFloatWord = new IntentFilter();
+	                			filterFloatWord.addAction(ACTION_BROADCAST_FLOAT_WORD);   
+	                			mContext.registerReceiver(broadcastReceiverFloatWord, filterFloatWord);
+	                		}
+	                		startPendingIntent(tag,pendingIntent, 1);
+	                		break;
 	                	case KEY_SWITCH_UPDATE_WORD:
-	                		intentServiceUpdateWord = intent;
+	                		if ( intentServiceUpdateWord == null)
+	                    		intentServiceUpdateWord = new Intent(mContext,ServiceUpdateWord.class);
+	                		if ( broadcastReceiverUpdateWord == null ) {
+		                		broadcastReceiverUpdateWord = new BroadcastReceiverUpdateWord();
+		                		IntentFilter filterUpdateWord = new IntentFilter();
+		                		filterUpdateWord.addAction(ACTION_BROADCAST_UPDATE_WORD);    
+		                		mContext.registerReceiver(broadcastReceiverUpdateWord, filterUpdateWord);
+	                		}
 	                		setEdtIntervalEditable(tag);
 	                		startPendingIntent(tag,pendingIntent,0);//update should before others
 	                		break;
 	                	default:
 	                		break;
 	                	}
-                	}
-                } else {
-                	if ( s.getTag() != null ) {
+	                } else {
 	                	switch (tag) {
 	                	case KEY_SWITCH_POP_NOTI_WORD:
-//	                		prefEditorSettings.putBoolean(prefString, false);
-//	                		prefEditorSettings.commit();
-//	                		setEdtIntervalEnabled(tag);
-//	                		stopPendingIntent(pendingIntentService);
-//	                		break;
+	                	case KEY_SWITCH_FLOAT_WORD:
 	                	case KEY_SWITCH_UPDATE_WORD:
 	                		prefEditorSettings.putBoolean(prefString, false);
 	                		prefEditorSettings.commit();
@@ -304,10 +364,8 @@ public class SettingsFragment extends Fragment {
 	                	default:
 	                		break;
 	                	}
-                	}
-                }
-                
-                
+	                }
+            	}
             }
         });
 		return s;
@@ -327,6 +385,7 @@ public class SettingsFragment extends Fragment {
 				+ DateUtils.MINUTE_IN_MILLIS * intPopNotiWordIntervalMinute
 				+ DateUtils.SECOND_IN_MILLIS * intPopNotiWordIntervalSecond;
     		break;
+    	case KEY_SWITCH_FLOAT_WORD:
     	case KEY_SWITCH_UPDATE_WORD:
     		alarmInterval = DateUtils.HOUR_IN_MILLIS * intUpdateWordIntervalHour 
 				+ DateUtils.MINUTE_IN_MILLIS * intUpdateWordIntervalMinute
@@ -359,6 +418,12 @@ public class SettingsFragment extends Fragment {
         	if ( intentServicePopNotiWord != null)
         		mContext.stopService(intentServicePopNotiWord);
         	break;
+        case KEY_SWITCH_FLOAT_WORD:
+        	if ( intentServiceFloatWord != null) {
+        		mContext.stopService(intentServiceFloatWord);
+        		MyWindowManager.removeSmallFloatWindow(mContext);
+        	}
+        	break;
         case KEY_SWITCH_UPDATE_WORD:
         	if ( intentServiceUpdateWord != null)
         		mContext.stopService(intentServiceUpdateWord);
@@ -373,7 +438,7 @@ public class SettingsFragment extends Fragment {
 	 * @author bubble
 	 * @date 2015-8-22 上午11:34:20
 	 */
-	private void initIntervalUpdateWord(View view) {
+	private void initEdtIntervalUpdateWord(View view) {
 		edtUpdateWordIntervalHour = (EditText)view.findViewById(R.id.setting_edittext_update_word_hour);
 		edtUpdateWordIntervalMinute = (EditText)view.findViewById(R.id.setting_edittext_update_word_minute);
 		edtUpdateWordIntervalSecond = (EditText)view.findViewById(R.id.setting_edittext_update_word_second);
@@ -398,7 +463,7 @@ public class SettingsFragment extends Fragment {
 		setEdtIntervalListener(edtUpdateWordIntervalSecond);
 	}
 	
-	private void initIntervalPopNotiWord(View view) {
+	private void initEdtIntervalPopNotiWord(View view) {
 		edtPopNotiWordIntervalHour = (EditText)view.findViewById(R.id.setting_edittext_pop_noti_word_hour);
 		edtPopNotiWordIntervalMinute = (EditText)view.findViewById(R.id.setting_edittext_pop_noti_word_minute);
 		edtPopNotiWordIntervalSecond = (EditText)view.findViewById(R.id.setting_edittext_pop_noti_word_second);
@@ -498,6 +563,7 @@ public class SettingsFragment extends Fragment {
 				    		break;
 				    	}
 		    		} 
+		    		
 		    		switch ( v.getId() ) {
 		    		case R.id.setting_edittext_pop_noti_word_hour:
 		    			prefEdit(edt, v);
@@ -528,8 +594,20 @@ public class SettingsFragment extends Fragment {
 		    		}
 		    		Log.d("putString", edtString);
 		    		Log.d("settings", "edittext失焦");
-		    		renewSwitch(switchPopNotiWord);
-		    		renewSwitch(switchUpdateWord);
+		    		
+		    		switch ( v.getId() ) {
+		    		case R.id.setting_edittext_pop_noti_word_hour:
+		    		case R.id.setting_edittext_pop_noti_word_minute:
+		    		case R.id.setting_edittext_pop_noti_word_second:
+		    			renewSwitch(switchPopNotiWord);
+		    			break;
+		    		case R.id.setting_edittext_update_word_hour:
+		    		case R.id.setting_edittext_update_word_minute:
+		    		case R.id.setting_edittext_update_word_second:
+		    			renewSwitch(switchUpdateWord);
+		    			renewSwitch(switchFloatWord);
+		    			break;		    			
+		    		}
 		    	}
 		    }
 
@@ -620,6 +698,8 @@ public class SettingsFragment extends Fragment {
 			renewSwitch(switchPopNotiWord);
 		case KEY_SWITCH_UPDATE_WORD:
 			renewSwitch(switchUpdateWord);
+		case KEY_SWITCH_FLOAT_WORD:
+			renewSwitch(switchFloatWord);
 		}
 	}
 

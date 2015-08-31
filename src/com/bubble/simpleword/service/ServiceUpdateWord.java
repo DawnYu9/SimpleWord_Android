@@ -1,6 +1,6 @@
 package com.bubble.simpleword.service;
 
-import com.bubble.simpleword.db.WordsDB;
+import com.bubble.simpleword.db.WordsManager;
 import com.bubble.simpleword.wordbook.WordsClass;
 
 import android.app.Service;
@@ -33,7 +33,7 @@ public class ServiceUpdateWord extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		UpdateWord();
-		Log.d("更新单词", WordsDB.wordClass.toString());
+		Log.d("更新单词", WordsManager.wordClass.toString());
 		return super.onStartCommand(intent, flags, startId);
 	}
 	/**
@@ -53,6 +53,6 @@ public class ServiceUpdateWord extends Service {
 	 * @date 2015-8-21 上午10:15:52
 	 */
 	private void UpdateWord() {
-		WordsDB.getWord();
+		WordsManager.getWord();
 	}
 }

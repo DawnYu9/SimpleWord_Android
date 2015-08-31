@@ -1,6 +1,9 @@
 package com.bubble.simpleword.util;
 
+import java.lang.reflect.Field;
+
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -15,7 +18,7 @@ import android.view.inputmethod.InputMethodManager;
  * @date 2015-8-22 下午6:33:12
  */
 public class Util {
-
+	private static int statusBarHeight;
 	/**
 	 * <p>Title: </p>
 	 * <p>Description: </p>
@@ -61,4 +64,27 @@ public class Util {
 	public static int getPrefStr2Int(SharedPreferences pref,String key,String defValue) {
 		return Integer.parseInt(pref.getString(key, defValue));
 	}
+	
+    /**
+     * <p>Title: getStatusBarHeight</p>
+     * <p>Description: </p>
+     * @param context
+     * @return
+     * @author bubble
+     * @date 2015-8-31 下午6:41:30
+     */
+    public static int getStatusBarHeight(Context context) {  
+        if (statusBarHeight == 0) {  
+            try {  
+                Class<?> c = Class.forName("com.android.internal.R$dimen");  
+                Object o = c.newInstance();  
+                Field field = c.getField("status_bar_height");  
+                int x = (Integer) field.get(o);  
+                statusBarHeight = context.getResources().getDimensionPixelSize(x);  
+            } catch (Exception e) {  
+                e.printStackTrace();  
+            }  
+        }  
+        return statusBarHeight;  
+    }
 }

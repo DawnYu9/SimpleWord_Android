@@ -5,7 +5,8 @@
     android:orientation="vertical" 
     android:clickable="true"
     android:focusable="true"
-    android:focusableInTouchMode="true">
+    android:focusableInTouchMode="true"
+    >
 
     <!-- 设置显示单词的排序方式 -->
     <RelativeLayout 
@@ -29,25 +30,14 @@
 	</RelativeLayout>
 	
     <!-- 设置是否开启通知栏单词 -->
-    <RelativeLayout 
+    <Switch
+        android:text="@string/setting_switch_pop_noti_word"
+        android:id="@+id/setting_switch_pop_noti_word"
         android:layout_width="match_parent"
-	    android:layout_height="wrap_content"
-	    >
-	    <TextView 
-	        android:text="@string/setting_switch_pop_noti_word"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentLeft="true"
-	        />
-	    <Switch
-	        android:id="@+id/setting_switch_pop_noti_word"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentRight="true"
-	        android:textOn="@string/switch_on"
-	        android:textOff="@string/switch_off"
-	        />
-	</RelativeLayout>
+        android:layout_height="wrap_content"
+        android:textOn="@string/switch_on"
+        android:textOff="@string/switch_off"
+        />
 	
     <!-- 设置通知栏单词弹出的时间间隔 -->
     <RelativeLayout 
@@ -103,24 +93,26 @@
     	</LinearLayout>
     </RelativeLayout>
 	
-    <!-- 设置是否自动定时更新单词 -->
-    <RelativeLayout 
+    
+    <!-- 设置是否开启悬浮窗单词 -->
+    <Switch
+        android:text="开启悬浮窗单词"
+        android:id="@+id/setting_switch_float_word"
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textOn="@string/switch_on"
+        android:textOff="@string/switch_off"
+        />
+    
+    <!-- 设置是否自动定时更新单词 -->
+	<Switch
+        android:text="自动更新单词"
+	    android:id="@+id/setting_switch_update_word"
+	    android:layout_width="match_parent"
 	    android:layout_height="wrap_content"
-        >
-		<TextView 
-	        android:text="自动更新单词"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentLeft="true"
-	        />
-		<Switch
-		    android:id="@+id/setting_switch_update_word"
-		    android:layout_width="wrap_content"
-		    android:layout_height="wrap_content"
-		    android:layout_alignParentRight="true"
-		    />
-    </RelativeLayout>
+	    android:textOn="@string/switch_on"
+        android:textOff="@string/switch_off"
+	    />
     
     <!-- 设置自动更新单词的时间间隔 -->
     <RelativeLayout 
@@ -175,5 +167,6 @@
 	        />
     	</LinearLayout>
     </RelativeLayout>
-    
+
+
 </LinearLayout>

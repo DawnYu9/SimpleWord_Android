@@ -12,11 +12,7 @@
     	android:orientation="horizontal"
     	android:layout_weight="0"
 	    >
-	    <EditText 
-	        android:layout_width="wrap_content"
-    		android:layout_height="wrap_content"
-    		android:layout_weight="1"
-	        />
+	    
 	    <ImageButton 
 	        android:layout_width="wrap_content"
     		android:layout_height="wrap_content"
@@ -32,11 +28,22 @@
 		android:text="下一个"/>
     <TextView 
         android:id="@+id/text"
-		android:layout_width="match_parent"
+		android:layout_width="100dp"
 		android:layout_height="wrap_content"
 		android:layout_weight="1"
 		android:background="@color/gray_shadow"
-		android:text="单词"
+		android:text="123456789123456789123456789123456789123456789"
+		android:singleLine="true"
+		android:ellipsize="marquee"
+		android:focusable="true"
+		android:focusableInTouchMode="true"
         />
-	
+	<com.bubble.simpleword.view.MarqueeTextView 
+	    android:layout_weight="1"
+        android:id="@+id/marqueeTextView"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+     	android:text="你好，安卓，你好，安卓，你好，安卓，你好，安卓，你好，安卓，你好，安卓"
+        />
 </LinearLayout>

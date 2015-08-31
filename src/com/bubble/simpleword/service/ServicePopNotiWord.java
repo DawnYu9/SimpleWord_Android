@@ -5,17 +5,16 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
 import com.bubble.simpleword.MainActivity;
 import com.bubble.simpleword.R;
-import com.bubble.simpleword.db.WordsDB;
-import com.bubble.simpleword.menu.SettingsFragment;
+import com.bubble.simpleword.db.WordsManager;
 
 /**
  * <p>Title: NotificationService</p>
@@ -74,17 +73,13 @@ public class ServicePopNotiWord extends Service {
 	 */
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		if ( WordsDB.wordClass == null ) {
-			WordsDB.getWord();
-		}
-		
 		mBuilder
-			.setContentText(WordsDB.wordClass.toString())
+			.setContentText(WordsManager.wordClass.toString())
 			.setWhen(System.currentTimeMillis())
-			.setTicker(WordsDB.wordClass.toString());	//popup in Status Bar
+			.setTicker(WordsManager.wordClass.toString());	//pop up in Status Bar
 		mNotificationManager.notify(notifyID, notification);	//update data
 		startForeground(notifyID, mBuilder.build());	//display in "ongoing"
-		Log.d("通知栏单词", WordsDB.wordClass.toString());
+		Log.d("通知栏单词", WordsManager.wordClass.toString());
 		return super.onStartCommand(intent, flags, startId);
 	}
 	
@@ -107,7 +102,6 @@ public class ServicePopNotiWord extends Service {
 		resultPendingIntent = stackBuilder.getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT);
 		mBuilder.setContentIntent(resultPendingIntent);
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-		startForeground(notifyID, notification);
 	}
 	
 }

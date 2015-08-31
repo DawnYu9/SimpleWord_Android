@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<LinearLayout  
+    xmlns:android="http://schemas.android.com/apk/res/android"  
+    android:id="@+id/small_window_layout"  
+    android:layout_width="60dip"  
+    android:layout_height="25dip"  
+    android:background="@color/background_floating_material_dark"  
+    >  
+    
+    <TextView   
+        android:id="@+id/word_float_window_small_textview"  
+        android:layout_width="fill_parent"  
+        android:layout_height="fill_parent"  
+        android:gravity="center"  
+        android:textColor="#ffffff"  
+        android:singleLine="true"
+        android:ellipsize="marquee"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        />  
+        
+</LinearLayout>  

@@ -13,6 +13,7 @@ import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -25,7 +26,7 @@ import android.view.MenuItem;
 import android.view.WindowManager;
 
 import com.bubble.simpleword.db.DBManager;
-import com.bubble.simpleword.db.WordsDB;
+import com.bubble.simpleword.db.WordsManager;
 import com.bubble.simpleword.menu.MainFragment;
 import com.bubble.simpleword.menu.SettingsFragment;
 import com.bubble.simpleword.menu.SlidingMenuFragment;
@@ -118,9 +119,22 @@ public class MainActivity extends SlidingFragmentActivity {
 		super.onResume();
 		Log.i("onResume", "开始");
 //		initSettings();
-		initWordsDB(isFirstStart);
-		
+		initWordsManager(isFirstStart);
+		initWordClass();
+
 		Log.i("onResume", "结束");
+	}
+	
+	/**
+	 * <p>Title: initWordClass</p>
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-8-31 下午10:36:30
+	 */
+	private void initWordClass() {
+		if ( WordsManager.wordClass == null ) {
+			WordsManager.getWord();
+		}
 	}
 	
 	/**
@@ -163,17 +177,17 @@ public class MainActivity extends SlidingFragmentActivity {
 	 * @author bubble
 	 * @date 2015-8-6
 	 */
-	private void initWordsDB(boolean isFirstStart){
+	private void initWordsManager(boolean isFirstStart){
 		if ( isFirstStart ) {
-			WordsDB.initWordsDB(this);
-			WordsDB.setWordInOrder();	//if it is the first time to start the app, the default mode to get word is "in order"
+			WordsManager.initWordsManager(this);
+			WordsManager.setWordInOrder();	//if it is the first time to start the app, the default mode to get word is "in order"
 		} else {
-			WordsDB.isInOrder = pref.getBoolean(WordsDB.IS_INORDER, true);
-			WordsDB.isReverseOrder = pref.getBoolean(WordsDB.IS_REVERSEORDER, false);
-			WordsDB.isRandom = pref.getBoolean(WordsDB.IS_RANDOM, false);
+			WordsManager.isInOrder = pref.getBoolean(WordsManager.IS_INORDER, true);
+			WordsManager.isReverseOrder = pref.getBoolean(WordsManager.IS_REVERSEORDER, false);
+			WordsManager.isRandom = pref.getBoolean(WordsManager.IS_RANDOM, false);
 			cursorIndex = pref.getInt(CURSOR_INDEX, 0);
 //			initWords(cursorIndex);
-			WordsDB.initWordsDB(this, cursorIndex);
+			WordsManager.initWordsManager(this, cursorIndex);
 		}
 	}
 	
@@ -260,7 +274,7 @@ public class MainActivity extends SlidingFragmentActivity {
 		getFragmentManager().beginTransaction().replace(R.id.menu_frame, new SlidingMenuFragment()).commit();
 
 		sm.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
-		sm.setTouchModeBehind(SlidingMenu.TOUCHMODE_MARGIN);
+		sm.setTouchModeBehind(SlidingMenu.TOUCHMODE_FULLSCREEN);
 		sm.setShadowWidthRes(R.dimen.shadow_width);	
 		sm.setShadowDrawable(R.drawable.shadow);
 		sm.setFadeDegree(0);
@@ -358,11 +372,11 @@ public class MainActivity extends SlidingFragmentActivity {
 			editor.putBoolean(IS_FIRST_START, false);
 			editor.commit();
 		}
-		cursorIndex = WordsDB.getCursorPosition();
+		cursorIndex = WordsManager.getCursorPosition();
 		editor.putInt(CURSOR_INDEX, cursorIndex);
-		editor.putBoolean(WordsDB.IS_INORDER, WordsDB.isInOrder);
-		editor.putBoolean(WordsDB.IS_REVERSEORDER, WordsDB.isReverseOrder);
-		editor.putBoolean(WordsDB.IS_RANDOM, WordsDB.isRandom);
+		editor.putBoolean(WordsManager.IS_INORDER, WordsManager.isInOrder);
+		editor.putBoolean(WordsManager.IS_REVERSEORDER, WordsManager.isReverseOrder);
+		editor.putBoolean(WordsManager.IS_RANDOM, WordsManager.isRandom);
 		editor.commit();
 		Log.i("cursorIndex", Integer.toString(cursorIndex));
 		Log.i("onStop", "结束");
@@ -390,4 +404,6 @@ public class MainActivity extends SlidingFragmentActivity {
 	public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
 		super.onSaveInstanceState(outState, outPersistentState);
 	}
+	
+
 }

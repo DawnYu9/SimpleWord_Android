@@ -20,7 +20,7 @@ import com.bubble.simpleword.wordbook.WordsClass;
  * @author bubble
  * @date 2015-8-6 下午11:35:11
  */
-public class WordsDB {
+public class WordsManager {
 	private static Context mContext;
 	private static SQLiteDatabase db;
     private static WordsDbHelper wordsDbHelper;
@@ -62,7 +62,7 @@ public class WordsDB {
      * @author bubble
      * @date 2015-8-7
      */
-    public static void initWordsDB(Context context){
+    public static void initWordsManager(Context context){
     	mContext = context;
 		wordsDbHelper = new WordsDbHelper(mContext, MainActivity.DB_NAME, null, 1);
 		db = wordsDbHelper.getWritableDatabase();
@@ -79,7 +79,7 @@ public class WordsDB {
      * @author bubble
      * @date 2015-8-20 上午12:32:56
      */
-    public static void initWordsDB(Context context, int position){
+    public static void initWordsManager(Context context, int position){
     	mContext = context;
     	wordsDbHelper = new WordsDbHelper(mContext, MainActivity.DB_NAME, null, 1);
     	db = wordsDbHelper.getWritableDatabase();

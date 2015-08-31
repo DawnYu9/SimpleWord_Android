@@ -8,6 +8,10 @@
         android:minSdkVersion="17"
         android:targetSdkVersion="21" />
 
+    <!-- 显示顶层浮窗 -->
+	<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+	<uses-permission android:name="android.permission.GET_TASKS" />
+
 	<application
         android:name="org.litepal.LitePalApplication"
         android:allowBackup="true"
@@ -25,6 +29,7 @@
         </activity>
         
         <service android:name="com.bubble.simpleword.service.ServicePopNotiWord" />
+        <service android:name="com.bubble.simpleword.service.ServiceFloatWord" /> 
         <service android:name="com.bubble.simpleword.service.ServiceUpdateWord" />
             
     </application>
