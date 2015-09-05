@@ -13,7 +13,9 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 
 import com.bubble.simpleword.R;
+import com.bubble.simpleword.menu.SettingsFragment;
 import com.bubble.simpleword.service.ServiceFloatWord;
+import com.bubble.simpleword.util.Util;
 
 /**
  * <p>Title: FloatWindowBigView</p>
@@ -41,8 +43,8 @@ public class ViewBigFloatWindow extends LinearLayout {
             @Override  
             public void onClick(View v) {  
                 // 点击关闭悬浮窗的时候，移除所有悬浮窗，并停止Service  
-                MyWindowManager.removeBigWindow(context);  
-                MyWindowManager.removeSmallFloatWindow(context);  
+                MyWindowManager.removeBigFloatWord(context);  
+                MyWindowManager.removeSmallFloatWord(context);  
                 Intent intent = new Intent(getContext(), ServiceFloatWord.class);  
                 context.stopService(intent);  
             }  
@@ -51,8 +53,8 @@ public class ViewBigFloatWindow extends LinearLayout {
             @Override  
             public void onClick(View v) {  
                 // 点击返回的时候，移除大悬浮窗，创建小悬浮窗  
-                MyWindowManager.removeBigWindow(context);  
-                MyWindowManager.createSmallWindow(context);  
+                MyWindowManager.removeBigFloatWord(context);  
+                MyWindowManager.createSmallFloatWord(context,Util.getPrefSettings(context).getInt(SettingsFragment.KEY_SEEKBAR_WIDTH_FLOAT_WORD, SettingsFragment.WIDTH_FLOAT_WORD));  
             }  
         });  
     }  
@@ -66,8 +68,8 @@ public class ViewBigFloatWindow extends LinearLayout {
     public boolean dispatchKeyEvent(KeyEvent event) { 
     	switch (event.getKeyCode()) {
         case KeyEvent.KEYCODE_BACK:
-        	MyWindowManager.removeBigWindow(getContext());
-    		MyWindowManager.createSmallWindow(getContext());
+        	MyWindowManager.removeBigFloatWord(getContext());
+    		MyWindowManager.createSmallFloatWord(getContext(),Util.getPrefSettings(getContext()).getInt(SettingsFragment.KEY_SEEKBAR_WIDTH_FLOAT_WORD, SettingsFragment.WIDTH_FLOAT_WORD));
             return true;
         default:
         	return super.dispatchKeyEvent(event); 
@@ -86,8 +88,8 @@ public class ViewBigFloatWindow extends LinearLayout {
         Rect rect = new Rect();
         this.getGlobalVisibleRect(rect);	//获取视图在屏幕坐标中的可视区域
         if ( ! rect.contains(x, y) ) {
-        	MyWindowManager.removeBigWindow(getContext());
-    		MyWindowManager.createSmallWindow(getContext());
+        	MyWindowManager.removeBigFloatWord(getContext());
+    		MyWindowManager.createSmallFloatWord(getContext(),Util.getPrefSettings(getContext()).getInt(SettingsFragment.KEY_SEEKBAR_WIDTH_FLOAT_WORD, SettingsFragment.WIDTH_FLOAT_WORD));
         }
     	return super.dispatchTouchEvent(event);
 //        return false;

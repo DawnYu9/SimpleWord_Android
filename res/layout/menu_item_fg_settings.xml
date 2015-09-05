@@ -103,6 +103,17 @@
         android:textOn="@string/switch_on"
         android:textOff="@string/switch_off"
         />
+    <!-- 设置悬浮窗的宽度 -->
+    <TextView 
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="设置悬浮窗的宽度"
+        />
+	<SeekBar 
+        android:id="@+id/setting_seekbar_fload_word_width"
+	    android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+	    />    
     
     <!-- 设置是否自动定时更新单词 -->
 	<Switch

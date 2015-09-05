@@ -138,7 +138,7 @@ public class ViewSmallFloatWindow extends LinearLayout {
      * 打开大悬浮窗，同时关闭小悬浮窗。 
      */  
     private void openBigFloatWindow() {  
-        MyWindowManager.createBigFloatWindow(getContext());  
-        MyWindowManager.removeSmallFloatWindow(getContext());  
+        MyWindowManager.createBigFloatWord(getContext());  
+        MyWindowManager.removeSmallFloatWord(getContext());  
     }  
 }

@@ -27,6 +27,10 @@ import com.bubble.simpleword.util.Util;
  * @date 2015-8-30 下午1:03:24
  */
 public class MyWindowManager {
+	private static int screenWidth;  
+	private static int screenHeight;
+	private static TextView tvWordCls;
+	
     private static ViewSmallFloatWindow smallFloatWindow;  
   
     private static ViewBigFloatWindow bigFloatWindow;  
@@ -48,12 +52,8 @@ public class MyWindowManager {
      * @author bubble
      * @date 2015-8-31 下午5:22:35
      */
-    public static void createSmallWindow(Context context) {  
-        WindowManager windowManager = getWindowManager(context);  
-        DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager(context).getDefaultDisplay().getMetrics(dm);
-        int screenWidth = dm.widthPixels;
-        int screenHeight = dm.heightPixels;
+    public static void createSmallFloatWord(Context context,int width) {  
+        getWindowManager(context);  
         if (smallFloatWindow == null) {  
             smallFloatWindow = new ViewSmallFloatWindow(context);  
             if (smallFloatWindowParams == null) {  
@@ -70,16 +70,26 @@ public class MyWindowManager {
                 //smallWindowParams.flags =  LayoutParams.FLAG_NOT_TOUCH_MODAL | LayoutParams.FLAG_NOT_FOCUSABLE | LayoutParams.FLAG_LAYOUT_IN_SCREEN
                 // | LayoutParams.FLAG_LAYOUT_INSET_DECOR | LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH; 
                 smallFloatWindowParams.gravity = Gravity.LEFT | Gravity.TOP;  
-                smallFloatWindowParams.width = ViewSmallFloatWindow.viewWidth;  
-                smallFloatWindowParams.height = ViewSmallFloatWindow.viewHeight;  
+                smallFloatWindowParams.height = Util.getStatusBarHeight(context);  
                 smallFloatWindowParams.x = 0;  
                 smallFloatWindowParams.y = Util.getStatusBarHeight(context);  
             }  
+            smallFloatWindowParams.width = width;  
             smallFloatWindow.setParams(smallFloatWindowParams);  
-            windowManager.addView(smallFloatWindow, smallFloatWindowParams);  
+            mWindowManager.addView(smallFloatWindow, smallFloatWindowParams);  
         }  
     }  
   
+    /**
+	 * <p>Title: changeSmallFloatWordWidth</p>
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-9-4 下午4:59:57
+	 */
+	public static void changeSmallFloatWordWidth(Context context,int width) {
+		smallFloatWindowParams.width = width; 
+		mWindowManager.updateViewLayout(smallFloatWindow, smallFloatWindowParams);  
+	}
     /**
      * <p>Title: removeSmallWindow</p>
      * <p>Description: </p>
@@ -87,10 +97,10 @@ public class MyWindowManager {
      * @author bubble
      * @date 2015-8-31 下午5:23:08
      */
-    public static void removeSmallFloatWindow(Context context) {  
+    public static void removeSmallFloatWord(Context context) {  
         if (smallFloatWindow != null) {  
-            WindowManager windowManager = getWindowManager(context);  
-            windowManager.removeView(smallFloatWindow);  
+            getWindowManager(context);  
+            mWindowManager.removeView(smallFloatWindow);  
             smallFloatWindow = null;  
         }  
     }  
@@ -102,10 +112,10 @@ public class MyWindowManager {
      * @author bubble
      * @date 2015-8-31 下午5:23:25
      */
-    public static void createBigFloatWindow(Context context) {  
-        WindowManager windowManager = getWindowManager(context);  
-        int screenWidth = windowManager.getDefaultDisplay().getWidth();  
-        int screenHeight = windowManager.getDefaultDisplay().getHeight();  
+    public static void createBigFloatWord(Context context) {  
+        getWindowManager(context);  
+        screenWidth = Util.getScreenWidth();  
+        screenHeight = Util.getScreenHeight();  
         if (bigFloatWindow == null) {  
             bigFloatWindow = new ViewBigFloatWindow(context);  
             if (bigFloatWindowParams == null) {  
@@ -118,7 +128,7 @@ public class MyWindowManager {
                 bigFloatWindowParams.width = ViewBigFloatWindow.viewWidth;  
                 bigFloatWindowParams.height = ViewBigFloatWindow.viewHeight;  
             }  
-            windowManager.addView(bigFloatWindow, bigFloatWindowParams);  
+            mWindowManager.addView(bigFloatWindow, bigFloatWindowParams);  
         }  
     }  
   
@@ -129,14 +139,25 @@ public class MyWindowManager {
      * @author bubble
      * @date 2015-8-31 下午5:23:33
      */
-    public static void removeBigWindow(Context context) {  
+    public static void removeBigFloatWord(Context context) {  
         if (bigFloatWindow != null) {  
-            WindowManager windowManager = getWindowManager(context);  
-            windowManager.removeView(bigFloatWindow);  
+            getWindowManager(context);  
+            mWindowManager.removeView(bigFloatWindow);  
             bigFloatWindow = null;  
         }  
     }  
 
+    /**
+	 * <p>Title: removeAllFloatWindow</p>
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-9-4 下午11:12:13
+	 */
+	public static void removeAllFloatWord(Context context) {
+		removeSmallFloatWord(context);
+		removeBigFloatWord(context);
+	}
+    
     /**
      * <p>Title: isFloatWindowShowing</p>
      * <p>Description: if there are float windows (smallFloatWindow or bigFloatWindow) showing on the screen</p>
@@ -151,16 +172,13 @@ public class MyWindowManager {
     /**
      * <p>Title: getWindowManager</p>
      * <p>Description: </p>
-     * @param context the app's context
-     * @return WindowManager to manage the float window views(add or remove)
+     * @param context
      * @author bubble
-     * @date 2015-8-31 下午5:26:21
+     * @date 2015-9-4 
      */
-    private static WindowManager getWindowManager(Context context) {  
-        if (mWindowManager == null) {  
-            mWindowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);  
-        }  
-        return mWindowManager;  
+    private static WindowManager getWindowManager(Context context) { 
+		mWindowManager = Util.getMyWindowManager(context);
+		return mWindowManager;
     }  
   
     /**
@@ -170,10 +188,10 @@ public class MyWindowManager {
      * @author bubble
      * @date 2015-8-31 下午9:32:03
      */
-    public static void updateWordClass(Context context) {  
+    public static void updateWordClass() {  
         if (smallFloatWindow != null) {  
-            TextView tvWordClass = (TextView) smallFloatWindow.findViewById(R.id.word_float_window_small_textview);  
-            tvWordClass.setText(WordsManager.wordClass.toString());  
+            tvWordCls = (TextView) smallFloatWindow.findViewById(R.id.word_float_window_small_textview);  
+            tvWordCls.setText(WordsManager.wordClass.toString());  
         }  
     }  
 }  

@@ -15,6 +15,8 @@ import android.content.pm.ResolveInfo;
 import android.os.Handler;
 import android.os.IBinder;
 
+import com.bubble.simpleword.menu.SettingsFragment;
+import com.bubble.simpleword.util.Util;
 import com.bubble.simpleword.view.MyWindowManager;
 
 /**
@@ -44,7 +46,10 @@ public class ServiceFloatWord extends Service {
     		handler.post(new Runnable() {  
               @Override  
               public void run() {  
-                  MyWindowManager.createSmallWindow(getApplicationContext());  
+            	  if ( MyWindowManager.isFloatWindowShowing() ) {
+            		  MyWindowManager.removeAllFloatWord(getApplicationContext());
+            	  }
+            	  MyWindowManager.createSmallFloatWord(getApplicationContext(),Util.getPrefSettings(getApplicationContext()).getInt(SettingsFragment.KEY_SEEKBAR_WIDTH_FLOAT_WORD, SettingsFragment.WIDTH_FLOAT_WORD));  
               }  
           }); 
     	}
@@ -60,7 +65,7 @@ public class ServiceFloatWord extends Service {
         handler.post(new Runnable() {  
             @Override  
             public void run() {  
-                MyWindowManager.updateWordClass(getApplicationContext());  
+                MyWindowManager.updateWordClass();  
             }  
         });
         return super.onStartCommand(intent, flags, startId);  

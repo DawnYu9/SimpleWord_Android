@@ -33,6 +33,7 @@ import com.bubble.simpleword.menu.SlidingMenuFragment;
 import com.bubble.simpleword.service.ServicePopNotiWord;
 import com.bubble.simpleword.service.ServiceUpdateWord;
 import com.bubble.simpleword.util.Util;
+import com.bubble.simpleword.view.MyWindowManager;
 import com.bubble.simpleword.wordbook.WordsClass;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
@@ -90,7 +91,7 @@ public class MainActivity extends SlidingFragmentActivity {
 		
 		prefSettings = getSharedPreferences(KEY_FILE_NAME_SETTINGS, Context.MODE_PRIVATE);
 		
-		initSwitch();
+//		initSwitch();
 		
 		Log.i("isFirstStart", Boolean.toString(isFirstStart));
 		Log.i("cursorIndex", Integer.toString(cursorIndex));

@@ -1,12 +1,13 @@
 package com.bubble.simpleword.service;
 
-import com.bubble.simpleword.db.WordsManager;
-import com.bubble.simpleword.wordbook.WordsClass;
-
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences.Editor;
 import android.os.IBinder;
 import android.util.Log;
+
+import com.bubble.simpleword.MainActivity;
+import com.bubble.simpleword.db.WordsManager;
 
 /**
  * <p>Title: ServiceUpdateWord</p>
@@ -54,5 +55,9 @@ public class ServiceUpdateWord extends Service {
 	 */
 	private void UpdateWord() {
 		WordsManager.getWord();
+		int cursorIndex = WordsManager.getCursorPosition();
+		Editor editor = this.getSharedPreferences(MainActivity.PREFS_FILE_NAME, MODE_PRIVATE).edit();  
+		editor.putInt(MainActivity.CURSOR_INDEX, cursorIndex);
+		editor.commit();
 	}
 }
