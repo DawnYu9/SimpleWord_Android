@@ -34,7 +34,7 @@ import com.bubble.simpleword.service.ServicePopNotiWord;
 import com.bubble.simpleword.service.ServiceUpdateWord;
 import com.bubble.simpleword.util.Util;
 import com.bubble.simpleword.view.MyWindowManager;
-import com.bubble.simpleword.wordbook.WordsClass;
+import com.bubble.simpleword.wordbook.WordCls;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
 
@@ -60,7 +60,7 @@ public class MainActivity extends SlidingFragmentActivity {
             + Environment.getDataDirectory().getAbsolutePath() + File.separator
             + PACKAGE_NAME + File.separator
             + FOLDER_NAME ;  //the path to save database
-    public static WordsClass word ;
+    public static WordCls word ;
     
     SharedPreferences pref;
     Editor editor;
@@ -133,8 +133,8 @@ public class MainActivity extends SlidingFragmentActivity {
 	 * @date 2015-8-31 下午10:36:30
 	 */
 	private void initWordClass() {
-		if ( WordsManager.wordClass == null ) {
-			WordsManager.getWord();
+		if ( WordsManager.wordCls == null ) {
+			WordsManager.updateWord();
 		}
 	}
 	

@@ -4,7 +4,13 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,11 +21,12 @@ import android.widget.TextView;
 
 import com.bubble.simpleword.MainActivity;
 import com.bubble.simpleword.R;
-import com.bubble.simpleword.db.WordsManager;
 import com.bubble.simpleword.db.WordsDbHelper;
+import com.bubble.simpleword.db.WordsManager;
 import com.bubble.simpleword.service.ServiceFloatWord;
 import com.bubble.simpleword.service.ServicePopNotiWord;
-import com.bubble.simpleword.wordbook.WordsClass;
+import com.bubble.simpleword.util.CustomTypefaceSpan;
+import com.bubble.simpleword.wordbook.WordCls;
 
 /**
  * <p>Title: MainFragment</p>
@@ -66,19 +73,20 @@ public class MainFragment extends Fragment implements OnClickListener{
 	public void onClick(View v) {
 		db = dbHelper.getWritableDatabase();
 		
-		StringBuilder sb = new StringBuilder();
 		Log.i("cursor", Integer.toString(WordsManager.getCursorPosition()));
 		Log.i("cursorIndex", Integer.toString(MainActivity.cursorIndex));
-		WordsClass wordsClass = WordsManager.getWord();
-		Log.i("正序", wordsClass.toString());
-		sb.append(wordsClass.toString() + "\n");
-		tv.setText(sb.toString());
 		
-		Intent intent1 = new Intent(getActivity() ,ServicePopNotiWord.class);
-		getActivity().startService(intent1);
+		WordCls wordsCls = WordsManager.updateWord();
 		
-		Intent intent2 = new Intent(getActivity(), ServiceFloatWord.class);  
-		getActivity().startService(intent2);  
+		Log.i("正序", wordsCls.toString());
+		
+		tv.setText(wordsCls.getSpannedHtml());
+		
+//		Intent intent1 = new Intent(getActivity() ,ServicePopNotiWord.class);
+//		getActivity().startService(intent1);
+//		
+//		Intent intent2 = new Intent(getActivity(), ServiceFloatWord.class);  
+//		getActivity().startService(intent2);  
 	}
 	/**
 	 * @author bubble

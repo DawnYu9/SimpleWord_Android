@@ -4,15 +4,25 @@
     android:id="@+id/small_window_layout"  
     android:layout_width="match_parent"  
     android:layout_height="match_parent"  
-    android:background="@color/background_floating_material_dark"  
+    android:background="@color/orange_bg"  
+    android:orientation="horizontal"
     >  
+    
+    <!-- 播放单词读音 -->
+    <ImageButton 
+        android:id="@+id/float_window_small_play_btn"
+        android:layout_height="match_parent"
+        android:layout_width="wrap_content"
+        android:background="@drawable/play"
+        />
     
     <!-- 悬浮窗文字显示跑马灯效果 -->
     <TextView   
-        android:id="@+id/word_float_window_small_textview"  
+        android:id="@+id/float_word_small_textview"  
         android:layout_width="match_parent"  
         android:layout_height="match_parent"  
         android:textColor="#ffffff"  
+        android:gravity="center_vertical"
         android:singleLine="true"
         android:ellipsize="marquee"
         android:marqueeRepeatLimit="marquee_forever"

@@ -23,7 +23,7 @@ import com.bubble.simpleword.MainActivity;
 import com.bubble.simpleword.R;
 import com.bubble.simpleword.db.WordsManager;
 import com.bubble.simpleword.wordbook.WordCardAdapter;
-import com.bubble.simpleword.wordbook.WordsClass;
+import com.bubble.simpleword.wordbook.WordCls;
 
 /**
  * <p>Title: WordBiikFragment</p>
@@ -35,12 +35,12 @@ import com.bubble.simpleword.wordbook.WordsClass;
  * @date 2015-8-3
  */
 public class WordBookFragment extends Fragment {
-	WordsClass word ;
+	WordCls word ;
 	RecyclerView mRecyclerView;  
 	  
     WordCardAdapter wordCardAdapter;  
     View view;
-    List<WordsClass> wordsList = new ArrayList<WordsClass>();  
+    List<WordCls> wordsList = new ArrayList<WordCls>();  
     Spinner mActionbarSpinner;    
     
     ActionBar actionBar;  
@@ -78,9 +78,9 @@ public class WordBookFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
 		view=inflater.inflate(R.layout.wordbook_recycler_view,container, false); 
 		activity = getActivity();
-		word = WordsManager.wordClass;
+		word = WordsManager.wordCls;
 		if ( word == null )
-			word = WordsManager.getWord();
+			word = WordsManager.updateWord();
 		wordsList.add(word);  
 //		actionBar.setTitle(R.string.wordbook);	//set all fragments's actionbar title
 		getActivity().setTitle(R.string.wordbook);	//set one fragment's actionbar title

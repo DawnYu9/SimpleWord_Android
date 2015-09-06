@@ -32,11 +32,6 @@
 		android:layout_height="wrap_content"
 		android:layout_weight="1"
 		android:background="@color/gray_shadow"
-		android:text="123456789123456789123456789123456789123456789"
-		android:singleLine="true"
-		android:ellipsize="marquee"
-		android:focusable="true"
-		android:focusableInTouchMode="true"
         />
 	<com.bubble.simpleword.view.MarqueeTextView 
 	    android:layout_weight="1"

@@ -65,7 +65,7 @@ public class ServiceFloatWord extends Service {
         handler.post(new Runnable() {  
             @Override  
             public void run() {  
-                MyWindowManager.updateWordClass();  
+                MyWindowManager.updateWordCls(getApplicationContext());  
             }  
         });
         return super.onStartCommand(intent, flags, startId);  

@@ -19,7 +19,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class WordsDbHelper extends SQLiteOpenHelper {
 	public static final String CREATE_WORDS = "create table if not exists Words (" +
 			"word text, " +
-			"phonetic_symbol text, " +
+			"phonetic text, " +
 			"definition text)";
 	
 	private Context mContext;

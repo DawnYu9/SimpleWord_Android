@@ -23,11 +23,11 @@ import com.bubble.simpleword.R;
 public class WordCardAdapter extends RecyclerView.Adapter<WordCardAdapter.ViewHolder>  
 {  
 
-	private List<WordsClass> wordsList;  
+	private List<WordCls> wordsList;  
 	
 	private Context mContext;  
 	
-	public WordCardAdapter( Context context , List<WordsClass> wordsList)  
+	public WordCardAdapter( Context context , List<WordCls> wordsList)  
 	{  
 	    this.mContext = context;  
 	    this.wordsList = wordsList;  
@@ -45,7 +45,7 @@ public class WordCardAdapter extends RecyclerView.Adapter<WordCardAdapter.ViewHo
 	public void onBindViewHolder( ViewHolder viewHolder, int i )  
 	{  
 	    // 给ViewHolder设置元素  
-	    WordsClass word = wordsList.get(i);  
+	    WordCls word = wordsList.get(i);  
 	    viewHolder.mTextView.setText(word.toString());  
 	}  
 

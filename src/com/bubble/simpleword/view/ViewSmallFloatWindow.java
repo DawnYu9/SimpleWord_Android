@@ -1,18 +1,18 @@
 package com.bubble.simpleword.view;
 
-import java.lang.reflect.Field;
-
 import android.content.Context;
+import android.graphics.Typeface;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bubble.simpleword.R;
 import com.bubble.simpleword.db.WordsManager;
-import com.bubble.simpleword.util.Util;
 
 /**
  * <p>Title: FloatWindowSmallView</p>
@@ -83,8 +83,18 @@ public class ViewSmallFloatWindow extends LinearLayout {
         View view = findViewById(R.id.small_window_layout);  
         viewWidth = view.getLayoutParams().width;  
         viewHeight = view.getLayoutParams().height;  
-        TextView tvWordClass = (TextView) findViewById(R.id.word_float_window_small_textview);  
-        tvWordClass.setText(WordsManager.wordClass.toString());  
+        
+        ImageButton btnPlay = (ImageButton) findViewById(R.id.float_window_small_play_btn);
+        btnPlay.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				//play the word's pronunciation audio
+			}
+		});
+        
+        TextView tvWordCls = (TextView) findViewById(R.id.float_word_small_textview);  
+        tvWordCls.setText(WordsManager.wordCls.getSpannedHtml());  
     }  
   
     @Override  

@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.bubble.simpleword.MainActivity;
-import com.bubble.simpleword.wordbook.WordsClass;
+import com.bubble.simpleword.wordbook.WordCls;
 
 
 /**
@@ -28,11 +28,11 @@ public class WordsManager {
     public static int counts;
     public static Cursor cursor;
     
-    public static WordsClass wordClass; //the current word
+    public static WordCls wordCls; //the current word
     
-    public final static String TABLE_NAME = "Words";
+    public final static String TABLE_NAME = "GraduateWords";
     public final static String COLUMN_WORD = "word";
-    public final static String COLUMN_PHONETIC = "phonetic_symbol";
+    public final static String COLUMN_PHONETIC = "phonetic";
     public final static String COLUMN_DEFINITION = "definition";
     public static String wordWord;  
     public static String wordPhonetic;  
@@ -116,13 +116,13 @@ public class WordsManager {
 	 * @author bubble
 	 * @date 2015-8-7
 	 */
-	public static ArrayList<WordsClass> getAllWords() {
+	public static ArrayList<WordCls> getAllWords() {
 		cursor.moveToFirst();
-		ArrayList<WordsClass> allWords = new ArrayList<WordsClass>();
+		ArrayList<WordCls> allWords = new ArrayList<WordCls>();
 		if (cursor != null && cursor.moveToFirst()) {  
 		    do {  
-		        setWordClass(cursor);
-		        allWords.add(wordClass);  
+		        setWordCls(cursor);
+		        allWords.add(wordCls);  
 		    } while (cursor.moveToNext());  
 		    db.close();
 		    return allWords;
@@ -139,19 +139,19 @@ public class WordsManager {
 	 * @author bubble
 	 * @date 2015-8-18 上午11:17:59
 	 */
-	public static WordsClass getWord(){
+	public static WordCls updateWord(){
 		if ( ! isCursorValid(cursor) ) {
-			if ( wordClass != null ) {
+			if ( wordCls != null ) {
 				cursor.moveToNext();
-				return wordClass;
+				return wordCls;
 			} else {
 				cursor.moveToLast();
-				return getWord();
+				return updateWord();
 			}
 		} else {
-			setWordClass(cursor);
+			setWordCls(cursor);
 			cursor.moveToNext();
-			return wordClass;
+			return wordCls;
 		}
 	}
 	/**
@@ -162,20 +162,20 @@ public class WordsManager {
 	 * @author bubble
 	 * @date 2015-8-20 上午11:04:55
 	 */
-	public static WordsClass getWord(int position){
+	public static WordCls getWord(int position){
 		cursor.moveToPosition(position);
 		if ( ! isCursorValid(cursor) ) {
-			if ( wordClass != null ) {
+			if ( wordCls != null ) {
 				cursor.moveToNext();
-				return wordClass;
+				return wordCls;
 			} else {
 				cursor.moveToLast();
-				return getWord();
+				return updateWord();
 			}
 		} else {
-			setWordClass(cursor);
+			setWordCls(cursor);
 			cursor.moveToNext();
-			return wordClass;
+			return wordCls;
 		}
 	}
 	
@@ -294,14 +294,11 @@ public class WordsManager {
 	 * @author bubble
 	 * @date 2015-8-8
 	 */
-	public static void setWordClass(Cursor cur){
-		wordClass = new WordsClass();  
+	public static void setWordCls(Cursor cur){
 		wordWord = cur.getString(cur.getColumnIndex(COLUMN_WORD));  
 		wordPhonetic = cur.getString(cur.getColumnIndex(COLUMN_PHONETIC));  
 		wordDefinition = cur.getString(cur.getColumnIndex(COLUMN_DEFINITION));  
-		wordClass.setWord(wordWord);  
-		wordClass.setPhonetic_symbol(wordPhonetic);  
-		wordClass.setDefinition(wordDefinition);
+		wordCls = new WordCls(wordWord, wordPhonetic, wordDefinition);  
 	}
 	 
 	/**

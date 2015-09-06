@@ -188,10 +188,10 @@ public class MyWindowManager {
      * @author bubble
      * @date 2015-8-31 下午9:32:03
      */
-    public static void updateWordClass() {  
+    public static void updateWordCls(Context context) {  
         if (smallFloatWindow != null) {  
-            tvWordCls = (TextView) smallFloatWindow.findViewById(R.id.word_float_window_small_textview);  
-            tvWordCls.setText(WordsManager.wordClass.toString());  
+            tvWordCls = (TextView) smallFloatWindow.findViewById(R.id.float_word_small_textview);  
+            tvWordCls.setText(WordsManager.wordCls.getSpannedHtml());  
         }  
     }  
 }  

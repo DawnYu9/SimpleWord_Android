@@ -74,12 +74,12 @@ public class ServicePopNotiWord extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		mBuilder
-			.setContentText(WordsManager.wordClass.toString())
+			.setContentText(WordsManager.wordCls.getSpannedHtml())
 			.setWhen(System.currentTimeMillis())
-			.setTicker(WordsManager.wordClass.toString());	//pop up in Status Bar
+			.setTicker(WordsManager.wordCls.getSpannedHtml());	//pop up in Status Bar
 		mNotificationManager.notify(notifyID, notification);	//update data
 		startForeground(notifyID, mBuilder.build());	//display in "ongoing"
-		Log.d("通知栏单词", WordsManager.wordClass.toString());
+		Log.d("通知栏单词", WordsManager.wordCls.toString());
 		return super.onStartCommand(intent, flags, startId);
 	}
 	
@@ -91,7 +91,7 @@ public class ServicePopNotiWord extends Service {
 	 */
 	private void initNotification() {
 		mBuilder = new NotificationCompat.Builder(this)
-		        .setSmallIcon(R.drawable.menu)
+		        .setSmallIcon(R.mipmap.ic_launcher)
 		        .setContentTitle("当前word");
 		notification = mBuilder.build();
 		
