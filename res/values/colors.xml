@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
  
+    <color name="colorPrimaryDark">#3367d6</color>
+    <color name="colorPrimary">#4285f4</color>
+    <color name="windowBackground">#eeeeee</color>
+    
     <item name="white" type="color">#FFFFFFFF</item>
     <item name="black" type="color">#000000</item>
     <item name="orange_text" type="color">#FF7F24</item>

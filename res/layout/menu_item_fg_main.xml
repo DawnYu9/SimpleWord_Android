@@ -5,40 +5,47 @@
     tools:context="com.bubble.simpleword.MainActivity" 
     android:orientation="vertical">
 
-	<LinearLayout 
-	    android:layout_width="match_parent"
-    	android:layout_height="wrap_content"
-    	android:layout_gravity="fill"
-    	android:orientation="horizontal"
-    	android:layout_weight="0"
-	    >
-	    
-	    <ImageButton 
-	        android:layout_width="wrap_content"
-    		android:layout_height="wrap_content"
-    		android:layout_weight="0"
-    		android:src="@drawable/menu"
-	        />
-	</LinearLayout>
+
 	<Button 
-	    android:id="@+id/create_db"
+	    android:id="@+id/btn1"
 	    android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:layout_weight="0"
-		android:text="下一个"/>
+		android:text="创建表"/>
+	<Button 
+	    android:id="@+id/btn2"
+	    android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="添加单词"/>
+	<Button 
+	    android:id="@+id/btn3"
+	    android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="删除单词"/>
+	<Button 
+	    android:id="@+id/btn4"
+	    android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="查询单词"/>
+	<Button 
+	    android:id="@+id/btn5"
+	    android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="编辑单词"/>
+	<Button 
+	    android:id="@+id/btn6"
+	    android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="删除表"/>
+	<Button 
+	    android:id="@+id/btn7"
+	    android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="修改表名"/>
     <TextView 
         android:id="@+id/text"
-		android:layout_width="100dp"
+		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:layout_weight="1"
 		android:background="@color/gray_shadow"
         />
-	<com.bubble.simpleword.view.MarqueeTextView 
-	    android:layout_weight="1"
-        android:id="@+id/marqueeTextView"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:singleLine="true"
-     	android:text="你好，安卓，你好，安卓，你好，安卓，你好，安卓，你好，安卓，你好，安卓"
-        />
+	
 </LinearLayout>

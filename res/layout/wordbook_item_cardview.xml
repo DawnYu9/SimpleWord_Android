@@ -7,20 +7,48 @@
     card_view:cardBackgroundColor="@color/orange_bg"  
     card_view:cardCornerRadius="5dp" >  
   
-    <RelativeLayout  
+    <LinearLayout  
         android:layout_width="match_parent"  
-        android:layout_height="100dp"  
-        android:padding="5dp" >  
+        android:layout_height="wrap_content"  
+        android:padding="5dp" 
+        android:orientation="vertical"
+        >
+	    <RelativeLayout  
+	        android:layout_width="match_parent"  
+	        android:layout_height="wrap_content"  
+	        >  
+	  
+	        <TextView  
+	            android:id="@+id/wordcard_tv_word"  
+	            android:layout_width="wrap_content"  
+	            android:layout_height="wrap_content"  
+	            android:layout_alignParentLeft="true"
+	            android:gravity="left"  
+	            android:textColor="@android:color/white"  
+	            android:textSize="24sp" />  
+	        <TextView  
+	            android:id="@+id/wordcard_tv_phonetic"  
+	            android:layout_width="wrap_content"  
+	            android:layout_height="wrap_content"  
+	            android:layout_toRightOf="@id/wordcard_tv_word"
+	            android:gravity="left"  
+	            android:textColor="@android:color/white"  
+	            android:textSize="24sp" />  
+            <ImageButton 
+                android:id="@+id/wordcard_imgbtn_add_delete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                />"
+	    </RelativeLayout>  
+	    
+	    <TextView  
+	        android:id="@+id/wordcard_tv_definition"  
+	        android:layout_width="wrap_content"  
+	        android:layout_height="wrap_content"  
+	        android:gravity="left|bottom"  
+	        android:textColor="@android:color/white"  
+	        android:textSize="24sp" />  
   
-        <TextView  
-            android:id="@+id/wordcard_tv"  
-            android:layout_width="match_parent"  
-            android:layout_height="match_parent"  
-            android:layout_marginBottom="10dp"  
-            android:layout_marginRight="10dp"  
-            android:gravity="right|bottom"  
-            android:textColor="@android:color/white"  
-            android:textSize="24sp" />  
-    </RelativeLayout>  
-  
+    </LinearLayout>  
 </android.support.v7.widget.CardView>  

@@ -1,11 +1,11 @@
 package com.bubble.simpleword.view;
 
 import android.content.Context;
-import android.graphics.Typeface;
-import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -23,7 +23,7 @@ import com.bubble.simpleword.db.WordsManager;
  * @author bubble
  * @date 2015-8-30 下午1:00:37
  */
-public class ViewSmallFloatWindow extends LinearLayout {
+public class ViewSmallFloatWindow extends LinearLayout implements OnTouchListener{
 	private Context mContext; 
 	 /** 
      * 记录小悬浮窗的宽度 
@@ -80,51 +80,62 @@ public class ViewSmallFloatWindow extends LinearLayout {
         mContext = context;
         windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);  
         LayoutInflater.from(context).inflate(R.layout.word_float_window_small, this);  
-        View view = findViewById(R.id.small_window_layout);  
+        View view = findViewById(R.id.word_small_float_window_layout);
+        view.setOnTouchListener(this);
+        
         viewWidth = view.getLayoutParams().width;  
         viewHeight = view.getLayoutParams().height;  
         
-        ImageButton btnPlay = (ImageButton) findViewById(R.id.float_window_small_play_btn);
-        btnPlay.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				//play the word's pronunciation audio
-			}
-		});
         
-        TextView tvWordCls = (TextView) findViewById(R.id.float_word_small_textview);  
+        ImageButton btnPlay = (ImageButton) findViewById(R.id.word_small_float_window_play_btn);
+        btnPlay.setOnTouchListener(this);
+        
+        TextView tvWordCls = (TextView) findViewById(R.id.word_small_float_window_tv);  
         tvWordCls.setText(WordsManager.wordCls.getSpannedHtml());  
     }  
   
-    @Override  
-    public boolean onTouchEvent(MotionEvent event) {  
-        switch (event.getAction()) {  
+	/**
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-9-7 下午9:40:51
+	 */
+	@Override
+	public boolean onTouch(View v, MotionEvent ev) {
+		switch (ev.getAction()) {  
         case MotionEvent.ACTION_DOWN:  
-            xInView = event.getX();  
-            yInView = event.getY();  
-            xDownInScreen = event.getRawX();  
-            yDownInScreen = event.getRawY();  
-            xInScreen = event.getRawX();  
-            yInScreen = event.getRawY();  
+            xInView = ev.getX();  
+            yInView = ev.getY();  
+            xDownInScreen = ev.getRawX();  
+            yDownInScreen = ev.getRawY();  
+            xInScreen = ev.getRawX();  
+            yInScreen = ev.getRawY();  
             break;  
         case MotionEvent.ACTION_MOVE:  
-            xInScreen = event.getRawX();  
-            yInScreen = event.getRawY();  
+            xInScreen = ev.getRawX();  
+            yInScreen = ev.getRawY();  
             updateViewPosition();  
             break;  
         case MotionEvent.ACTION_UP:  
-            // 如果手指离开屏幕时，xDownInScreen和xInScreen相等，且yDownInScreen和yInScreen相等，则视为触发了单击事件。  
             if (xDownInScreen == xInScreen && yDownInScreen == yInScreen) { 
-                openBigFloatWindow();  
+            	switch (v.getId()) {
+				case R.id.word_small_float_window_layout:
+					Log.d(VIEW_LOG_TAG, "点击了text");
+					openBigFloatWindow();  
+					break;
+				case R.id.word_small_float_window_play_btn:
+					Log.d(VIEW_LOG_TAG, "点击了btn");
+					break;
+				default:
+					break;
+				}
             }  
             break;  
         default:  
             break;  
-        }  
-        return true;  
-    }  
-  
+        }
+		return true;
+	}  
+	
     /** 
      * 将小悬浮窗的参数传入，用于更新小悬浮窗的位置。 
      *  
@@ -150,5 +161,6 @@ public class ViewSmallFloatWindow extends LinearLayout {
     private void openBigFloatWindow() {  
         MyWindowManager.createBigFloatWord(getContext());  
         MyWindowManager.removeSmallFloatWord(getContext());  
-    }  
+    }
+
 }

@@ -1,7 +1,5 @@
 package com.bubble.simpleword.view;
 
-import org.litepal.util.LogUtil;
-
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
@@ -54,7 +52,7 @@ public class ViewBigFloatWindow extends LinearLayout {
             public void onClick(View v) {  
                 // 点击返回的时候，移除大悬浮窗，创建小悬浮窗  
                 MyWindowManager.removeBigFloatWord(context);  
-                MyWindowManager.createSmallFloatWord(context,Util.getPrefSettings(context).getInt(SettingsFragment.KEY_SEEKBAR_WIDTH_FLOAT_WORD, SettingsFragment.WIDTH_FLOAT_WORD));  
+                MyWindowManager.createSmallFloatWord(context,Util.getSharedPreferences(context).getInt(SettingsFragment.KEY_SEEKBAR_WIDTH_FLOAT_WORD, SettingsFragment.WIDTH_FLOAT_WORD));  
             }  
         });  
     }  
@@ -69,7 +67,7 @@ public class ViewBigFloatWindow extends LinearLayout {
     	switch (event.getKeyCode()) {
         case KeyEvent.KEYCODE_BACK:
         	MyWindowManager.removeBigFloatWord(getContext());
-    		MyWindowManager.createSmallFloatWord(getContext(),Util.getPrefSettings(getContext()).getInt(SettingsFragment.KEY_SEEKBAR_WIDTH_FLOAT_WORD, SettingsFragment.WIDTH_FLOAT_WORD));
+    		MyWindowManager.createSmallFloatWord(getContext(),Util.getSharedPreferences(getContext()).getInt(SettingsFragment.KEY_SEEKBAR_WIDTH_FLOAT_WORD, SettingsFragment.WIDTH_FLOAT_WORD));
             return true;
         default:
         	return super.dispatchKeyEvent(event); 
@@ -79,19 +77,18 @@ public class ViewBigFloatWindow extends LinearLayout {
     /**
      * <p>Description: </p>
      * @author bubble
-     * @date 2015-8-31 下午2:17:39
+     * @date 2015-9-7 下午8:25:34
      */
     @Override
-    public boolean dispatchTouchEvent(MotionEvent event) {
+    public boolean onTouchEvent(MotionEvent event) {
     	int x = (int) event.getX();
         int y = (int) event.getY();
         Rect rect = new Rect();
         this.getGlobalVisibleRect(rect);	//获取视图在屏幕坐标中的可视区域
         if ( ! rect.contains(x, y) ) {
         	MyWindowManager.removeBigFloatWord(getContext());
-    		MyWindowManager.createSmallFloatWord(getContext(),Util.getPrefSettings(getContext()).getInt(SettingsFragment.KEY_SEEKBAR_WIDTH_FLOAT_WORD, SettingsFragment.WIDTH_FLOAT_WORD));
+    		MyWindowManager.createSmallFloatWord(getContext(),Util.getSharedPreferences(getContext()).getInt(SettingsFragment.KEY_SEEKBAR_WIDTH_FLOAT_WORD, SettingsFragment.WIDTH_FLOAT_WORD));
         }
-    	return super.dispatchTouchEvent(event);
-//        return false;
+    	return super.onTouchEvent(event);
     }
 }

@@ -23,6 +23,8 @@ import com.bubble.simpleword.menu.SettingsFragment;
  * @date 2015-8-22 下午6:33:12
  */
 public class Util {
+	public static final String PREFS_FILE_NAME = "SimpleWord_Prefs_File";
+	
 	private static InputMethodManager inputMethodManager;
 	
 	private static int statusBarHeight;
@@ -33,7 +35,6 @@ public class Util {
 	
 	private static WindowManager mWindowManager;
 	
-	private static SharedPreferences prefSettings;
 	private static SharedPreferences.Editor prefEditorSettings;
 	/**
 	 * <p>Title: </p>
@@ -148,7 +149,6 @@ public class Util {
 		return screenHeight;
 	}
 	
-	
     /**
      * <p>Title: getWindowManager</p>
      * <p>Description: </p>
@@ -162,16 +162,11 @@ public class Util {
         return mWindowManager;  
     } 
     
-    /**
-     * <p>Title: getPrefSettings</p>
-     * <p>Description: </p>
-     * @param context
-     * @return
-     * @author bubble
-     * @date 2015-9-4
-     */
-    public static SharedPreferences getPrefSettings(Context context) {
-    	prefSettings = context.getSharedPreferences(SettingsFragment.KEY_FILE_NAME_SETTINGS, Context.MODE_PRIVATE);
-    	return prefSettings;
+    public static SharedPreferences getSharedPreferences(Context context) {
+    	return context.getSharedPreferences(PREFS_FILE_NAME, Context.MODE_PRIVATE);
+    }
+    
+    public static SharedPreferences.Editor getSharedPreferencesEditor(Context context) {
+    	return getSharedPreferences(context).edit();
     }
 }

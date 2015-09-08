@@ -3,6 +3,7 @@
     <style name="AppTheme" parent="AppBaseTheme">
     </style>
     
+    <!-- ActionBar -->
     <style name="CustomActionBarTheme" parent="@android:style/Theme.Holo.Light">  
         <item name="android:actionBarStyle">@style/MyActionBar</item>  
         <item name="android:homeAsUpIndicator">@drawable/menu</item>
@@ -14,5 +15,6 @@
     <style name="MyActionBarTitleText" parent="@android:style/TextAppearance.Holo.Widget.ActionBar.Title">  
         <item name="android:textColor">@color/white</item>  
     </style>  
+    
     
 </resources>

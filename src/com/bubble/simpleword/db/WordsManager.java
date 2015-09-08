@@ -1,7 +1,10 @@
 package com.bubble.simpleword.db;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -21,22 +24,26 @@ import com.bubble.simpleword.wordbook.WordCls;
  * @date 2015-8-6 下午11:35:11
  */
 public class WordsManager {
+	public final static String DB_NAME = "simpleword.db";
+	public final static String TABLE_NAME = "GraduateWords";
+	public final static String COLUMN_WORD = "word";
+	public final static String COLUMN_PHONETIC = "phonetic";
+	public final static String COLUMN_DEFINITION = "definition";
+	public static String wordWord;  
+	public static String wordPhonetic;  
+	public static String wordDefinition;  
+	
 	private static Context mContext;
 	private static SQLiteDatabase db;
-    private static WordsDbHelper wordsDbHelper;
+    private static MyDbHelper wordsDbHelper;
+    private static ContentValues cValue;
+    private static final String WHERE_CLAUSE_BY_WORD = COLUMN_WORD + " = ?";  
     
     public static int counts;
     public static Cursor cursor;
     
     public static WordCls wordCls; //the current word
     
-    public final static String TABLE_NAME = "GraduateWords";
-    public final static String COLUMN_WORD = "word";
-    public final static String COLUMN_PHONETIC = "phonetic";
-    public final static String COLUMN_DEFINITION = "definition";
-    public static String wordWord;  
-    public static String wordPhonetic;  
-    public static String wordDefinition;  
     
     //"db.query"'s parameter: "orderby"
     private final static String ORDERBY_RANDOM = "RANDOM()"; //整体随机重新排序，未改变原数据库数据顺序
@@ -57,15 +64,15 @@ public class WordsManager {
     
     /**
      * <p>Title: initWordsDB</p>
-     * <p>Description: 对表执行操作前先初始化</p>
+     * <p>Description: init WordsManager before operate the table</p>
      * @param context
      * @author bubble
      * @date 2015-8-7
      */
     public static void initWordsManager(Context context){
     	mContext = context;
-		wordsDbHelper = new WordsDbHelper(mContext, MainActivity.DB_NAME, null, 1);
-		db = wordsDbHelper.getWritableDatabase();
+		wordsDbHelper = new MyDbHelper(mContext, MainActivity.DB_NAME, null, 1);
+		db = wordsDbHelper.getReadableDatabase();
 		cursor = db.query(TABLE_NAME, null, null, null, null, null, null);
 		cursor.moveToFirst();
 		counts = cursor.getCount();
@@ -73,7 +80,7 @@ public class WordsManager {
     }
     /**
      * <p>Title: initWordsDB</p>
-     * <p>Description: </p>
+     * <p>Description: init WordsManager before operate the table</p>
      * @param context
      * @param position
      * @author bubble
@@ -81,8 +88,8 @@ public class WordsManager {
      */
     public static void initWordsManager(Context context, int position){
     	mContext = context;
-    	wordsDbHelper = new WordsDbHelper(mContext, MainActivity.DB_NAME, null, 1);
-    	db = wordsDbHelper.getWritableDatabase();
+    	wordsDbHelper = new MyDbHelper(mContext, MainActivity.DB_NAME, null, 1);
+    	db = wordsDbHelper.getReadableDatabase();
     	cursor = db.query(TABLE_NAME, null, null, null, null, null, null);
     	if ( isInOrder ) {
     		isInOrder = false;
@@ -97,16 +104,172 @@ public class WordsManager {
     	cursor.moveToPosition(position);
     }
 
-	public static void addWord(){
-		
+    /**
+     * <p>Title: getTableList</p>
+     * <p>Description: </p>
+     * @return
+     * @author bubble
+     * @date 2015-9-8 下午9:09:02
+     */
+    public static List<String> getTableList() {
+    	db = wordsDbHelper.getReadableDatabase();
+    	List<String> tableList = new ArrayList<String>();
+    	Cursor cursor = db.rawQuery("select name from sqlite_master where type='table' order by name", null);
+    	while(cursor.moveToNext()){
+    		tableList.add(cursor.getString(0));
+    	}
+    	return tableList;
+    }
+	
+	/**
+	 * <p>Title: createTable</p>
+	 * <p>Description: </p>
+	 * @param tableName
+	 * @author bubble
+	 * @date 2015-9-7 下午5:23:48
+	 */
+	public static void createTable(String tableName) {
+		String sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
+				"word TEXT NOT NULL," +
+				"phonetic TEXT," +
+				"definition TEXT," +
+				"time TEXT DEFAULT (datetime('now','localtime'))," +
+				"isRemembered INTEGER DEFAULT 0," +
+				"PRIMARY KEY (\"word\" ASC)" +
+						");";    
+        db.execSQL(sql);
 	}
 	
-	public static void deleteWord(){
-		
+	/**
+	 * <p>Title: deleteTable</p>
+	 * <p>Description: </p>
+	 * @param tableName
+	 * @author bubble
+	 * @date 2015-9-8 下午9:37:58
+	 */
+	public static void deleteTable(String tableName) {
+		db.execSQL("DROP TABLE IF EXISTS " + tableName );
 	}
 	
-	public static void editWord(){
+	/**
+	 * <p>Title: alterTableName</p>
+	 * <p>Description: </p>
+	 * @param oldName
+	 * @param newName
+	 * @author bubble
+	 * @date 2015-9-8 下午9:41:06
+	 */
+	public static void alterTableName(String oldName, String newName) {
+		db.execSQL("ALTER TABLE " + oldName + " RENAME TO " + newName + ";");
+	}
+    
+    
+	/**
+	 * <p>Title: addWord</p>
+	 * <p>Description: </p>
+	 * @param word
+	 * @param phonetic
+	 * @param definition
+	 * @author bubble
+	 * @date 2015-9-7 下午1:50:23
+	 */
+	public static void addWord(String tableName, String word, String phonetic, String definition) {
+	    cValue = new ContentValues();  
+	    cValue.put(COLUMN_WORD, word);  
+	    cValue.put(COLUMN_PHONETIC, phonetic);  
+	    cValue.put(COLUMN_DEFINITION, definition);  
+	   
+	    db = wordsDbHelper.getWritableDatabase();
+	    db.insert(tableName, null, cValue); 
+	    db.close();
+	}
+	
+	/**
+	 * <p>Title: deleteWord</p>
+	 * <p>Description: </p>
+	 * @param word
+	 * @author bubble
+	 * @date 2015-9-7 下午1:58:57
+	 */
+	public static void deleteWord(String tableName, String word) {
+		String[] whereArgs = { word };  
 		
+		db = wordsDbHelper.getWritableDatabase();
+		db.delete(tableName, WHERE_CLAUSE_BY_WORD, whereArgs);   
+		db.close();
+	}
+	
+	/**
+	 * <p>Title: editWord</p>
+	 * <p>Description: </p>
+	 * @param word
+	 * @param editKey
+	 * @param editValue
+	 * @author bubble
+	 * @date 2015-9-7 下午2:15:14
+	 */
+	public static void editWord(String tableName, String word, String editKey, String editValue) {
+	    cValue = new ContentValues();  
+	    switch (editKey) {
+	    case COLUMN_WORD:
+	    	cValue.put(COLUMN_WORD, editValue);
+	    	break;
+	    case COLUMN_PHONETIC:
+	    	cValue.put(COLUMN_PHONETIC, editValue);
+	    	break;
+	    case COLUMN_DEFINITION:
+	    	cValue.put(COLUMN_DEFINITION, editValue);
+	    	break;
+	    }
+	    
+	    String[] whereArgs={ word };  
+	    
+	    db = wordsDbHelper.getWritableDatabase();
+	    db.update(tableName, cValue, WHERE_CLAUSE_BY_WORD, whereArgs);
+	    db.close();
+	}
+	
+	/**
+	 * <p>Title: queryWord</p>
+	 * <p>Description: </p>
+	 * @param column
+	 * @param value
+	 * @return
+	 * @author bubble
+	 * @date 2015-9-7 下午3:32:40
+	 */
+	public static ArrayList<WordCls> queryWord(String tableName, String column, String value) {
+		db = wordsDbHelper.getReadableDatabase();
+		String[] columns = { COLUMN_WORD, COLUMN_PHONETIC, COLUMN_DEFINITION };
+		String selection = WHERE_CLAUSE_BY_WORD; 
+		String[] selectionArgs = { value };
+		switch (column) {
+		case COLUMN_WORD:
+			break;
+		case COLUMN_DEFINITION:
+			selection = COLUMN_DEFINITION + " = ?";
+			break;
+		default:
+			break;
+		}
+		Cursor cursor = db.query(tableName, columns, selection, selectionArgs, null, null, COLUMN_WORD);  
+		
+		ArrayList<WordCls> wordClsList = new ArrayList<WordCls>();
+        while(cursor.moveToNext()){  
+        	WordCls wordCls = new WordCls();
+            wordCls.setWord(cursor.getString(cursor.getColumnIndex(COLUMN_WORD)));  
+            wordCls.setPhonetic(cursor.getString(cursor.getColumnIndex(COLUMN_PHONETIC)));  
+            wordCls.setDefinition(cursor.getString(cursor.getColumnIndex(COLUMN_DEFINITION)));  
+            wordClsList.add(wordCls);
+        }  
+        db.close(); 
+        return wordClsList;
+	}
+
+	
+	public static Cursor query(String tableName) {
+		db = wordsDbHelper.getReadableDatabase();
+		return db.query(tableName,null,null,null,null,null,null);
 	}
 	
 	/**
@@ -117,16 +280,20 @@ public class WordsManager {
 	 * @date 2015-8-7
 	 */
 	public static ArrayList<WordCls> getAllWords() {
-		cursor.moveToFirst();
+		db = wordsDbHelper.getReadableDatabase();
+		Cursor cur = db.query(TABLE_NAME, null, null, null, null, null, null);
+		cur.moveToFirst();
 		ArrayList<WordCls> allWords = new ArrayList<WordCls>();
-		if (cursor != null && cursor.moveToFirst()) {  
+		if (cur != null && cur.moveToFirst()) {  
 		    do {  
-		        setWordCls(cursor);
+		        setWordCls(cur);
 		        allWords.add(wordCls);  
-		    } while (cursor.moveToNext());  
+		    } while (cur.moveToNext()); 
+		    cur.close();
 		    db.close();
 		    return allWords;
 		} else {
+			cur.close();
 			db.close();
 			return null;
 		}
@@ -139,14 +306,14 @@ public class WordsManager {
 	 * @author bubble
 	 * @date 2015-8-18 上午11:17:59
 	 */
-	public static WordCls updateWord(){
+	public static WordCls updateWordCls(){
 		if ( ! isCursorValid(cursor) ) {
 			if ( wordCls != null ) {
 				cursor.moveToNext();
 				return wordCls;
 			} else {
 				cursor.moveToLast();
-				return updateWord();
+				return updateWordCls();
 			}
 		} else {
 			setWordCls(cursor);
@@ -170,7 +337,7 @@ public class WordsManager {
 				return wordCls;
 			} else {
 				cursor.moveToLast();
-				return updateWord();
+				return updateWordCls();
 			}
 		} else {
 			setWordCls(cursor);

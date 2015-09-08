@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.bubble.simpleword.MainActivity;
 import com.bubble.simpleword.db.WordsManager;
+import com.bubble.simpleword.util.Util;
 
 /**
  * <p>Title: ServiceUpdateWord</p>
@@ -34,7 +35,7 @@ public class ServiceUpdateWord extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		UpdateWord();
-		Log.d("更新单词", WordsManager.wordCls.toString());
+		Log.d("更新单词", WordsManager.wordCls.getWholeString());
 		return super.onStartCommand(intent, flags, startId);
 	}
 	/**
@@ -54,9 +55,9 @@ public class ServiceUpdateWord extends Service {
 	 * @date 2015-8-21 上午10:15:52
 	 */
 	private void UpdateWord() {
-		WordsManager.updateWord();
+		WordsManager.updateWordCls();
 		int cursorIndex = WordsManager.getCursorPosition();
-		Editor editor = this.getSharedPreferences(MainActivity.PREFS_FILE_NAME, MODE_PRIVATE).edit();  
+		Editor editor = Util.getSharedPreferencesEditor(getApplicationContext());  
 		editor.putInt(MainActivity.CURSOR_INDEX, cursorIndex);
 		editor.commit();
 	}

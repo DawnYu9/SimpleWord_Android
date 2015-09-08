@@ -13,7 +13,6 @@ import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -25,7 +24,7 @@ import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.WindowManager;
 
-import com.bubble.simpleword.db.DBManager;
+import com.bubble.simpleword.db.MyDbHelper;
 import com.bubble.simpleword.db.WordsManager;
 import com.bubble.simpleword.menu.MainFragment;
 import com.bubble.simpleword.menu.SettingsFragment;
@@ -33,7 +32,6 @@ import com.bubble.simpleword.menu.SlidingMenuFragment;
 import com.bubble.simpleword.service.ServicePopNotiWord;
 import com.bubble.simpleword.service.ServiceUpdateWord;
 import com.bubble.simpleword.util.Util;
-import com.bubble.simpleword.view.MyWindowManager;
 import com.bubble.simpleword.wordbook.WordCls;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
@@ -46,9 +44,8 @@ import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
  */
 public class MainActivity extends SlidingFragmentActivity {
 	int spinnerWordSortSelection;
-	static final String KEY_FILE_NAME_SETTINGS = SettingsFragment.KEY_FILE_NAME_SETTINGS;
+//	static final String KEY_FILE_NAME_SETTINGS = SettingsFragment.KEY_FILE_NAME_SETTINGS;
 	SharedPreferences prefSettings;
-	public DBManager dbManager;
 	private Fragment contentFragment;
 	SlidingMenu sm;
 	ActionBar mActionBar;
@@ -64,13 +61,14 @@ public class MainActivity extends SlidingFragmentActivity {
     
     SharedPreferences pref;
     Editor editor;
-    public static final String PREFS_FILE_NAME = "SimpleWord_Prefs_File";  
+//    public static final String PREFS_FILE_NAME = "SimpleWord_Prefs_File";  
     public static final String IS_FIRST_START = "is_first_start";  
     public static Boolean isFirstStart;
     
     Cursor cursor;
     public static int cursorIndex = 0;
     public static final String CURSOR_INDEX = "cursor_index";
+    
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -84,12 +82,13 @@ public class MainActivity extends SlidingFragmentActivity {
 		
 		loadDatabase();	//load SDcard's database
 		
-		pref = this.getSharedPreferences(PREFS_FILE_NAME, MODE_PRIVATE);  
+//		pref = this.getSharedPreferences(PREFS_FILE_NAME, MODE_PRIVATE);  
+		pref = Util.getSharedPreferences(this);
 		editor = pref.edit();
 
 		isFirstStart = pref.getBoolean(IS_FIRST_START, true);
 		
-		prefSettings = getSharedPreferences(KEY_FILE_NAME_SETTINGS, Context.MODE_PRIVATE);
+		prefSettings = Util.getSharedPreferences(getApplicationContext());
 		
 //		initSwitch();
 		
@@ -134,7 +133,7 @@ public class MainActivity extends SlidingFragmentActivity {
 	 */
 	private void initWordClass() {
 		if ( WordsManager.wordCls == null ) {
-			WordsManager.updateWord();
+			WordsManager.updateWordCls();
 		}
 	}
 	
@@ -296,9 +295,7 @@ public class MainActivity extends SlidingFragmentActivity {
 	 * @date 2015-8-6 下午11:52:05
 	 */
 	public void loadDatabase(){
-		dbManager = new DBManager(this);
-		db = dbManager.getDatabase(DB_PATH + "/" + DB_NAME);
-        dbManager.closeDatabase(db);
+		MyDbHelper.loadDatabase(this, DB_PATH + "/" + DB_NAME);
 	}
 	
 	/**

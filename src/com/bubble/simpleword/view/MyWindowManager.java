@@ -190,7 +190,7 @@ public class MyWindowManager {
      */
     public static void updateWordCls(Context context) {  
         if (smallFloatWindow != null) {  
-            tvWordCls = (TextView) smallFloatWindow.findViewById(R.id.float_word_small_textview);  
+            tvWordCls = (TextView) smallFloatWindow.findViewById(R.id.word_small_float_window_tv);  
             tvWordCls.setText(WordsManager.wordCls.getSpannedHtml());  
         }  
     }  

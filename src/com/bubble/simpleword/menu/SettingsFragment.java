@@ -74,7 +74,7 @@ public class SettingsFragment extends Fragment {
 	
 	public static SharedPreferences prefSettings;
 	private SharedPreferences.Editor prefEditorSettings;
-	public static final String KEY_FILE_NAME_SETTINGS = "SimpleWord_Settings_File";
+//	public static final String KEY_FILE_NAME_SETTINGS = "SimpleWord_Settings_File";
 	
 	private BroadcastReceiver broadcastReceiver;
 	private Intent intentBroadcast;
@@ -86,7 +86,7 @@ public class SettingsFragment extends Fragment {
 	//Spinner : "select the word's sort"
 	private int spinnerWordSortSelection;
 	private Spinner spinnerWordsort;
-	public static final String KEY_SPINNER_SELECTION_WODE_MODE = "KEY_SPINNER_SELECTION_WODE_MODE";
+	public static final String KEY_SPINNER_SELECTION_WODE_SORT_MODE = "KEY_SPINNER_SELECTION_WODE_SORT_MODE";
 
 	//Switch : "display word in status bar's notification,and pop up the notification"
 	public static Switch switchPopNotiWord;
@@ -171,7 +171,7 @@ public class SettingsFragment extends Fragment {
 		mActivity.setTitle(R.string.settings);
 		mActivity.getActionBar().setDisplayShowCustomEnabled(false);
 		
-		prefSettings = mActivity.getSharedPreferences(KEY_FILE_NAME_SETTINGS, Context.MODE_PRIVATE);
+		prefSettings = Util.getSharedPreferences(mContext);
     	prefEditorSettings = prefSettings.edit();
     	
     	if ( am == null ) {
@@ -215,7 +215,7 @@ public class SettingsFragment extends Fragment {
 		//绑定 Adapter到控件
 		spinnerWordsort .setAdapter(adapter);
 		
-		spinnerWordSortSelection = prefSettings.getInt(KEY_SPINNER_SELECTION_WODE_MODE, 0);
+		spinnerWordSortSelection = prefSettings.getInt(KEY_SPINNER_SELECTION_WODE_SORT_MODE, 0);
 		if ( spinnerWordSortSelection != 0 )
 			spinnerWordsort.setSelection(spinnerWordSortSelection);
 		
@@ -237,7 +237,7 @@ public class SettingsFragment extends Fragment {
 		    		break;
 		    	}
 		    	
-		    	prefEditorSettings.putInt(KEY_SPINNER_SELECTION_WODE_MODE, position);
+		    	prefEditorSettings.putInt(KEY_SPINNER_SELECTION_WODE_SORT_MODE, position);
 		    	prefEditorSettings.commit();
 		    	Log.i("MODE_GET_WORD", Integer.toString(WordsManager.MODE_GET_WORD));
 		    }

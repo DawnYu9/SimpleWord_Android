@@ -22,7 +22,12 @@ public class WordCls {
 	private String word;	
 	private String phonetic;	
 	private String definition;	
+	private String time;	
+	private boolean isRemembered;	
+	
+	
 	private String wholeString;	
+
 	private String htmlString;	
 
 	private Typeface phoneticFont;   
@@ -63,6 +68,22 @@ public class WordCls {
 	
 	public void setDefinition(String definition) {
 		this.definition = definition;
+	}
+	
+	public String getTime() {
+		return time;
+	}
+
+	public void setTime(String time) {
+		this.time = time;
+	}
+
+	public boolean isRemembered() {
+		return isRemembered;
+	}
+
+	public void setRemembered(boolean isRemembered) {
+		this.isRemembered = isRemembered;
 	}
 	
 	/**

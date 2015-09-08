@@ -2,16 +2,9 @@ package com.bubble.simpleword.menu;
 
 import android.app.Fragment;
 import android.content.Context;
-import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Typeface;
 import android.os.Bundle;
-import android.text.Html;
-import android.text.SpannableString;
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
-import android.text.style.StyleSpan;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -21,12 +14,8 @@ import android.widget.TextView;
 
 import com.bubble.simpleword.MainActivity;
 import com.bubble.simpleword.R;
-import com.bubble.simpleword.db.WordsDbHelper;
+import com.bubble.simpleword.db.MyDbHelper;
 import com.bubble.simpleword.db.WordsManager;
-import com.bubble.simpleword.service.ServiceFloatWord;
-import com.bubble.simpleword.service.ServicePopNotiWord;
-import com.bubble.simpleword.util.CustomTypefaceSpan;
-import com.bubble.simpleword.wordbook.WordCls;
 
 /**
  * <p>Title: MainFragment</p>
@@ -39,7 +28,7 @@ import com.bubble.simpleword.wordbook.WordCls;
  */
 public class MainFragment extends Fragment implements OnClickListener{
 	public View mView;
-	private WordsDbHelper dbHelper;
+	private MyDbHelper dbHelper;
 	SQLiteDatabase db;
 	Context mContext;
 	Button btn;
@@ -60,10 +49,22 @@ public class MainFragment extends Fragment implements OnClickListener{
 		mView=inflater.inflate(R.layout.menu_item_fg_main,container, false);  
 		getActivity().setTitle(R.string.app_name);
 		
-		dbHelper = new WordsDbHelper(mContext, MainActivity.DB_NAME, null, 1);
+		dbHelper = new MyDbHelper(mContext, MainActivity.DB_NAME, null, 1);
 		
-		btn = (Button)mView.findViewById(R.id.create_db);
-		btn.setOnClickListener(this);
+		Button btn1 = (Button)mView.findViewById(R.id.btn1);
+		btn1.setOnClickListener(this);
+		Button btn2 = (Button)mView.findViewById(R.id.btn2);
+		btn2.setOnClickListener(this);
+		Button btn3 = (Button)mView.findViewById(R.id.btn3);
+		btn3.setOnClickListener(this);
+		Button btn4 = (Button)mView.findViewById(R.id.btn4);
+		btn4.setOnClickListener(this);
+		Button btn5 = (Button)mView.findViewById(R.id.btn5);
+		btn5.setOnClickListener(this);
+		Button btn6 = (Button)mView.findViewById(R.id.btn6);
+		btn6.setOnClickListener(this);
+		Button btn7 = (Button)mView.findViewById(R.id.btn7);
+		btn7.setOnClickListener(this);
 		
 		tv = (TextView)mView.findViewById(R.id.text);
 		getActivity().getActionBar().setDisplayShowCustomEnabled(false);
@@ -72,21 +73,47 @@ public class MainFragment extends Fragment implements OnClickListener{
 	@Override
 	public void onClick(View v) {
 		db = dbHelper.getWritableDatabase();
+		String tableName = "我是创建的表";
+		switch (v.getId()) {
+		case R.id.btn1:
+			WordsManager.createTable(tableName);
+			break;
+		case R.id.btn2:
+			WordsManager.addWord(tableName, "add", "[æd]", "add");
+			WordsManager.addWord(tableName, "delete", "[diˈlit]", "delete");
+			break;
+		case R.id.btn3:
+			WordsManager.deleteWord(tableName, "delete");
+			break;
+		case R.id.btn4:
+			WordsManager.queryWord(tableName, "word", "add");
+			break;
+		case R.id.btn5:
+			WordsManager.editWord(tableName, "add", "phonetic", "音标");
+			break;
+		case R.id.btn6:
+			WordsManager.deleteTable(tableName);
+			break;
+		case R.id.btn7:
+			WordsManager.alterTableName(tableName, "修改了表名");
+			break;
+		default:
+			break;
+		}
+//		Cursor cursor = WordsManager.query(tableName);  
+//		StringBuilder sb = new StringBuilder();
+//		if( cursor != null ){
+//			if( cursor.moveToFirst() ){
+//				do{
+//					String word = cursor.getString(cursor.getColumnIndex("word"));  
+//		            String phonetic = cursor.getString(cursor.getColumnIndex("phonetic"));  
+//		            String definition = cursor.getString(cursor.getColumnIndex("definition")); 
+//		            sb.append(word + phonetic + definition + "\n");
+//				}while( cursor.moveToNext());
+//			}
+//		}
+//		tv.setText(sb.toString());
 		
-		Log.i("cursor", Integer.toString(WordsManager.getCursorPosition()));
-		Log.i("cursorIndex", Integer.toString(MainActivity.cursorIndex));
-		
-		WordCls wordsCls = WordsManager.updateWord();
-		
-		Log.i("正序", wordsCls.toString());
-		
-		tv.setText(wordsCls.getSpannedHtml());
-		
-//		Intent intent1 = new Intent(getActivity() ,ServicePopNotiWord.class);
-//		getActivity().startService(intent1);
-//		
-//		Intent intent2 = new Intent(getActivity(), ServiceFloatWord.class);  
-//		getActivity().startService(intent2);  
 	}
 	/**
 	 * @author bubble
