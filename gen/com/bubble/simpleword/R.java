@@ -2262,7 +2262,7 @@ containing a value of this type.
         public static final int action_mode_bar=0x7f070043;
         public static final int action_mode_bar_stub=0x7f070042;
         public static final int action_mode_close_button=0x7f07002b;
-        public static final int action_settings=0x7f070085;
+        public static final int action_settings=0x7f070088;
         public static final int activity_chooser_view_content=0x7f07002c;
         public static final int alertTitle=0x7f070036;
         public static final int always=0x7f07001f;
@@ -2377,14 +2377,17 @@ containing a value of this type.
         public static final int word_small_float_window_tv=0x7f07007c;
         public static final int wordbook_actionbar_imgbtn_edit=0x7f07007f;
         public static final int wordbook_actionbar_spinner=0x7f07007e;
-        public static final int wordbook_card_menu_addtobook=0x7f070088;
-        public static final int wordbook_card_menu_delete=0x7f070087;
-        public static final int wordbook_card_menu_edit=0x7f070086;
-        public static final int wordbook_recycler_list=0x7f070084;
-        public static final int wordcard_imgbtn_add_delete=0x7f070082;
-        public static final int wordcard_tv_definition=0x7f070083;
-        public static final int wordcard_tv_phonetic=0x7f070081;
-        public static final int wordcard_tv_word=0x7f070080;
+        public static final int wordbook_card_menu_addtobook=0x7f07008b;
+        public static final int wordbook_card_menu_delete=0x7f07008a;
+        public static final int wordbook_card_menu_edit=0x7f070089;
+        public static final int wordbook_dlg_edttxt_definition=0x7f070082;
+        public static final int wordbook_dlg_edttxt_phonetic=0x7f070081;
+        public static final int wordbook_dlg_edttxt_word=0x7f070080;
+        public static final int wordbook_recycler_list=0x7f070087;
+        public static final int wordcard_imgbtn_add_delete=0x7f070085;
+        public static final int wordcard_tv_definition=0x7f070086;
+        public static final int wordcard_tv_phonetic=0x7f070084;
+        public static final int wordcard_tv_word=0x7f070083;
         public static final int wrap_content=0x7f070010;
     }
     public static final class integer {
@@ -2475,8 +2478,9 @@ containing a value of this type.
         public static final int word_float_window_small=0x7f04002f;
         public static final int word_floating_window_small=0x7f040030;
         public static final int wordbook_actionbar=0x7f040031;
-        public static final int wordbook_item_cardview=0x7f040032;
-        public static final int wordbook_recycler_view=0x7f040033;
+        public static final int wordbook_dlg_edit_word=0x7f040032;
+        public static final int wordbook_item_cardview=0x7f040033;
+        public static final int wordbook_recycler_view=0x7f040034;
     }
     public static final class menu {
         public static final int main=0x7f0f0000;

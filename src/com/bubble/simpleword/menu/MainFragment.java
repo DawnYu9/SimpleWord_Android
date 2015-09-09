@@ -73,7 +73,7 @@ public class MainFragment extends Fragment implements OnClickListener{
 	@Override
 	public void onClick(View v) {
 		db = dbHelper.getWritableDatabase();
-		String tableName = "我是创建的表";
+		String tableName = "表1";
 		switch (v.getId()) {
 		case R.id.btn1:
 			WordsManager.createTable(tableName);
@@ -95,7 +95,7 @@ public class MainFragment extends Fragment implements OnClickListener{
 			WordsManager.deleteTable(tableName);
 			break;
 		case R.id.btn7:
-			WordsManager.alterTableName(tableName, "修改了表名");
+			WordsManager.alterTableName(tableName, "表2");
 			break;
 		default:
 			break;

@@ -114,10 +114,11 @@ public class WordsManager {
     public static List<String> getTableList() {
     	db = wordsDbHelper.getReadableDatabase();
     	List<String> tableList = new ArrayList<String>();
-    	Cursor cursor = db.rawQuery("select name from sqlite_master where type='table' order by name", null);
+    	Cursor cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name!='android_metadata' order by name", null);
     	while(cursor.moveToNext()){
     		tableList.add(cursor.getString(0));
     	}
+    	db.close();
     	return tableList;
     }
 	
@@ -129,6 +130,7 @@ public class WordsManager {
 	 * @date 2015-9-7 下午5:23:48
 	 */
 	public static void createTable(String tableName) {
+		db = wordsDbHelper.getReadableDatabase();
 		String sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
 				"word TEXT NOT NULL," +
 				"phonetic TEXT," +
@@ -138,6 +140,7 @@ public class WordsManager {
 				"PRIMARY KEY (\"word\" ASC)" +
 						");";    
         db.execSQL(sql);
+        db.close();
 	}
 	
 	/**
@@ -148,7 +151,9 @@ public class WordsManager {
 	 * @date 2015-9-8 下午9:37:58
 	 */
 	public static void deleteTable(String tableName) {
+		db = wordsDbHelper.getReadableDatabase();
 		db.execSQL("DROP TABLE IF EXISTS " + tableName );
+		db.close();
 	}
 	
 	/**
@@ -160,7 +165,11 @@ public class WordsManager {
 	 * @date 2015-9-8 下午9:41:06
 	 */
 	public static void alterTableName(String oldName, String newName) {
-		db.execSQL("ALTER TABLE " + oldName + " RENAME TO " + newName + ";");
+		if ( ! getTableList().contains(newName) ) {
+			db = wordsDbHelper.getReadableDatabase();
+			db.execSQL("ALTER TABLE " + oldName + " RENAME TO " + newName + ";");
+			db.close();
+		}
 	}
     
     
@@ -178,6 +187,25 @@ public class WordsManager {
 	    cValue.put(COLUMN_WORD, word);  
 	    cValue.put(COLUMN_PHONETIC, phonetic);  
 	    cValue.put(COLUMN_DEFINITION, definition);  
+	   
+	    db = wordsDbHelper.getWritableDatabase();
+	    db.insert(tableName, null, cValue); 
+	    db.close();
+	}
+	
+	/**
+	 * <p>Title: addWord</p>
+	 * <p>Description: </p>
+	 * @param tableName
+	 * @param wordCls
+	 * @author bubble
+	 * @date 2015-9-9 下午8:10:02
+	 */
+	public static void addWord(String tableName, WordCls wordCls) {
+		cValue = new ContentValues();  
+	    cValue.put(COLUMN_WORD, wordCls.getWord());  
+	    cValue.put(COLUMN_PHONETIC, wordCls.getPhonetic());  
+	    cValue.put(COLUMN_DEFINITION, wordCls.getDefinition());  
 	   
 	    db = wordsDbHelper.getWritableDatabase();
 	    db.insert(tableName, null, cValue); 
@@ -230,6 +258,27 @@ public class WordsManager {
 	}
 	
 	/**
+	 * <p>Title: editWord</p>
+	 * <p>Description: </p>
+	 * @param tableName
+	 * @param wordCls
+	 * @author bubble
+	 * @date 2015-9-10 上午12:09:51
+	 */
+	public static void editWord(String tableName, WordCls wordCls) {
+		cValue = new ContentValues();  
+		cValue.put(COLUMN_WORD, wordCls.getWord());
+		cValue.put(COLUMN_PHONETIC, wordCls.getPhonetic());
+		cValue.put(COLUMN_DEFINITION, wordCls.getDefinition());
+		
+		String[] whereArgs={ wordCls.getWord() };  
+		
+		db = wordsDbHelper.getWritableDatabase();
+		db.update(tableName, cValue, WHERE_CLAUSE_BY_WORD, whereArgs);
+		db.close();
+	}
+	
+	/**
 	 * <p>Title: queryWord</p>
 	 * <p>Description: </p>
 	 * @param column
@@ -279,9 +328,9 @@ public class WordsManager {
 	 * @author bubble
 	 * @date 2015-8-7
 	 */
-	public static ArrayList<WordCls> getAllWords() {
+	public static ArrayList<WordCls> getWordsList(String tableName) {
 		db = wordsDbHelper.getReadableDatabase();
-		Cursor cur = db.query(TABLE_NAME, null, null, null, null, null, null);
+		Cursor cur = db.query(tableName, null, null, null, null, null, null);
 		cur.moveToFirst();
 		ArrayList<WordCls> allWords = new ArrayList<WordCls>();
 		if (cur != null && cur.moveToFirst()) {  
