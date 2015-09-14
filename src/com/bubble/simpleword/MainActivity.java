@@ -25,14 +25,14 @@ import android.view.MenuItem;
 import android.view.WindowManager;
 
 import com.bubble.simpleword.db.MyDbHelper;
+import com.bubble.simpleword.db.WordCls;
 import com.bubble.simpleword.db.WordsManager;
-import com.bubble.simpleword.menu.MainFragment;
-import com.bubble.simpleword.menu.SettingsFragment;
-import com.bubble.simpleword.menu.SlidingMenuFragment;
+import com.bubble.simpleword.fragment.MainFragment;
+import com.bubble.simpleword.fragment.SettingsFragment;
+import com.bubble.simpleword.fragment.SlidingMenuFragment;
 import com.bubble.simpleword.service.ServicePopNotiWord;
 import com.bubble.simpleword.service.ServiceUpdateWord;
 import com.bubble.simpleword.util.Util;
-import com.bubble.simpleword.wordbook.WordCls;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
 
@@ -47,13 +47,13 @@ public class MainActivity extends SlidingFragmentActivity {
 //	static final String KEY_FILE_NAME_SETTINGS = SettingsFragment.KEY_FILE_NAME_SETTINGS;
 	SharedPreferences prefSettings;
 	private Fragment contentFragment;
-	SlidingMenu sm;
+	static SlidingMenu sm;
 	ActionBar mActionBar;
 	SQLiteDatabase db;
 	public static final String DB_NAME = "simpleword.db"; //the database file's name
     public static final String PACKAGE_NAME = "com.bubble.simpleword";
     public static final String FOLDER_NAME = "databases";
-    public static final String DB_PATH = File.separator + "data"
+    public static final String DB_DIRECTORY = File.separator + "data"
             + Environment.getDataDirectory().getAbsolutePath() + File.separator
             + PACKAGE_NAME + File.separator
             + FOLDER_NAME ;  //the path to save database
@@ -286,8 +286,19 @@ public class MainActivity extends SlidingFragmentActivity {
     	display.getSize(size);
     	int slidingWidth = size.x * 2 / 5;
 		sm.setBehindWidth(slidingWidth);
-		
 	}
+	
+	/**
+	 * <p>Title: setSlidingAboveMode</p>
+	 * <p>Description: </p>
+	 * @param mode
+	 * @author bubble
+	 * @date 2015-9-10 下午3:29:50
+	 */
+	public static void setSlidingAboveMode(int mode) {
+		sm.setTouchModeAbove(mode);
+	}
+	
 	/**
 	 * <p>Title: loadDatabase</p>
 	 * <p>Description: load SDcard's database</p>
@@ -295,7 +306,7 @@ public class MainActivity extends SlidingFragmentActivity {
 	 * @date 2015-8-6 下午11:52:05
 	 */
 	public void loadDatabase(){
-		MyDbHelper.loadDatabase(this, DB_PATH + "/" + DB_NAME);
+		MyDbHelper.loadDatabase(this, DB_DIRECTORY + "/" + DB_NAME);
 	}
 	
 	/**

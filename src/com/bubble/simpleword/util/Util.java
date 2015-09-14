@@ -11,7 +11,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
-import com.bubble.simpleword.menu.SettingsFragment;
+import com.bubble.simpleword.fragment.SettingsFragment;
 
 /**
  * <p>Title: UtilOnView</p>
@@ -162,11 +162,28 @@ public class Util {
         return mWindowManager;  
     } 
     
+    /**
+     * <p>Title: getSharedPreferences</p>
+     * <p>Description: </p>
+     * @param context
+     * @return
+     * @author bubble
+     * @date 2015-9
+     */
     public static SharedPreferences getSharedPreferences(Context context) {
     	return context.getSharedPreferences(PREFS_FILE_NAME, Context.MODE_PRIVATE);
     }
     
+    /**
+     * <p>Title: getSharedPreferencesEditor</p>
+     * <p>Description: </p>
+     * @param context
+     * @return
+     * @author bubble
+     * @date 2015-9
+     */
     public static SharedPreferences.Editor getSharedPreferencesEditor(Context context) {
     	return getSharedPreferences(context).edit();
     }
+    
 }

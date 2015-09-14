@@ -15,7 +15,7 @@ import android.content.pm.ResolveInfo;
 import android.os.Handler;
 import android.os.IBinder;
 
-import com.bubble.simpleword.menu.SettingsFragment;
+import com.bubble.simpleword.fragment.SettingsFragment;
 import com.bubble.simpleword.util.Util;
 import com.bubble.simpleword.view.MyWindowManager;
 

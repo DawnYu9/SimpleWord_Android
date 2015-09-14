@@ -11,7 +11,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 
 import com.bubble.simpleword.R;
-import com.bubble.simpleword.menu.SettingsFragment;
+import com.bubble.simpleword.fragment.SettingsFragment;
 import com.bubble.simpleword.service.ServiceFloatWord;
 import com.bubble.simpleword.util.Util;
 

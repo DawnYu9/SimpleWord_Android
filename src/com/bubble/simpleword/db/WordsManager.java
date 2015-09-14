@@ -11,7 +11,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.bubble.simpleword.MainActivity;
-import com.bubble.simpleword.wordbook.WordCls;
 
 
 /**
@@ -328,7 +327,7 @@ public class WordsManager {
 	 * @author bubble
 	 * @date 2015-8-7
 	 */
-	public static ArrayList<WordCls> getWordsList(String tableName) {
+	public static ArrayList<WordCls> getWordsDataset(String tableName) {
 		db = wordsDbHelper.getReadableDatabase();
 		Cursor cur = db.query(tableName, null, null, null, null, null, null);
 		cur.moveToFirst();
