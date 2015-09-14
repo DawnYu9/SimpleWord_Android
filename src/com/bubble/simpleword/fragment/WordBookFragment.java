@@ -1,16 +1,26 @@
 package com.bubble.simpleword.fragment;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import android.R.string;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
@@ -22,7 +32,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -30,7 +39,6 @@ import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.PopupMenu.OnMenuItemClickListener;
 import android.widget.Spinner;
@@ -105,7 +113,7 @@ public class WordBookFragment extends Fragment {
     
     View savedFirstVisibleChild;
     View currentFirstVisibleChild;
-	int dy;
+	int dyTop;
 	int dyBottom;
 	int savedFirstVisiblePosition;
 	int savedFirstVisibleBottom;
@@ -114,7 +122,7 @@ public class WordBookFragment extends Fragment {
 	int currentFirstVisiblePosition;
 	int currentFirstVisibleTop;
 	
-	
+	boolean isRecyclerInit = false;
     /**
 	 * <p>Title: </p>
 	 * <p>Description: </p>
@@ -142,7 +150,7 @@ public class WordBookFragment extends Fragment {
         
         initSpinner();  
         
-        initRecyclerView();
+//        initRecyclerView();
         
         
         
@@ -206,11 +214,17 @@ public class WordBookFragment extends Fragment {
 //	        		wordsDataset = wordsDatasetHM.get(tableName);
 //	        	}
 //	        	
+	        	if ( ! isRecyclerInit ) {
+	        		initRecyclerView();
+	        		isRecyclerInit = true;
+	        	}
+	        	
 	        	wordsDataset = WordsManager.getWordsDataset(tableName);
 	        	wordCardAdapter.updateList(wordsDataset);
 	        	Toast.makeText(activity, "你点击的是:"+tableName, Toast.LENGTH_SHORT).show();   
-	        	restoreRecyclerViewPosition(tableName);
 	        	
+	        	
+	        	restoreRecyclerViewPosition(tableName);
 			}
 
 			@Override
@@ -292,6 +306,7 @@ public class WordBookFragment extends Fragment {
 	 * @date 2015-9-10 下午10:15:11
 	 */
 	private void initRecyclerView() {
+		isRecyclerInit = true;
 		recyclerView = (SnappingRecyclerView) view.findViewById(R.id.wordbook_recycler_list); 
 	
 		wordCardAdapter = new WordRecyclerViewAdapter(activity, tableName, wordsDataset);  
@@ -376,10 +391,12 @@ public class WordBookFragment extends Fragment {
 		savedFirstVisibleChild = recyclerView.getChildAt(0);
 		//dy正，列表下滑
 		//dy负，列表上滑
-		dy = savedFirstVisibleChild.getHeight() - savedFirstVisibleChild.getBottom(); 
+		dyTop = savedFirstVisibleChild.getHeight() - savedFirstVisibleChild.getBottom(); 
+		dyBottom = recyclerView.getHeight() - savedFirstVisibleChild.getBottom();
 		
 		prefEditorSettings.putInt(KEY_RECYCLERVIEW_SCROLL_POSITION + tableName, firstVisibleItemPosition);
-		prefEditorSettings.putInt(KEY_RECYCLERVIEW_SCROLL_DY_TOP + tableName, dy);
+		prefEditorSettings.putInt(KEY_RECYCLERVIEW_SCROLL_DY_TOP + tableName, dyTop);
+		prefEditorSettings.putInt(KEY_RECYCLERVIEW_SCROLL_DY_BOTTOM + tableName, dyBottom);
 		prefEditorSettings.commit();
 		
 	}
@@ -393,28 +410,22 @@ public class WordBookFragment extends Fragment {
 	public void restoreRecyclerViewPosition(final String tableName) {
 		if ( recyclerView != null) {
 			savedFirstVisiblePosition = prefSettings.getInt(KEY_RECYCLERVIEW_SCROLL_POSITION + tableName, 0);
-			dy = prefSettings.getInt(KEY_RECYCLERVIEW_SCROLL_DY_TOP + tableName, 0);
+			dyTop = prefSettings.getInt(KEY_RECYCLERVIEW_SCROLL_DY_TOP + tableName, 0);
+			dyBottom = prefSettings.getInt(KEY_RECYCLERVIEW_SCROLL_DY_BOTTOM + tableName, 0);
 			
 			currentFirstVisiblePosition =  ((LinearLayoutManager)recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
 			
 			recyclerView.scrollToPosition(savedFirstVisiblePosition);
 			if(currentFirstVisiblePosition > -1) {
 				if (currentFirstVisiblePosition >= savedFirstVisiblePosition) {	//savedFirstVisiblePosition在顶部，手指往下滑-列表往上滑，列表应该下滑
-					recyclerView.scrollBy(0, dy);
+					recyclerView.scrollBy(0, dyTop);
 				} else if (currentFirstVisiblePosition < savedFirstVisiblePosition){	//savedFirstVisiblePosition在底部，手指往上滑-列表往下滑，列表应该继续上滑
-					recyclerView.scrollBy(0, recyclerView.getHeight());
-					recyclerView.scrollToPosition(savedFirstVisiblePosition);
-					handler.post(new Runnable() {
-						
-						@Override
-						public void run() {
-							recyclerView.scrollBy(0, dy);
-						}
-					});
+					recyclerView.scrollBy(0, dyBottom);	//第一页的item会不准，暂时会找到合适的办法，用runnable会有跳转动作显示。			
 				} 
 			}
 		}
 	}
+	
 	
 	/**
 	 * <p>Title: setWordRecyclerViewOrientation</p>
