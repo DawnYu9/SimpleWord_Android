@@ -1,26 +1,15 @@
 package com.bubble.simpleword.fragment;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
-import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
@@ -30,6 +19,8 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -68,22 +59,21 @@ public class WordBookFragment extends Fragment {
 	private static SharedPreferences prefSettings;
 	private SharedPreferences.Editor prefEditorSettings;
 	
-	ActionBar actionBar;  
-	Activity activity;
-	  
+	private ActionBar actionBar;  
+	private Activity activity;
+	private View actionbarLayout;
     
-    Spinner spnWordbook;  
-    List<String> wordbookList;
-    HashMap<String, List> wordsDatasetHM = new HashMap<String, List>();
+	private Spinner spnWordbook;  
+	private List<String> wordbookList;
     public static final String KEY_SPINNER_SELECTED_TABLENAME = "KEY_SPINNER_SELECTED_NAME";
-    int spnSelectedPosition;
-    String tableName;
+    private int spnSelectedPosition;
+    private String tableName;
     
-    SnappingRecyclerView recyclerView;
-    WordRecyclerViewAdapter wordCardAdapter;  
-    View view;
-    List<WordCls> wordsDataset = new ArrayList<WordCls>();  
-    WordCls word ;
+    private SnappingRecyclerView recyclerView;
+    private WordRecyclerViewAdapter wordCardAdapter;  
+    private View view;
+    private List<WordCls> wordsDataset = new ArrayList<WordCls>();  
+    private WordCls word ;
     
     
     private Switch swi;
@@ -93,36 +83,29 @@ public class WordBookFragment extends Fragment {
     private static final String KEY_WORDBOOK_ORIENTATION = "KEY_WORDBOOK_ORIENTATION";
     private int viewHolderType;
     
-    private HashMap <String, Parcelable> hmRecyclerViewState = new HashMap<String, Parcelable>();    
-    private Parcelable recyclerViewState;
-    
-    private boolean isTableFirstShow = true;
-    private int scrollX;
-    private int scrollY;
     private static final String KEY_RECYCLERVIEW_SCROLL_POSITION = "KEY_RECYCLERVIEW_SCROLL_POSITION";
     private static final String KEY_RECYCLERVIEW_SCROLL_DY_TOP = "KEY_RECYCLERVIEW_SCROLL_DY_TOP";
     private static final String KEY_RECYCLERVIEW_SCROLL_DY_BOTTOM = "KEY_RECYCLERVIEW_SCROLL_DY_BOTTOM";
     
-    Handler handler = new Handler();
+    private Handler handler = new Handler();
     
-    int firstVisibleItemPosition;
-    int firstCompletelyVisibleItemPosition;
-    int lastCompletelyVisibleItemPosition;
-    int lastVisibleItemPosition;
+    private int firstVisibleItemPosition;
     
-    
-    View savedFirstVisibleChild;
-    View currentFirstVisibleChild;
-	int dyTop;
-	int dyBottom;
-	int savedFirstVisiblePosition;
-	int savedFirstVisibleBottom;
-	int savedFirstVisibleHeight;
+    private View savedFirstVisibleChild;
+    private int dyTop;
+    private int dyBottom;
+    private int savedFirstVisiblePosition;
+    private int currentFirstVisiblePosition;
 	
-	int currentFirstVisiblePosition;
-	int currentFirstVisibleTop;
+    private HashMap<String, List> hmDataset = new HashMap<String, List>();
+    private boolean isRecyclerInit = false;
 	
-	boolean isRecyclerInit = false;
+    private HashMap<String, Boolean> hmIsDatasetEdit = new HashMap<String, Boolean>();
+    private boolean isDatasetEdit = false;
+	
+    private HashMap<String, Parcelable> hmRecyclerViewState = new HashMap<String, Parcelable>();
+    private Parcelable recyclerViewState;
+	
     /**
 	 * <p>Title: </p>
 	 * <p>Description: </p>
@@ -132,6 +115,8 @@ public class WordBookFragment extends Fragment {
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
+		
+		Log.i(getTag(), "WordBookFragment——onCreateView");
 		view=inflater.inflate(R.layout.fg_layout_wordbook,container, false); 
 		
 		
@@ -139,20 +124,8 @@ public class WordBookFragment extends Fragment {
 		
 		prefSettings = Util.getSharedPreferences(getActivity());
     	prefEditorSettings = prefSettings.edit();
-    	
-    	
-    	
-//		actionBar.setTitle(R.string.wordbook);	//set all fragments's actionbar title
-		getActivity().setTitle(R.string.wordbook);	//set one fragment's actionbar title
-
-		actionBar = activity.getActionBar();
-        actionBar.setDisplayShowCustomEnabled(true);	//make custom actionbar view work
         
-        initSpinner();  
-        
-//        initRecyclerView();
-        
-        
+    	initActionBar();        
         
         swi = (Switch)view.findViewById(R.id.switch_layout);
         swi.setOnCheckedChangeListener(new OnCheckedChangeListener() {
@@ -169,17 +142,20 @@ public class WordBookFragment extends Fragment {
         
 		return view; 
 	}
-	
-	/**
-	 * <p>Description: </p>
-	 * @author bubble
-	 * @date 2015-9-12 上午12:05:56
-	 */
-	@Override
-	public void onResume() {
-		super.onResume();
-	}
 
+	public void initActionBar() {
+		actionBar = activity.getActionBar();
+        actionBar.setDisplayShowCustomEnabled(true);	//make custom actionbar view works
+        
+//      actionbarLayout = LayoutInflater.from(activity).inflate(R.layout.wordbook_actionbar, null);  
+		actionbarLayout = view.inflate(activity,R.layout.wordbook_actionbar, null);  
+      
+		initSpinner();
+		
+        actionBar.setCustomView(actionbarLayout);  
+	}
+	
+	
 	/**
      * <p>Title: initSpinner</p>
      * <p>Description: </p>
@@ -187,8 +163,7 @@ public class WordBookFragment extends Fragment {
      * @date 2015-8
      */
     private void initSpinner() {  
-//        View actionbarLayout = LayoutInflater.from(activity).inflate(R.layout.wordbook_actionbar, null);  
-        View actionbarLayout = view.inflate(activity,R.layout.wordbook_actionbar, null);  
+
         spnWordbook = (Spinner) actionbarLayout.findViewById(R.id.wordbook_actionbar_spinner);  
           
 //        initSpinnerDataMethod1();  
@@ -207,20 +182,20 @@ public class WordBookFragment extends Fragment {
 	        	prefEditorSettings.putString(KEY_SPINNER_SELECTED_TABLENAME, tableName);
 	        	prefEditorSettings.commit();
 	        	
-//	        	if ( wordsDatasetHM.get(tableName) == null ) {	//如果有更新怎么办？？？
-//	        		wordsDataset = WordsManager.getWordsDataset(tableName);
-//	        		wordsDatasetHM.put(tableName, wordsDataset);
-//	        	} else {
-//	        		wordsDataset = wordsDatasetHM.get(tableName);
-//	        	}
-//	        	
+	        	if ( hmDataset.get(tableName) == null || hmIsDatasetEdit.get(tableName)) {
+	        		wordsDataset = WordsManager.getWordsDataset(tableName);
+	        		hmDataset.put(tableName, wordsDataset);
+	        		hmIsDatasetEdit.put(tableName, false);
+	        	} else {
+	        		wordsDataset = hmDataset.get(tableName);
+	        	}
+	        	
 	        	if ( ! isRecyclerInit ) {
 	        		initRecyclerView();
 	        		isRecyclerInit = true;
 	        	}
 	        	
-	        	wordsDataset = WordsManager.getWordsDataset(tableName);
-	        	wordCardAdapter.updateList(wordsDataset);
+	        	wordCardAdapter.updateDataset(wordsDataset);
 	        	Toast.makeText(activity, "你点击的是:"+tableName, Toast.LENGTH_SHORT).show();   
 	        	
 	        	
@@ -232,8 +207,6 @@ public class WordBookFragment extends Fragment {
 			}
 		});
           
-        //在Bar上显示定制view  
-        actionBar.setCustomView(actionbarLayout);  
     }
 
     /** 
@@ -385,12 +358,15 @@ public class WordBookFragment extends Fragment {
 	 * @author bubble
 	 * @date 2015-9-11 
 	 */
-	public void saveRecyclerViewPosition(String tableName) {
+	private void saveRecyclerViewPosition(String tableName) {
+		recyclerViewState = recyclerView.getLayoutManager().onSaveInstanceState();
+		hmRecyclerViewState.put(tableName, recyclerViewState);
+		
 		firstVisibleItemPosition = ((LinearLayoutManager)recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
 		
 		savedFirstVisibleChild = recyclerView.getChildAt(0);
-		//dy正，列表下滑
-		//dy负，列表上滑
+		//dy正，手指将列表往上拉
+		//dy负，手指将列表往下拉
 		dyTop = savedFirstVisibleChild.getHeight() - savedFirstVisibleChild.getBottom(); 
 		dyBottom = recyclerView.getHeight() - savedFirstVisibleChild.getBottom();
 		
@@ -398,7 +374,6 @@ public class WordBookFragment extends Fragment {
 		prefEditorSettings.putInt(KEY_RECYCLERVIEW_SCROLL_DY_TOP + tableName, dyTop);
 		prefEditorSettings.putInt(KEY_RECYCLERVIEW_SCROLL_DY_BOTTOM + tableName, dyBottom);
 		prefEditorSettings.commit();
-		
 	}
 	
 	/**
@@ -407,21 +382,36 @@ public class WordBookFragment extends Fragment {
 	 * @author bubble
 	 * @date 2015-9-11 
 	 */
-	public void restoreRecyclerViewPosition(final String tableName) {
-		if ( recyclerView != null) {
-			savedFirstVisiblePosition = prefSettings.getInt(KEY_RECYCLERVIEW_SCROLL_POSITION + tableName, 0);
-			dyTop = prefSettings.getInt(KEY_RECYCLERVIEW_SCROLL_DY_TOP + tableName, 0);
-			dyBottom = prefSettings.getInt(KEY_RECYCLERVIEW_SCROLL_DY_BOTTOM + tableName, 0);
-			
-			currentFirstVisiblePosition =  ((LinearLayoutManager)recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
-			
-			recyclerView.scrollToPosition(savedFirstVisiblePosition);
-			if(currentFirstVisiblePosition > -1) {
-				if (currentFirstVisiblePosition >= savedFirstVisiblePosition) {	//savedFirstVisiblePosition在顶部，手指往下滑-列表往上滑，列表应该下滑
+	private void restoreRecyclerViewPosition(String tableName) {
+		recyclerViewState = hmRecyclerViewState.get(tableName);
+		if (recyclerViewState != null) {
+			recyclerView.getLayoutManager().onRestoreInstanceState(recyclerViewState);
+		} else {
+			if ( recyclerView != null) {
+				savedFirstVisiblePosition = prefSettings.getInt(KEY_RECYCLERVIEW_SCROLL_POSITION + tableName, 0);
+				dyTop = prefSettings.getInt(KEY_RECYCLERVIEW_SCROLL_DY_TOP + tableName, 0);
+				dyBottom = prefSettings.getInt(KEY_RECYCLERVIEW_SCROLL_DY_BOTTOM + tableName, 0);
+				
+				currentFirstVisiblePosition =  ((LinearLayoutManager)recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+				
+				recyclerView.scrollToPosition(savedFirstVisiblePosition);
+				
+				if(currentFirstVisiblePosition > -1) {
+					if (currentFirstVisiblePosition >= savedFirstVisiblePosition) {	//savedFirstVisiblePosition在顶部
+						recyclerView.scrollBy(0, dyTop);
+					} else if (currentFirstVisiblePosition < savedFirstVisiblePosition){	//savedFirstVisiblePosition在底部
+						if (savedFirstVisiblePosition > 4)
+							recyclerView.scrollBy(0, dyBottom);				
+						else {	//第一页的item用handler/smoothScrollBy会有跳转动作显示，暂时会找到合适的办法
+							recyclerView.scrollBy(0, recyclerView.getHeight());
+							recyclerView.scrollToPosition(savedFirstVisiblePosition);
+							recyclerView.smoothScrollBy(0, dyTop);
+						}
+					} 
+				} else {	//第一次打开，还未出现界面
+					recyclerView.scrollToPosition(savedFirstVisiblePosition);
 					recyclerView.scrollBy(0, dyTop);
-				} else if (currentFirstVisiblePosition < savedFirstVisiblePosition){	//savedFirstVisiblePosition在底部，手指往上滑-列表往下滑，列表应该继续上滑
-					recyclerView.scrollBy(0, dyBottom);	//第一页的item会不准，暂时会找到合适的办法，用runnable会有跳转动作显示。			
-				} 
+				}
 			}
 		}
 	}
@@ -557,6 +547,7 @@ public class WordBookFragment extends Fragment {
                     	for (int i = 0; i < selectedBookArray.length; i++) {
                     		if ( selectedBookArray[i] ) {
                     			WordsManager.addWord(tableList[i], wordCls);
+                    			hmIsDatasetEdit.put(tableList[i], true);
                     		}
                     	}
                         Toast.makeText(view.getContext(), "添加成功", Toast.LENGTH_SHORT).show();  
@@ -612,6 +603,8 @@ public class WordBookFragment extends Fragment {
     	WordsManager.deleteWord(tableName, wordCls.getWord());
     	
     	saveRecyclerViewPosition(tableName);
+    	
+    	hmIsDatasetEdit.put(tableName, true);
 	}
 	
       
@@ -638,6 +631,8 @@ public class WordBookFragment extends Fragment {
 		wordCardAdapter.updateItem(position, wordCls);
 		
 		saveRecyclerViewPosition(tableName);
+		
+		hmIsDatasetEdit.put(tableName, true);
 	}
     
 	/**
@@ -648,17 +643,30 @@ public class WordBookFragment extends Fragment {
 	@Override
 	public void onPause() {
 		super.onPause();
+		Log.i(getTag(), "WordBookFragment——onPause");
 		saveRecyclerViewPosition(tableName);
 	}
 	
 	/**
 	 * <p>Description: </p>
 	 * @author bubble
-	 * @date 2015-9-12 下午1:16:23
+	 * @date 2015-9-15 下午8:52:49
 	 */
 	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		super.onSaveInstanceState(outState);
+	public void onActivityCreated(Bundle savedInstanceState) {
+		Log.i(getTag(), "WordBookFragment——onActivityCreated");
+		super.onActivityCreated(savedInstanceState);
+	}
+	
+	/**
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-9-15 上午10:48:15
+	 */
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		Log.i(getTag(), "WordBookFragment——onDestroy");
 	}
 	
 }

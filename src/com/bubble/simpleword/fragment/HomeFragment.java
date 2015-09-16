@@ -2,7 +2,6 @@ package com.bubble.simpleword.fragment;
 
 import android.app.Fragment;
 import android.content.Context;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -26,7 +25,7 @@ import com.bubble.simpleword.db.WordsManager;
  * @author bubble
  * @date 2015-8-2
  */
-public class MainFragment extends Fragment implements OnClickListener{
+public class HomeFragment extends Fragment implements OnClickListener{
 	public View mView;
 	private MyDbHelper dbHelper;
 	SQLiteDatabase db;
@@ -37,7 +36,7 @@ public class MainFragment extends Fragment implements OnClickListener{
 	 * <p>Title: </p>
 	 * <p>Description: </p>
 	 */
-	public MainFragment(Context context) {
+	public HomeFragment(Context context) {
 		mContext = context;
 	}
 	/**
@@ -47,7 +46,6 @@ public class MainFragment extends Fragment implements OnClickListener{
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
 		mView=inflater.inflate(R.layout.fg_layout_main,container, false);  
-		getActivity().setTitle(R.string.app_name);
 		
 		dbHelper = new MyDbHelper(mContext, MainActivity.DB_NAME, null, 1);
 		
@@ -70,6 +68,7 @@ public class MainFragment extends Fragment implements OnClickListener{
 		getActivity().getActionBar().setDisplayShowCustomEnabled(false);
 		return mView; 
 	}
+	
 	@Override
 	public void onClick(View v) {
 		db = dbHelper.getWritableDatabase();

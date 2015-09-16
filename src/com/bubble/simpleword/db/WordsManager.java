@@ -331,15 +331,15 @@ public class WordsManager {
 		db = wordsDbHelper.getReadableDatabase();
 		Cursor cur = db.query(tableName, null, null, null, null, null, null);
 		cur.moveToFirst();
-		ArrayList<WordCls> allWords = new ArrayList<WordCls>();
+		ArrayList<WordCls> wordsDataset = new ArrayList<WordCls>();
 		if (cur != null && cur.moveToFirst()) {  
 		    do {  
 		        setWordCls(cur);
-		        allWords.add(wordCls);  
+		        wordsDataset.add(wordCls);  
 		    } while (cur.moveToNext()); 
 		    cur.close();
 		    db.close();
-		    return allWords;
+		    return wordsDataset;
 		} else {
 			cur.close();
 			db.close();

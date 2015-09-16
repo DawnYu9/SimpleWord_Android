@@ -7,7 +7,6 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
@@ -168,8 +167,6 @@ public class SettingsFragment extends Fragment {
 		
 		mContext = getActivity();
 		mActivity = getActivity();
-		mActivity.setTitle(R.string.settings);
-		mActivity.getActionBar().setDisplayShowCustomEnabled(false);
 		
 		prefSettings = Util.getSharedPreferences(mContext);
     	prefEditorSettings = prefSettings.edit();

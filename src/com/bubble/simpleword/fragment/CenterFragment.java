@@ -29,8 +29,6 @@ public class CenterFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
 		View view=inflater.inflate(R.layout.fg_layout_center,container, false);  
-		getActivity().setTitle(R.string.center);
-		getActivity().getActionBar().setDisplayShowCustomEnabled(false);
 		return view; 
 	}
 }

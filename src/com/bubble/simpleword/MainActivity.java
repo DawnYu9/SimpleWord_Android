@@ -5,6 +5,7 @@ import java.io.File;
 import android.app.ActionBar;
 import android.app.AlarmManager;
 import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -27,7 +28,7 @@ import android.view.WindowManager;
 import com.bubble.simpleword.db.MyDbHelper;
 import com.bubble.simpleword.db.WordCls;
 import com.bubble.simpleword.db.WordsManager;
-import com.bubble.simpleword.fragment.MainFragment;
+import com.bubble.simpleword.fragment.HomeFragment;
 import com.bubble.simpleword.fragment.SettingsFragment;
 import com.bubble.simpleword.fragment.SlidingMenuFragment;
 import com.bubble.simpleword.service.ServicePopNotiWord;
@@ -43,13 +44,14 @@ import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
  * @date 2015-8-2
  */
 public class MainActivity extends SlidingFragmentActivity {
+	private FragmentTransaction transaction;
 	int spinnerWordSortSelection;
 //	static final String KEY_FILE_NAME_SETTINGS = SettingsFragment.KEY_FILE_NAME_SETTINGS;
-	SharedPreferences prefSettings;
+	private SharedPreferences prefSettings;
 	private Fragment contentFragment;
 	static SlidingMenu sm;
-	ActionBar mActionBar;
-	SQLiteDatabase db;
+	private ActionBar mActionBar;
+	private SQLiteDatabase db;
 	public static final String DB_NAME = "simpleword.db"; //the database file's name
     public static final String PACKAGE_NAME = "com.bubble.simpleword";
     public static final String FOLDER_NAME = "databases";
@@ -59,15 +61,18 @@ public class MainActivity extends SlidingFragmentActivity {
             + FOLDER_NAME ;  //the path to save database
     public static WordCls word ;
     
-    SharedPreferences pref;
-    Editor editor;
+    private SharedPreferences pref;
+    private Editor editor;
 //    public static final String PREFS_FILE_NAME = "SimpleWord_Prefs_File";  
     public static final String IS_FIRST_START = "is_first_start";  
     public static Boolean isFirstStart;
     
-    Cursor cursor;
+    private Cursor cursor;
     public static int cursorIndex = 0;
     public static final String CURSOR_INDEX = "cursor_index";
+    
+    private Handler handler = new Handler();
+
     
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -265,13 +270,13 @@ public class MainActivity extends SlidingFragmentActivity {
 		if (savedInstanceState != null)
 			contentFragment = getFragmentManager().getFragment(savedInstanceState, "contentFragment");
 		if (contentFragment == null)
-			contentFragment = new MainFragment(this);	
+			contentFragment = new HomeFragment(this);	
 		
 		setContentView(R.layout.main_frame_content);
-		getFragmentManager().beginTransaction().replace(R.id.content_frame, contentFragment).commit();
+		getFragmentManager().beginTransaction().replace(R.id.frame_content, contentFragment).commit();
 
 		setBehindContentView(R.layout.main_frame_menu);
-		getFragmentManager().beginTransaction().replace(R.id.menu_frame, new SlidingMenuFragment()).commit();
+		getFragmentManager().beginTransaction().replace(R.id.frame_menu, new SlidingMenuFragment()).commit();
 
 		sm.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
 		sm.setTouchModeBehind(SlidingMenu.TOUCHMODE_FULLSCREEN);
@@ -316,16 +321,51 @@ public class MainActivity extends SlidingFragmentActivity {
 	 * @author bubble
 	 * @date 2015-8-5
 	 */
-	public void switchContent(Fragment fragment) {
-		contentFragment = fragment;
-		getFragmentManager().beginTransaction().replace(R.id.content_frame, fragment).commit();
-//		sm.showContent();
-        Handler h = new Handler();
-        h.postDelayed(new Runnable() {
-            public void run() {
-            	sm.showContent();
-            }
-        }, 50);
+//	public void switchContent(Fragment fragment) {
+//		contentFragment = fragment;
+//		getFragmentManager().beginTransaction().replace(R.id.content_frame, fragment).commit();
+////		sm.showContent();
+//        Handler h = new Handler();
+//        h.postDelayed(new Runnable() {
+//            public void run() {
+//            	sm.showContent();
+//            }
+//        }, 50);
+//	}
+	
+	/**
+	 * <p>Title: switchContent</p>
+	 * <p>Description: </p>
+	 * @param contentFragment
+	 * @param newFragment
+	 * @author bubble
+	 * @date 2015-9-15 下午2:08:22
+	 */
+	public void switchContent(Fragment newFragment) {
+		if ( contentFragment == null || newFragment == null)
+			return;
+		
+   	    transaction = getFragmentManager().beginTransaction();
+   	    
+   	    if (contentFragment != newFragment) {
+	   	    if (!newFragment.isAdded()) {
+	   	        // 隐藏当前的fragment，add下一个到Activity中
+	   	        transaction.hide(contentFragment).add(R.id.frame_content,newFragment).commit();
+	   	    } else {
+	   	       // 隐藏当前的fragment，显示下一个
+	    		transaction.hide(contentFragment).show(newFragment).commit();
+	   	    }
+	   	    contentFragment = newFragment;
+   	    }
+   	    
+   	    handler.post(new Runnable() {
+			
+			@Override
+			public void run() {
+				sm.showContent();
+			}
+		});
+   	    
 	}
 
 	/**

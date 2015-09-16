@@ -29,8 +29,6 @@ public class BBSFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
 		View view=inflater.inflate(R.layout.fg_layout_bbs,container, false);  
-		getActivity().setTitle(R.string.BBS);
-		getActivity().getActionBar().setDisplayShowCustomEnabled(false);
 		return view; 
 	}
 }

@@ -280,7 +280,7 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 	 * @author bubble
 	 * @date 2015-9-9 下午2:20:58
 	 */
-	public void updateList(List<WordCls> newList) {
+	public void updateDataset(List<WordCls> newList) {
 		wordsList = newList;
 		notifyDataSetChanged();
 	}

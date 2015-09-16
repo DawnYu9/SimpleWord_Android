@@ -2461,7 +2461,6 @@ containing a value of this type.
         public static final int contentDialog=0x7f0b005c;
         public static final int contentPanel=0x7f0b0037;
         public static final int contentSelector=0x7f0b0056;
-        public static final int content_frame=0x7f0b0076;
         public static final int custom=0x7f0b003b;
         public static final int customPanel=0x7f0b003a;
         public static final int decor_content_parent=0x7f0b0044;
@@ -2475,6 +2474,8 @@ containing a value of this type.
         public static final int end_padder=0x7f0b0083;
         public static final int expand_activities_button=0x7f0b002d;
         public static final int expanded_menu=0x7f0b003d;
+        public static final int frame_content=0x7f0b0076;
+        public static final int frame_menu=0x7f0b0077;
         public static final int fullscreen=0x7f0b0027;
         public static final int green=0x7f0b0059;
         public static final int home=0x7f0b0001;
@@ -2493,7 +2494,6 @@ containing a value of this type.
         public static final int list_item=0x7f0b0030;
         public static final int margin=0x7f0b0028;
         public static final int media_actions=0x7f0b007b;
-        public static final int menu_frame=0x7f0b0077;
         public static final int message=0x7f0b005e;
         public static final int message_scrollView=0x7f0b005d;
         public static final int middle=0x7f0b0024;
