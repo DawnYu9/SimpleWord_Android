@@ -1,8 +1,14 @@
 package com.bubble.simpleword.fragment;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import net.htmlparser.jericho.Source;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -10,6 +16,7 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
@@ -19,8 +26,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -106,6 +111,9 @@ public class WordBookFragment extends Fragment {
     private HashMap<String, Parcelable> hmRecyclerViewState = new HashMap<String, Parcelable>();
     private Parcelable recyclerViewState;
 	
+    
+    
+    
     /**
 	 * <p>Title: </p>
 	 * <p>Description: </p>
@@ -350,6 +358,8 @@ public class WordBookFragment extends Fragment {
 			}
 		});
 	}
+	
+	 
 
 	/**
 	 * <p>Title: saveInstanceState</p>

@@ -28,9 +28,20 @@ public class WordsManager {
 	public final static String COLUMN_WORD = "word";
 	public final static String COLUMN_PHONETIC = "phonetic";
 	public final static String COLUMN_DEFINITION = "definition";
+	public final static String COLUMN_DEFINITION_EN = "definition_en";
+	public final static String COLUMN_DEFINITION_CN = "definition_cn";
+	public final static String COLUMN_AUDIO_URL_US = "audio_url_us";
+	public final static String COLUMN_TIME = "time";
+	public final static String COLUMN_IS_REMEMBERED = "is_remembered";
+	public final static String COLUMN_IS_LOADED = "is_loaded";
 	public static String wordWord;  
 	public static String wordPhonetic;  
 	public static String wordDefinition;  
+	public static String wordDefinitionEN;  
+	public static String wordDefinitionCN;  
+	public static String wordAudioURLUS;  
+	public static int isRemembered;  
+	public static int isLoaded;  
 	
 	private static Context mContext;
 	private static SQLiteDatabase db;
@@ -131,11 +142,15 @@ public class WordsManager {
 	public static void createTable(String tableName) {
 		db = wordsDbHelper.getReadableDatabase();
 		String sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
-				"word TEXT NOT NULL," +
-				"phonetic TEXT," +
-				"definition TEXT," +
-				"time TEXT DEFAULT (datetime('now','localtime'))," +
-				"isRemembered INTEGER DEFAULT 0," +
+				COLUMN_WORD + " TEXT NOT NULL," +
+				COLUMN_PHONETIC + " TEXT," +
+				COLUMN_DEFINITION + " TEXT," +
+				COLUMN_DEFINITION_EN + " TEXT," +
+				COLUMN_DEFINITION_CN + " TEXT," +
+				COLUMN_AUDIO_URL_US + " TEXT," +
+				COLUMN_TIME + " TEXT DEFAULT (datetime('now','localtime'))," +
+				COLUMN_IS_REMEMBERED + " INTEGER DEFAULT 0," +
+				COLUMN_IS_LOADED + " INTEGER DEFAULT 0," +
 				"PRIMARY KEY (\"word\" ASC)" +
 						");";    
         db.execSQL(sql);
@@ -247,6 +262,21 @@ public class WordsManager {
 	    case COLUMN_DEFINITION:
 	    	cValue.put(COLUMN_DEFINITION, editValue);
 	    	break;
+	    case COLUMN_DEFINITION_EN:
+	    	cValue.put(COLUMN_DEFINITION_EN, editValue);
+	    	break;
+	    case COLUMN_DEFINITION_CN:
+	    	cValue.put(COLUMN_DEFINITION_CN, editValue);
+	    	break;
+	    case COLUMN_AUDIO_URL_US:
+	    	cValue.put(COLUMN_AUDIO_URL_US, editValue);
+	    	break;
+	    case COLUMN_IS_REMEMBERED:
+	    	cValue.put(COLUMN_IS_REMEMBERED, editValue);
+	    	break;
+	    case COLUMN_IS_LOADED:
+	    	cValue.put(COLUMN_IS_LOADED, editValue);
+	    	break;
 	    }
 	    
 	    String[] whereArgs={ word };  
@@ -258,7 +288,7 @@ public class WordsManager {
 	
 	/**
 	 * <p>Title: editWord</p>
-	 * <p>Description: </p>
+	 * <p>Description: edit: word, phonetic, definition</p>
 	 * @param tableName
 	 * @param wordCls
 	 * @author bubble
@@ -276,6 +306,29 @@ public class WordsManager {
 		db.update(tableName, cValue, WHERE_CLAUSE_BY_WORD, whereArgs);
 		db.close();
 	}
+	/**
+	 * <p>Title: editWholeWord</p>
+	 * <p>Description: add the loaded information of the word
+	 * editing these columns: COLUMN_DEFINITION_EN, COLUMN_DEFINITION_CN, COLUMN_AUDIO_URL_US, COLUMN_IS_LOADED</p>
+	 * @param tableName
+	 * @param wordCls
+	 * @author bubble
+	 * @date 2015-9-16 下午11:48:05
+	 */
+	public static void addWordLoadInfo(String tableName, WordCls wordCls) {
+		cValue = new ContentValues();  
+		cValue.put(COLUMN_DEFINITION_EN, wordCls.getDefinitionEN());
+		cValue.put(COLUMN_DEFINITION_CN, wordCls.getDefinitionCN());
+		cValue.put(COLUMN_AUDIO_URL_US, wordCls.getAudioUrlUS());
+		cValue.put(COLUMN_IS_LOADED, wordCls.isLoaded());
+		
+		String[] whereArgs={ wordCls.getWord() };  
+		
+		db = wordsDbHelper.getWritableDatabase();
+		db.update(tableName, cValue, WHERE_CLAUSE_BY_WORD, whereArgs);
+		db.close();
+	}
+	
 	
 	/**
 	 * <p>Title: queryWord</p>
@@ -334,7 +387,7 @@ public class WordsManager {
 		ArrayList<WordCls> wordsDataset = new ArrayList<WordCls>();
 		if (cur != null && cur.moveToFirst()) {  
 		    do {  
-		        setWordCls(cur);
+		        setWordCls(cur, 0);
 		        wordsDataset.add(wordCls);  
 		    } while (cur.moveToNext()); 
 		    cur.close();
@@ -480,27 +533,6 @@ public class WordsManager {
 		cur = db.query(TABLE_NAME, null, null, null, null, null, orderby);
 		return cur;
 	}
-	/**
-	 * <p>Title: getWordOrderBy</p>
-	 * <p>Description: </p>
-	 * @param cur
-	 * @return
-	 * @author bubble
-	 * @date 2015-8-9
-	 */
-/*	private static WordsClass getWordOrderBy(Cursor cur){
-		if ( ! isCursorValid(cur) ) {
-			if ( wordClass != null ) {
-				return wordClass;
-			} else {
-				cursor.moveToLast();
-				return getWordOrderBy(cursor);
-			}
-		} else {
-			setWordClass(cur);
-			return wordClass;
-		}
-	}*/
 	
 	/**
 	 * <p>Title: setWordClass</p>
@@ -514,6 +546,33 @@ public class WordsManager {
 		wordPhonetic = cur.getString(cur.getColumnIndex(COLUMN_PHONETIC));  
 		wordDefinition = cur.getString(cur.getColumnIndex(COLUMN_DEFINITION));  
 		wordCls = new WordCls(wordWord, wordPhonetic, wordDefinition);  
+	}
+	
+	/**
+	 * <p>Title: setWordCls</p>
+	 * <p>Description: </p>
+	 * @param cur
+	 * @param type 0: 完整释义
+	 * @author bubble
+	 * @date 2015-9-16 下午9:29:56
+	 */
+	public static void setWordCls(Cursor cur,int type){
+		switch (type) {
+		case 0:
+			wordWord = cur.getString(cur.getColumnIndex(COLUMN_WORD));  
+			wordPhonetic = cur.getString(cur.getColumnIndex(COLUMN_PHONETIC));  
+			wordDefinition = cur.getString(cur.getColumnIndex(COLUMN_DEFINITION));  
+			wordDefinitionEN = cur.getString(cur.getColumnIndex(COLUMN_DEFINITION_EN));  
+			wordDefinitionCN = cur.getString(cur.getColumnIndex(COLUMN_DEFINITION_CN));  
+			wordAudioURLUS = cur.getString(cur.getColumnIndex(COLUMN_AUDIO_URL_US));  
+			isRemembered = cur.getInt(cur.getColumnIndex(COLUMN_IS_REMEMBERED));  
+			isLoaded = cur.getInt(cur.getColumnIndex(COLUMN_IS_LOADED));  
+			wordCls = new WordCls(wordWord, wordPhonetic, wordDefinition, wordDefinitionEN,
+					wordDefinitionCN, wordAudioURLUS,isRemembered, isLoaded);  
+			break;
+		default:
+			break;
+		}
 	}
 	 
 	/**

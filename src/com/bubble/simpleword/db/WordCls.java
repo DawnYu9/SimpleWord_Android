@@ -22,9 +22,25 @@ public class WordCls {
 	private String word;	
 	private String phonetic;	
 	private String definition;	
-	private String time;	
-	private boolean isRemembered;	
 	
+	
+	private String definitionEN;
+	private String definitionCN;
+	private String audioUrlUS;
+	
+	private String time;	
+	
+	/**
+	 * default value = 0, means "false"
+	 * value = 1, means "true"
+	 */
+	private int isRemembered;
+	
+	/**
+	 * default value = 0, means "false"
+	 * value = 1, means "true"
+	 */
+	private int isLoaded;	
 	
 	private String wholeString;	
 
@@ -45,8 +61,21 @@ public class WordCls {
 		setPhonetic(phonetic);
 		setDefinition(definition);
 	}
+	public WordCls(String word, String phonetic, String definition, String definitionEN, 
+			String definitionCN, String audioUrlUS, int isRemembered, int isLoaded) {
+		setWord(word);
+		setPhonetic(phonetic);
+		setDefinition(definition);
+		setDefinitionEN(definitionEN);
+		setDefinitionCN(definitionCN);
+		setAudioUrlUS(audioUrlUS);
+		setRemembered(isRemembered);
+		setLoaded(isLoaded);
+	}
 	
 	public String getWord() {
+		if ( word == null )
+			word = "";
 		return word;
 	}
 	
@@ -55,6 +84,8 @@ public class WordCls {
 	}
 	
 	public String getPhonetic() {
+		if ( phonetic == null )
+			phonetic = "";
 		return phonetic;
 	}
 	
@@ -63,6 +94,8 @@ public class WordCls {
 	}
 	
 	public String getDefinition() {
+		if ( definition == null )
+			definition = "";
 		return definition;
 	}
 	
@@ -70,6 +103,30 @@ public class WordCls {
 		this.definition = definition;
 	}
 	
+	public String getDefinitionEN() {
+		return definitionEN;
+	}
+
+	public String getDefinitionCN() {
+		return definitionCN;
+	}
+
+	public String getAudioUrlUS() {
+		return audioUrlUS;
+	}
+
+	public void setDefinitionEN(String definitionEN) {
+		this.definitionEN = definitionEN;
+	}
+
+	public void setDefinitionCN(String definitionCN) {
+		this.definitionCN = definitionCN;
+	}
+
+	public void setAudioUrlUS(String audioUrlUS) {
+		this.audioUrlUS = audioUrlUS;
+	}
+
 	public String getTime() {
 		return time;
 	}
@@ -78,14 +135,56 @@ public class WordCls {
 		this.time = time;
 	}
 
+	/**
+	 * <p>Title: isRemembered</p>
+	 * <p>Description: </p>
+	 * @return 0：false; 1:true
+	 * @author bubble
+	 * @date 2015-9-16 下午11:34:36
+	 */
 	public boolean isRemembered() {
-		return isRemembered;
+		if ( isRemembered == 0 )
+			return false;
+		else 
+			return true;
 	}
 
-	public void setRemembered(boolean isRemembered) {
+	/**
+	 * <p>Title: setRemembered</p>
+	 * <p>Description: </p>
+	 * @param isRemembered 0：false; 1:true
+	 * @author bubble
+	 * @date 2015-9-16 下午11:35:06
+	 */
+	public void setRemembered(int isRemembered) {
 		this.isRemembered = isRemembered;
 	}
 	
+	/**
+	 * <p>Title: isLoaded</p>
+	 * <p>Description: </p>
+	 * @return 0：false; 1: true
+	 * @author bubble
+	 * @date 2015-9-16 下午11:35:37
+	 */
+	public boolean isLoaded() {
+		if ( isLoaded == 0 )
+			return false;
+		else
+			return true;
+	}
+
+	/**
+	 * <p>Title: setLoaded</p>
+	 * <p>Description: </p>
+	 * @param isLoaded 0：false; 1: true
+	 * @author bubble
+	 * @date 2015-9-16 下午11:35:47
+	 */
+	public void setLoaded(int isLoaded) {
+		this.isLoaded = isLoaded;
+	}
+
 	/**
 	 * <p>Title: getWholeString</p>
 	 * <p>Description: </p>

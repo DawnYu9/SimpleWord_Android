@@ -1,23 +1,34 @@
 package com.bubble.simpleword.adapter;
 
+import java.net.URL;
 import java.util.List;
 
-import android.app.ActionBar.LayoutParams;
+import net.htmlparser.jericho.Source;
+
+import org.json.JSONObject;
+
 import android.content.Context;
+import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Message;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnFocusChangeListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bubble.simpleword.R;
 import com.bubble.simpleword.db.WordCls;
+import com.bubble.simpleword.db.WordsManager;
 import com.bubble.simpleword.util.Util;
 
 /**
@@ -38,10 +49,15 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 	private OnRecyclerViewItemLongClickListener onItemLongClickListener = null;
 	
 	private int viewType = 0;
-	public static final int TYPE_VIEW_VERTICAL = 0;
-    public static final int TYPE_VIEW_HORIZON = 1;
+	public static final int TYPE_VIEW_VERTICAL = LinearLayoutManager.HORIZONTAL;
+    public static final int TYPE_VIEW_HORIZON = LinearLayoutManager.VERTICAL;
     
     private int currentPosition;
+    
+    private WordCls wordCls;
+    
+    boolean isJsonSucceed;
+    boolean isLoadedSucceed = false;
 	
 	public WordRecyclerViewAdapter( Context context , String tableName, List<WordCls> wordsList) {  
 	    this.mContext = context;  
@@ -105,7 +121,7 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 	/**
 	 * <p>Title: setItemViewType</p>
 	 * <p>Description: </p>
-	 * @param viewType
+	 * @param viewType LinearLayoutManager.HORIZONTAL or LinearLayoutManager.VERTICAL
 	 * @author bubble
 	 * @date 2015-9-10 下午5:39:29
 	 */
@@ -177,7 +193,6 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 			}
 		});
 	    
-	    setCurrentItemPosition(viewHolder.getLayoutPosition());
 	    
 	    return viewHolder;   
 	}
@@ -188,8 +203,11 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 	 * @date 2015-9-10 下午9:04:07
 	 */
 	@Override  
-	public void onBindViewHolder( BaseViewHolder baseViewHolder, int position ) {  
-		WordCls wordCls = wordsList.get(position);  
+	public void onBindViewHolder( BaseViewHolder baseViewHolder, final int position ) {  
+		setCurrentItemPosition(position);
+		
+		wordCls = wordsList.get(position);  
+		setWordCls(wordCls);
 		
 		baseViewHolder.itemView.setTag(wordCls);
 		
@@ -199,7 +217,51 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 		
 		switch (baseViewHolder.getItemViewType()) {
 		case TYPE_VIEW_HORIZON:
-			HorizonViewHolder horizonViewHolder = (HorizonViewHolder) baseViewHolder;
+			final HorizonViewHolder horizonViewHolder = (HorizonViewHolder) baseViewHolder;
+			
+			if ( wordCls.isLoaded() ) {
+				horizonViewHolder.tvHint.setVisibility(View.INVISIBLE);
+				horizonViewHolder.tvDefEN.setText(wordCls.getDefinitionEN());
+				horizonViewHolder.tvDefCN.setText(wordCls.getDefinitionCN());
+			} else {
+				horizonViewHolder.tvHint.setVisibility(View.VISIBLE);
+			}
+			
+			horizonViewHolder.tvHint.setOnClickListener(new OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					switch (v.getId()) {
+					case R.id.wordbook_horizon_tv_hint:
+						if ( ! wordCls.isLoaded() ) {
+							Handler handler = new Handler(){
+								
+								@Override
+								public void handleMessage(Message msg) {
+									switch (msg.what) {
+									case 0:
+										horizonViewHolder.tvHint.setText("数据获取失败，请重试");
+									case 1:
+										horizonViewHolder.tvHint.setVisibility(View.INVISIBLE);
+										break;
+									default:
+										break;
+									}
+								}
+								
+							};
+							ParseJsonTask parseJsonTask = new ParseJsonTask(horizonViewHolder, wordCls, position, handler);
+							parseJsonTask.execute();
+						} 
+						break;
+
+					default:
+						break;
+					}
+				}
+			});
+			
+			
 			break;
 		case TYPE_VIEW_VERTICAL:
 		default:
@@ -213,6 +275,110 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 			break;
 		}
 	}  
+	
+	/**
+	 * @date 2015-9-17 上午12:37:04
+	 * @author bubble
+	 */
+	class ParseJsonTask extends AsyncTask<String, Void, Boolean> {
+		HorizonViewHolder horizonViewHolder;
+		WordCls wordCls;
+		int position;
+		
+		String definitionEN;
+		String definitionCN;
+		String audioUrlUS;
+		
+		Handler handler;
+		
+        public ParseJsonTask(HorizonViewHolder horizonViewHolder,
+				WordCls wordCls, int position, Handler handler) {
+			super();
+			this.horizonViewHolder = horizonViewHolder;
+			this.wordCls = wordCls;
+			this.position = position;
+			this.handler = handler;
+		}
+
+		@Override
+        protected void onPreExecute() {
+        	horizonViewHolder.progressBar.setVisibility(View.VISIBLE);
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+        	Message msg = handler.obtainMessage();
+        	
+        	horizonViewHolder.progressBar.setVisibility(View.INVISIBLE);
+            if (result) {
+            	wordCls.setDefinitionEN(definitionEN);
+            	wordCls.setDefinitionCN(definitionCN);
+            	wordCls.setAudioUrlUS(audioUrlUS);
+            	wordCls.setLoaded(1);
+            	WordsManager.addWordLoadInfo(tableName, wordCls);
+            	updateItem(position, wordCls);
+            	
+            	msg.what = 1;
+            }else {
+            	msg.what = 0;
+            	Log.i(wordCls.getWord(), "获取失败");
+            }
+            
+            handler.sendMessage(msg);
+            
+            super.onPostExecute(result);
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            String path = "https://api.shanbay.com/bdc/search/?word=" + wordCls.getWord();
+            try {
+            	URL url = new URL(path);
+                Source source = new Source(url.openConnection());	//jericho-html-3.1.jar
+                String jsonstr = source.toString();
+                 
+                JSONObject jsonObj = new JSONObject(jsonstr);
+                 
+                JSONObject data = jsonObj.getJSONObject("data");
+                 
+                JSONObject defEN = data.getJSONObject("en_definition");
+                definitionEN = defEN.getString("pos") + "." + defEN.getString("defn"); 
+                 
+                JSONObject defCN = data.getJSONObject("cn_definition");
+                definitionCN = defCN.getString("pos") + defCN.getString("defn"); 
+                 
+                audioUrlUS = data.getString("us_audio");
+                 
+                return true;
+            } catch (Exception e) {
+            	Toast.makeText(mContext, "获取数据失败", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+    	}
+	}
+	
+	/**
+	 * <p>Title: getWordCls</p>
+	 * <p>Description: </p>
+	 * @return
+	 * @author bubble
+	 * @date 2015-9-16 下午4:39:01
+	 */
+	public WordCls getWordCls() {
+		return this.wordCls;
+	}
+
+	/**
+	 * <p>Title: setWordCls</p>
+	 * <p>Description: </p>
+	 * @param wordCls
+	 * @author bubble
+	 * @date 2015-9-16 下午4:39:03
+	 */
+	public void setWordCls(WordCls wordCls) {
+		this.wordCls = wordCls;
+	}
 
 	@Override  
 	public int getItemCount()  
@@ -321,6 +487,12 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 	 * @date 2015-9-10 下午8:10:28
 	 */
 	public class HorizonViewHolder extends BaseViewHolder {
+		TextView tvHint;
+		LinearLayout progressBar;
+		
+		TextView tvDefEN;
+		TextView tvDefCN;
+		LinearLayout llCompleteWord;
 		
 		public HorizonViewHolder( View v) {  
 			super(v); 
@@ -328,6 +500,13 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 			tvWord = (TextView) v.findViewById(R.id.wordcard_horizon_tv_word);  
 			tvPhonetic = (TextView) v.findViewById(R.id.wordcard_horizon_tv_phonetic);  
 			tvDefinition = (TextView) v.findViewById(R.id.wordcard_horizon_tv_definition);  
+			
+			tvHint = (TextView) v.findViewById(R.id.wordbook_horizon_tv_hint);
+			progressBar = (LinearLayout) v.findViewById(R.id.wordbook_horizon_progressbar);
+			
+			tvDefEN = (TextView) v.findViewById(R.id.wordbook_horizon_tv_def_en);
+			tvDefCN = (TextView) v.findViewById(R.id.wordbook_horizon_tv_def_cn);
+			llCompleteWord=(LinearLayout)v.findViewById(R.id.wordbook_horizon_ll_complete_word);
 		}
 	}
 }  
