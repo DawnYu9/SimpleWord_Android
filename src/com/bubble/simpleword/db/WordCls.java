@@ -161,6 +161,20 @@ public class WordCls {
 	}
 	
 	/**
+	 * <p>Title: setRemembered</p>
+	 * <p>Description: </p>
+	 * @param isRemembered
+	 * @author bubble
+	 * @date 2015-9-17 下午1:07:16
+	 */
+	public void setRemembered(boolean isRemembered) {
+		if ( isRemembered )
+			this.isRemembered = 1;
+		else
+			this.isRemembered = 0;
+	}
+	
+	/**
 	 * <p>Title: isLoaded</p>
 	 * <p>Description: </p>
 	 * @return 0：false; 1: true
@@ -183,6 +197,20 @@ public class WordCls {
 	 */
 	public void setLoaded(int isLoaded) {
 		this.isLoaded = isLoaded;
+	}
+	
+	/**
+	 * <p>Title: setLoaded</p>
+	 * <p>Description: </p>
+	 * @param isLoaded
+	 * @author bubble
+	 * @date 2015-9-17 下午1:05:50
+	 */
+	public void setLoaded(boolean isLoaded) {
+		if ( isLoaded )
+			this.isLoaded = 1;
+		else 
+			this.isLoaded = 0;
 	}
 
 	/**

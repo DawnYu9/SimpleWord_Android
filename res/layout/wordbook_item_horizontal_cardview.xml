@@ -73,6 +73,7 @@
 	    	    android:textColor="@color/black"
 	    	    android:background="@color/white"
 	    	    android:gravity="center"
+	    	    android:clickable="true"
     	    />
 		    
 			<LinearLayout

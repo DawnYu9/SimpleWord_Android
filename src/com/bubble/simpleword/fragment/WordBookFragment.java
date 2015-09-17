@@ -1,14 +1,8 @@
 package com.bubble.simpleword.fragment;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import net.htmlparser.jericho.Source;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -16,7 +10,6 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
@@ -48,7 +41,6 @@ import com.bubble.simpleword.adapter.WordRecyclerViewAdapter.OnRecyclerViewItemL
 import com.bubble.simpleword.db.WordCls;
 import com.bubble.simpleword.db.WordsManager;
 import com.bubble.simpleword.util.Util;
-import com.bubble.simpleword.view.SnappingRecyclerView;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 
 /**
@@ -74,7 +66,7 @@ public class WordBookFragment extends Fragment {
     private int spnSelectedPosition;
     private String tableName;
     
-    private SnappingRecyclerView recyclerView;
+    private RecyclerView recyclerView;
     private WordRecyclerViewAdapter wordCardAdapter;  
     private View view;
     private List<WordCls> wordsDataset = new ArrayList<WordCls>();  
@@ -288,7 +280,7 @@ public class WordBookFragment extends Fragment {
 	 */
 	private void initRecyclerView() {
 		isRecyclerInit = true;
-		recyclerView = (SnappingRecyclerView) view.findViewById(R.id.wordbook_recycler_list); 
+		recyclerView = (RecyclerView) view.findViewById(R.id.wordbook_recycler_list); 
 	
 		wordCardAdapter = new WordRecyclerViewAdapter(activity, tableName, wordsDataset);  
 		recyclerView.setAdapter(wordCardAdapter); 
@@ -312,9 +304,17 @@ public class WordBookFragment extends Fragment {
 				
 				switch (newState) {
 	            case RecyclerView.SCROLL_STATE_IDLE:
+	            	switch (wordCardAdapter.getItemViewType()) {
+					case TYPE_VIEW_HORIZON:
+						scrollToCenter(recyclerView);
+						break;
+					case TYPE_VIEW_VERTICAL:
+					default:
+						break;
+					}
+	            	
+	            	saveRecyclerViewPosition(tableName);
 	        
-	            	Log.i("SCROLL_STATE_IDLE", "SCROLL_STATE_IDLE");
-					saveRecyclerViewPosition(tableName);
 					
 	                break;
 	            case RecyclerView.SCROLL_STATE_DRAGGING:
@@ -338,6 +338,7 @@ public class WordBookFragment extends Fragment {
 			public void onItemClick(View view, int position, WordCls wordCls) {
 				switch (wordCardAdapter.getItemViewType(position)) {
 				case TYPE_VIEW_HORIZON:
+					Log.i(tableName, "onItemClick——" + String.valueOf(position) + "——" + wordCls.getWord());
 					//水平为全屏卡片模式，单击发音
 					Toast.makeText(getActivity(), "发音" + wordCls.getWord(), Toast.LENGTH_SHORT).show();
 					break;
@@ -359,7 +360,21 @@ public class WordBookFragment extends Fragment {
 		});
 	}
 	
-	 
+	private void scrollToCenter(RecyclerView recyclerView) {
+		int firstPosition = ((LinearLayoutManager)recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+		View firstChild = recyclerView.getChildAt(0);
+		int firstChildVisibleWidth = firstChild.getRight();
+		
+		int secondPosition = ((LinearLayoutManager)recyclerView.getLayoutManager()).findLastVisibleItemPosition();
+		if ( firstPosition < secondPosition ) {
+			View secondChild = recyclerView.getChildAt(1);
+			int secondChildVisibleWidth = recyclerView.getWidth() - secondChild.getLeft();
+			if ( firstChildVisibleWidth > secondChildVisibleWidth )
+				recyclerView.smoothScrollToPosition(firstPosition);
+			else if ( firstChildVisibleWidth < secondChildVisibleWidth )
+				recyclerView.smoothScrollToPosition(secondPosition);
+		}
+	}
 
 	/**
 	 * <p>Title: saveInstanceState</p>
@@ -440,7 +455,6 @@ public class WordBookFragment extends Fragment {
 			prefEditorSettings.putInt(KEY_WORDBOOK_ORIENTATION, type);
 			wordCardAdapter.setItemViewType(type);
 			recyclerView.setLayoutManager(new LinearLayoutManager(activity,LinearLayoutManager.HORIZONTAL,false));
-			recyclerView.setSnapEnabled(true);
 			MainActivity.setSlidingAboveMode(SlidingMenu.TOUCHMODE_MARGIN);
 			break;
 		case TYPE_VIEW_VERTICAL:
@@ -448,7 +462,6 @@ public class WordBookFragment extends Fragment {
 			prefEditorSettings.putInt(KEY_WORDBOOK_ORIENTATION, type);
 			wordCardAdapter.setItemViewType(type);
 			recyclerView.setLayoutManager(new LinearLayoutManager(activity)); 
-			recyclerView.setSnapEnabled(false);
 			MainActivity.setSlidingAboveMode(SlidingMenu.TOUCHMODE_FULLSCREEN);
 			break;
 		}

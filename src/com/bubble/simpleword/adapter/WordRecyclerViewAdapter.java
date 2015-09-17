@@ -119,6 +119,17 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 	}
 	
 	/**
+	 * <p>Title: getItemViewType</p>
+	 * <p>Description: </p>
+	 * @return
+	 * @author bubble
+	 * @date 2015-9-17 下午12:24:55
+	 */
+	public int getItemViewType() {
+		return viewType;
+	}
+	
+	/**
 	 * <p>Title: setItemViewType</p>
 	 * <p>Description: </p>
 	 * @param viewType LinearLayoutManager.HORIZONTAL or LinearLayoutManager.VERTICAL
@@ -207,7 +218,8 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 		setCurrentItemPosition(position);
 		
 		wordCls = wordsList.get(position);  
-		setWordCls(wordCls);
+//		setWordCls(wordCls);
+		Log.i(tableName, "onBindViewHolder——" + String.valueOf(position) + "——" +wordCls.getWord());
 		
 		baseViewHolder.itemView.setTag(wordCls);
 		
@@ -231,6 +243,8 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 				
 				@Override
 				public void onClick(View v) {
+					WordCls wordCls = wordsList.get(position);
+					Log.i(tableName, "tvHint-onClick——" + String.valueOf(position) + "——" +wordCls.getWord());
 					switch (v.getId()) {
 					case R.id.wordbook_horizon_tv_hint:
 						if ( ! wordCls.isLoaded() ) {
@@ -238,15 +252,10 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 								
 								@Override
 								public void handleMessage(Message msg) {
-									switch (msg.what) {
-									case 0:
-										horizonViewHolder.tvHint.setText("数据获取失败，请重试");
-									case 1:
+									if (msg.what == position)
 										horizonViewHolder.tvHint.setVisibility(View.INVISIBLE);
-										break;
-									default:
-										break;
-									}
+									else
+										horizonViewHolder.tvHint.setText("数据获取失败，请重试");
 								}
 								
 							};
@@ -315,11 +324,11 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
             	wordCls.setDefinitionEN(definitionEN);
             	wordCls.setDefinitionCN(definitionCN);
             	wordCls.setAudioUrlUS(audioUrlUS);
-            	wordCls.setLoaded(1);
+            	wordCls.setLoaded(true);
             	WordsManager.addWordLoadInfo(tableName, wordCls);
             	updateItem(position, wordCls);
             	
-            	msg.what = 1;
+            	msg.what = position;
             }else {
             	msg.what = 0;
             	Log.i(wordCls.getWord(), "获取失败");
