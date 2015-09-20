@@ -6,7 +6,7 @@ import android.content.SharedPreferences.Editor;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.bubble.simpleword.MainActivity;
+import com.bubble.simpleword.activity.MainActivity;
 import com.bubble.simpleword.db.WordsManager;
 import com.bubble.simpleword.util.Util;
 

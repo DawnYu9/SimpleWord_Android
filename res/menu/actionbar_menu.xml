@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    
+	<item 
+	    android:id="@+id/actionbar_item_search"
+        android:title="搜索"
+        android:icon="@drawable/menu"
+        android:showAsAction="always"
+        android:actionViewClass="android.widget.SearchView" />
+    
+</menu>

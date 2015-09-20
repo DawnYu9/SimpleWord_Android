@@ -10,6 +10,7 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
@@ -17,29 +18,42 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
+import android.support.v7.widget.RecyclerView.ViewHolder;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.PopupMenu;
 import android.widget.PopupMenu.OnMenuItemClickListener;
+import android.widget.PopupWindow;
 import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.TableLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bubble.simpleword.MainActivity;
 import com.bubble.simpleword.R;
+import com.bubble.simpleword.activity.MainActivity;
+import com.bubble.simpleword.adapter.BookMenuRecyclerViewAdapter;
+import com.bubble.simpleword.adapter.EditBookRecyclerViewAdapter;
+import com.bubble.simpleword.adapter.EditBookRecyclerViewAdapter.OnStartDragListener;
 import com.bubble.simpleword.adapter.WordRecyclerViewAdapter;
 import com.bubble.simpleword.adapter.WordRecyclerViewAdapter.OnRecyclerViewItemLongClickListener;
 import com.bubble.simpleword.db.WordCls;
 import com.bubble.simpleword.db.WordsManager;
+import com.bubble.simpleword.drag.SimpleItemTouchHelperCallback;
+import com.bubble.simpleword.util.MyLayoutManager;
 import com.bubble.simpleword.util.Util;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 
@@ -52,33 +66,31 @@ import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
  * @author bubble
  * @date 2015-8-3
  */
-public class WordBookFragment extends Fragment {
+public class WordBookFragment extends Fragment implements EditBookRecyclerViewAdapter.OnStartDragListener {
 	private static SharedPreferences prefSettings;
-	private SharedPreferences.Editor prefEditorSettings;
+	private static SharedPreferences.Editor prefEditorSettings;
 	
 	private ActionBar actionBar;  
-	private Activity activity;
+	private static Activity activity;
 	private View actionbarLayout;
     
 	private Spinner spnWordbook;  
-	private List<String> wordbookList;
-    public static final String KEY_SPINNER_SELECTED_TABLENAME = "KEY_SPINNER_SELECTED_NAME";
+	private static List<String> wordbookList;
+    public static final String KEY_WORDBOOK_SELECTED_TABLENAME = "KEY_SELECTED_TABLENAME";
     private int spnSelectedPosition;
-    private String tableName;
     
-    private RecyclerView recyclerView;
-    private WordRecyclerViewAdapter wordCardAdapter;  
-    private View view;
-    private List<WordCls> wordsDataset = new ArrayList<WordCls>();  
+    private static RecyclerView recyclerViewWord;
+    private static WordRecyclerViewAdapter wordCardAdapter;  
+    private static View view;
+    private static List<WordCls> wordsDataset = new ArrayList<WordCls>();  
     private WordCls word ;
-    
     
     private Switch swi;
     public static final int TYPE_VIEW_VERTICAL = WordRecyclerViewAdapter.TYPE_VIEW_VERTICAL;
     public static final int TYPE_VIEW_HORIZON = WordRecyclerViewAdapter.TYPE_VIEW_HORIZON;
     
     private static final String KEY_WORDBOOK_ORIENTATION = "KEY_WORDBOOK_ORIENTATION";
-    private int viewHolderType;
+    private static int viewHolderType;
     
     private static final String KEY_RECYCLERVIEW_SCROLL_POSITION = "KEY_RECYCLERVIEW_SCROLL_POSITION";
     private static final String KEY_RECYCLERVIEW_SCROLL_DY_TOP = "KEY_RECYCLERVIEW_SCROLL_DY_TOP";
@@ -86,25 +98,47 @@ public class WordBookFragment extends Fragment {
     
     private Handler handler = new Handler();
     
-    private int firstVisibleItemPosition;
+    private static int recyclerViewWidth;
+    private static int firstVisibleItemPosition;
+    private static int lastVisibleItemPosition;
+    private static View firstVisibleChild;
+    private View lastVisibleChild;
+    private static int firstChildVisibleWidth;
+    private int lastChildVisibleWidth;
     
-    private View savedFirstVisibleChild;
-    private int dyTop;
-    private int dyBottom;
-    private int savedFirstVisiblePosition;
-    private int currentFirstVisiblePosition;
+    private static int dyTop;
+    private static int dyBottom;
+    private static int savedFirstVisiblePosition;
+    private static int currentFirstVisiblePosition;
 	
-    private HashMap<String, List> hmDataset = new HashMap<String, List>();
-    private boolean isRecyclerInit = false;
+    private static HashMap<String, List> hmDataset = new HashMap<String, List>();
+    private static boolean isWordRecyclerInit = false;
 	
-    private HashMap<String, Boolean> hmIsDatasetEdit = new HashMap<String, Boolean>();
+    private static HashMap<String, Boolean> hmIsDatasetEdit = new HashMap<String, Boolean>();
     private boolean isDatasetEdit = false;
 	
-    private HashMap<String, Parcelable> hmRecyclerViewState = new HashMap<String, Parcelable>();
-    private Parcelable recyclerViewState;
+    private static HashMap<String, Parcelable> hmRecyclerViewState = new HashMap<String, Parcelable>();
+    private static Parcelable recyclerViewState;
 	
+    private PopupWindow dropdownPopMenu;
+    private View dropdownPopMenuView;
+    private static TextView tvDropdownPopMenu;
+    private RecyclerView recyclerviewBookList;
+    private List<String> datasetBookList;
+    private static BookMenuRecyclerViewAdapter bookMenuRecyclerViewAdapter;
+    private Button btnPopMenuEditWordbook;
+    private PopupWindow popWindowEditBook;
+    private View viewEditBookPopWindow;
+    private RecyclerView recyclerViewEditBook;
+    private EditBookRecyclerViewAdapter editBookRecyclerViewAdapter;
     
+    Button btnCreateBook;
     
+    ItemTouchHelper.Callback callback;
+	ItemTouchHelper touchHelper;
+    private OnStartDragListener mDragStartListener;
+    
+    private static String tableName;
     
     /**
 	 * <p>Title: </p>
@@ -125,7 +159,7 @@ public class WordBookFragment extends Fragment {
 		prefSettings = Util.getSharedPreferences(getActivity());
     	prefEditorSettings = prefSettings.edit();
         
-    	initActionBar();        
+    	initActionBar(inflater);        
         
         swi = (Switch)view.findViewById(R.id.switch_layout);
         swi.setOnCheckedChangeListener(new OnCheckedChangeListener() {
@@ -143,19 +177,206 @@ public class WordBookFragment extends Fragment {
 		return view; 
 	}
 
-	public void initActionBar() {
+	public void initActionBar(LayoutInflater inflater) {
 		actionBar = activity.getActionBar();
         actionBar.setDisplayShowCustomEnabled(true);	//make custom actionbar view works
         
 //      actionbarLayout = LayoutInflater.from(activity).inflate(R.layout.wordbook_actionbar, null);  
-		actionbarLayout = view.inflate(activity,R.layout.wordbook_actionbar, null);  
+		actionbarLayout = view.inflate(activity,R.layout.wordbook_actionbar_2, null);  
       
-		initSpinner();
+		initPopMenu(inflater);
+//		initSpinner();
 		
         actionBar.setCustomView(actionbarLayout);  
 	}
 	
-	
+	/**
+	 * <p>Title: initPopMenu</p>
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-9-17 下午4:24:38
+	 */
+	private void initPopMenu(LayoutInflater inflater) {
+		tableName = prefSettings.getString(KEY_WORDBOOK_SELECTED_TABLENAME, getWordbookList().get(0));
+		
+		tvDropdownPopMenu = (TextView) actionbarLayout.findViewById(R.id.wordbook_actionbar_tv_popmenu);
+		tvDropdownPopMenu.setWidth(Util.getScreenWidth()/2);
+		tvDropdownPopMenu.setText(tableName);
+		tvDropdownPopMenu.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				dropdownPopMenu.showAsDropDown(v);
+			}
+		});
+
+		dropdownPopMenuView = LayoutInflater.from(activity).inflate(R.layout.wordbook_actionbar_popmenu_ll, null);
+		dropdownPopMenu = new PopupWindow(dropdownPopMenuView, Util.getScreenWidth()/2, LayoutParams.WRAP_CONTENT);
+		dropdownPopMenu.setFocusable(true);
+		dropdownPopMenu.setOutsideTouchable(true);
+		dropdownPopMenu.setBackgroundDrawable(new BitmapDrawable()); 
+		dropdownPopMenu.update();
+		
+		recyclerviewBookList = (RecyclerView) dropdownPopMenuView.findViewById(R.id.wordbook_actionbar_popmenu_recyclerview);
+		bookMenuRecyclerViewAdapter = new BookMenuRecyclerViewAdapter(activity, getWordbookList());
+		recyclerviewBookList.setLayoutManager(new MyLayoutManager(activity));
+		recyclerviewBookList.setItemAnimator(new DefaultItemAnimator());  
+		recyclerviewBookList.setHasFixedSize(true);
+		recyclerviewBookList.setAdapter(bookMenuRecyclerViewAdapter);
+		
+		getWordDataset(tableName);
+    	
+    	if ( ! isWordRecyclerInit ) {
+    		initWordRecyclerView();
+    		isWordRecyclerInit = true;
+    	}
+    	
+    	restoreWordRecyclerViewPosition(tableName);
+		
+    	bookMenuRecyclerViewAdapter.setOnItemClickListener(new BookMenuRecyclerViewAdapter.OnRecyclerViewItemClickListener() {
+			
+			@Override
+			public void onItemClick(View view, int position, String tableName) {
+				tableName = tableName;
+				tvDropdownPopMenu.setText(tableName);
+				view.setBackgroundColor(getResources().getColor(R.color.background_material_dark));
+				dropdownPopMenu.dismiss();
+				
+	        	prefEditorSettings.putString(KEY_WORDBOOK_SELECTED_TABLENAME, tableName);
+	        	prefEditorSettings.commit();
+	        	
+	        	getWordDataset(tableName);
+	        	
+	        	if ( ! isWordRecyclerInit ) {
+	        		initWordRecyclerView();
+	        		isWordRecyclerInit = true;
+	        	}
+	        	
+	        	wordCardAdapter.updateDataset(wordsDataset);
+	        	
+	        	restoreWordRecyclerViewPosition(tableName);
+	        	
+			}
+		});
+		
+		btnPopMenuEditWordbook = (Button) dropdownPopMenuView.findViewById(R.id.wordbook_actionbar_popmenu_btn_edit);
+		btnPopMenuEditWordbook.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				dropdownPopMenu.dismiss();
+				popWindowEditBook.showAsDropDown(v);
+			}
+		});
+		
+		viewEditBookPopWindow = LayoutInflater.from(activity).inflate(R.layout.wordbook_popwindow_edit_book, null);
+		
+		popWindowEditBook = new PopupWindow(viewEditBookPopWindow, Util.getScreenWidth() * 3/5, LayoutParams.WRAP_CONTENT);
+		popWindowEditBook.setFocusable(true);
+		popWindowEditBook.setOutsideTouchable(true);
+		popWindowEditBook.setBackgroundDrawable(new BitmapDrawable()); 
+		popWindowEditBook.update();		
+		
+		editBookRecyclerViewAdapter = new EditBookRecyclerViewAdapter(activity, getWordbookList(), mDragStartListener);
+		recyclerViewEditBook = (RecyclerView) viewEditBookPopWindow.findViewById(R.id.wordbook_recyclerview_edit_book);
+		recyclerViewEditBook.setLayoutManager(new MyLayoutManager(activity));
+		recyclerViewEditBook.setAdapter(editBookRecyclerViewAdapter);
+		recyclerViewEditBook.setItemAnimator(new DefaultItemAnimator());  
+		recyclerViewEditBook.setHasFixedSize(true);
+		
+		editBookRecyclerViewAdapter.setOnItemClickListener(new EditBookRecyclerViewAdapter.OnRecyclerViewItemClickListener() {
+			
+			@Override
+			public void onItemClick(View view, final int position, final String tableName) {
+				LayoutInflater layoutInflater = LayoutInflater.from(activity);  
+		        View viewDlgEditBook = layoutInflater.inflate(R.layout.wordbook_dlg_create_book, null);  
+		        final EditText edtBook = (EditText)viewDlgEditBook.findViewById(R.id.wordbook_edt_create_book);
+		        edtBook.setText(tableName);
+		        
+		        AlertDialog.Builder builder = new AlertDialog.Builder(activity); 
+		        builder.setTitle("编辑单词本")
+		                .setIcon(R.mipmap.ic_launcher)
+		                .setView(viewDlgEditBook)  
+		                .setPositiveButton("提交", new DialogInterface.OnClickListener() {  
+		  
+		                    @Override  
+		                    public void onClick(DialogInterface dialog, int which) { 
+		                    	String newName = edtBook.getText().toString();
+		                    	if ( WordsManager.alterTableName(tableName, newName) ) {
+		                    		editBookRecyclerViewAdapter.updateItem(position, newName);
+		                    		WordsManager.editTableInfo(tableName, newName);
+		                    		bookMenuRecyclerViewAdapter.updateItem(position, newName);
+		                    		Toast.makeText(activity, "修改成功", Toast.LENGTH_SHORT).show();
+		                    	}
+		                    	else 
+		                    		Toast.makeText(activity, "请勿重复命名", Toast.LENGTH_SHORT).show();
+		                    }  
+		                })  
+		                .setNegativeButton("取消", new DialogInterface.OnClickListener() {  
+		  
+		                    @Override  
+		                    public void onClick(DialogInterface dialog, int which) {  
+		                    }  
+		                }).  
+		                create();  
+		        builder.show(); 
+			}
+		});
+		
+		callback = new SimpleItemTouchHelperCallback(editBookRecyclerViewAdapter);
+		touchHelper = new ItemTouchHelper(callback);
+		touchHelper.attachToRecyclerView(recyclerViewEditBook);
+		
+		btnCreateBook = (Button) viewEditBookPopWindow.findViewById(R.id.wordbook_btn_add_book);
+		btnCreateBook.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				LayoutInflater layoutInflater = LayoutInflater.from(getActivity());  
+		        View viewDlgAddBook = layoutInflater.inflate(R.layout.wordbook_dlg_create_book, null);  
+		        final EditText edtCreateBook = (EditText)viewDlgAddBook.findViewById(R.id.wordbook_edt_create_book);
+		        
+		        AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext()); 
+		        builder.setTitle("请输入新的单词本名称")
+		                .setIcon(R.mipmap.ic_launcher)
+		                .setView(viewDlgAddBook)  
+		                .setPositiveButton("提交", new DialogInterface.OnClickListener() {  
+		  
+		                    @Override  
+		                    public void onClick(DialogInterface dialog, int which) {  
+		                    	createBook(edtCreateBook.getText().toString());
+		                    }  
+		                })  
+		                .setNegativeButton("取消", new DialogInterface.OnClickListener() {  
+		  
+		                    @Override  
+		                    public void onClick(DialogInterface dialog, int which) {  
+		                    }  
+		                }).  
+		                create();  
+		        builder.show(); 
+			}
+		});
+	}
+
+	/**
+	 * <p>Title: getDataset</p>
+	 * <p>Description: </p>
+	 * @param tableName
+	 * @author bubble
+	 * @date 2015-9-18 上午11:13:45
+	 */
+	private static List<WordCls> getWordDataset(String tableName) {
+		if ( hmDataset.get(tableName) == null || hmIsDatasetEdit.get(tableName)) {
+    		wordsDataset = WordsManager.getWordsDataset(tableName);
+    		hmDataset.put(tableName, wordsDataset);
+    		hmIsDatasetEdit.put(tableName, false);
+    	} else {
+    		wordsDataset = hmDataset.get(tableName);
+    	}
+		return wordsDataset;
+	}
+		
 	/**
      * <p>Title: initSpinner</p>
      * <p>Description: </p>
@@ -170,7 +391,7 @@ public class WordBookFragment extends Fragment {
           
         initSpinnerDataMethod2();  
         
-        tableName = prefSettings.getString(KEY_SPINNER_SELECTED_TABLENAME, getWordbookList().get(0));
+        tableName = prefSettings.getString(KEY_WORDBOOK_SELECTED_TABLENAME, getWordbookList().get(0));
         spnSelectedPosition = getWordbookList().indexOf(tableName);
         spnWordbook.setSelection(spnSelectedPosition);
           
@@ -179,27 +400,21 @@ public class WordBookFragment extends Fragment {
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 				tableName= parent.getItemAtPosition(position).toString(); 
-	        	prefEditorSettings.putString(KEY_SPINNER_SELECTED_TABLENAME, tableName);
+	        	prefEditorSettings.putString(KEY_WORDBOOK_SELECTED_TABLENAME, tableName);
 	        	prefEditorSettings.commit();
 	        	
-	        	if ( hmDataset.get(tableName) == null || hmIsDatasetEdit.get(tableName)) {
-	        		wordsDataset = WordsManager.getWordsDataset(tableName);
-	        		hmDataset.put(tableName, wordsDataset);
-	        		hmIsDatasetEdit.put(tableName, false);
-	        	} else {
-	        		wordsDataset = hmDataset.get(tableName);
-	        	}
+	        	getWordDataset(tableName);
 	        	
-	        	if ( ! isRecyclerInit ) {
-	        		initRecyclerView();
-	        		isRecyclerInit = true;
+	        	if ( ! isWordRecyclerInit ) {
+	        		initWordRecyclerView();
+	        		isWordRecyclerInit = true;
 	        	}
 	        	
 	        	wordCardAdapter.updateDataset(wordsDataset);
 	        	Toast.makeText(activity, "你点击的是:"+tableName, Toast.LENGTH_SHORT).show();   
 	        	
 	        	
-	        	restoreRecyclerViewPosition(tableName);
+	        	restoreWordRecyclerViewPosition(tableName);
 			}
 
 			@Override
@@ -233,44 +448,10 @@ public class WordBookFragment extends Fragment {
 	 * 下拉列表数据源 
 	 * @return 
 	 */  
-	private List<String> getWordbookList(){          
+	private static List<String> getWordbookList(){          
 	    wordbookList = WordsManager.getTableList();  
 	    return wordbookList;  
 	}
-
-	/**
-	 * <p>Title: addWordbook</p>
-	 * <p>Description: </p>
-	 * @param bookName
-	 * @author bubble
-	 * @date 2015-9-8 下午10:55:41
-	 */
-	private void addWordbook(String bookName) {
-		WordsManager.createTable(bookName);
-	}
-
-	/**
-	 * <p>Title: deleteWordbook</p>
-	 * <p>Description: </p>
-	 * @param bookName
-	 * @author bubble
-	 * @date 2015-9-8 下午10:56:07
-	 */
-	private void deleteWordbook(String bookName) {
-		WordsManager.deleteTable(bookName);
-	}
-
-    /**
-     * <p>Title: editWordbookName</p>
-     * <p>Description: </p>
-     * @param oldName
-     * @param newName
-     * @author bubble
-     * @date 2015-9-8 下午10:57:01
-     */
-    private void editWordbookName(String oldName, String newName) {
-    	WordsManager.alterTableName(oldName, newName);
-    }
 
     /**
 	 * <p>Title: initRecyclerView</p>
@@ -278,15 +459,17 @@ public class WordBookFragment extends Fragment {
 	 * @author bubble
 	 * @date 2015-9-10 下午10:15:11
 	 */
-	private void initRecyclerView() {
-		isRecyclerInit = true;
-		recyclerView = (RecyclerView) view.findViewById(R.id.wordbook_recycler_list); 
+	private static void initWordRecyclerView() {
+		
+		isWordRecyclerInit = true;
+		recyclerViewWord = (RecyclerView) view.findViewById(R.id.wordbook_recycler_list); 
 	
 		wordCardAdapter = new WordRecyclerViewAdapter(activity, tableName, wordsDataset);  
-		recyclerView.setAdapter(wordCardAdapter); 
+		recyclerViewWord.setAdapter(wordCardAdapter); 
 		
+		recyclerViewWidth = recyclerViewWord.getWidth();
 		
-		recyclerView.addOnScrollListener(new OnScrollListener() {
+		recyclerViewWord.addOnScrollListener(new OnScrollListener() {
 			
 			@Override
 		    public void onScrolled(RecyclerView recyclerView, int dx, final int dy) {
@@ -315,7 +498,6 @@ public class WordBookFragment extends Fragment {
 	            	
 	            	saveRecyclerViewPosition(tableName);
 	        
-					
 	                break;
 	            case RecyclerView.SCROLL_STATE_DRAGGING:
 	                break;
@@ -329,8 +511,8 @@ public class WordBookFragment extends Fragment {
 		viewHolderType = prefSettings.getInt(KEY_WORDBOOK_ORIENTATION, TYPE_VIEW_VERTICAL);
 		setRecyclerViewWordType(viewHolderType);
 		
-	    recyclerView.setItemAnimator(new DefaultItemAnimator());  
-	    recyclerView.setHasFixedSize(true);
+	    recyclerViewWord.setItemAnimator(new DefaultItemAnimator());  
+	    recyclerViewWord.setHasFixedSize(true);
 	
 	    wordCardAdapter.setOnItemClickListener(new WordRecyclerViewAdapter.OnRecyclerViewItemClickListener() {
 	
@@ -340,13 +522,13 @@ public class WordBookFragment extends Fragment {
 				case TYPE_VIEW_HORIZON:
 					Log.i(tableName, "onItemClick——" + String.valueOf(position) + "——" + wordCls.getWord());
 					//水平为全屏卡片模式，单击发音
-					Toast.makeText(getActivity(), "发音" + wordCls.getWord(), Toast.LENGTH_SHORT).show();
+					Toast.makeText(activity, "发音" + wordCls.getWord(), Toast.LENGTH_SHORT).show();
 					break;
 				case TYPE_VIEW_VERTICAL:
 					//垂直为小卡片list模式，单击进入大卡片的该单词position，联网获取完整释义
 				default:
 					setRecyclerViewWordType(TYPE_VIEW_HORIZON);
-					recyclerView.scrollToPosition(position);
+					recyclerViewWord.scrollToPosition(position);
 					break;
 				}
 			}
@@ -360,45 +542,53 @@ public class WordBookFragment extends Fragment {
 		});
 	}
 	
-	private void scrollToCenter(RecyclerView recyclerView) {
-		int firstPosition = ((LinearLayoutManager)recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
-		View firstChild = recyclerView.getChildAt(0);
-		int firstChildVisibleWidth = firstChild.getRight();
+	/**
+	 * <p>Title: scrollToCenter</p>
+	 * <p>Description: </p>
+	 * @param recyclerView
+	 * @author bubble
+	 * @date 2015-9-17
+	 */
+	private static void scrollToCenter(RecyclerView recyclerView) {
+		firstVisibleItemPosition = ((LinearLayoutManager)recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+		lastVisibleItemPosition = ((LinearLayoutManager)recyclerView.getLayoutManager()).findLastVisibleItemPosition();
 		
-		int secondPosition = ((LinearLayoutManager)recyclerView.getLayoutManager()).findLastVisibleItemPosition();
-		if ( firstPosition < secondPosition ) {
-			View secondChild = recyclerView.getChildAt(1);
-			int secondChildVisibleWidth = recyclerView.getWidth() - secondChild.getLeft();
-			if ( firstChildVisibleWidth > secondChildVisibleWidth )
-				recyclerView.smoothScrollToPosition(firstPosition);
-			else if ( firstChildVisibleWidth < secondChildVisibleWidth )
-				recyclerView.smoothScrollToPosition(secondPosition);
+		if ( firstVisibleItemPosition < lastVisibleItemPosition ) {
+			recyclerViewWidth = recyclerView.getWidth();
+			firstVisibleChild = recyclerView.getChildAt(0);
+			firstChildVisibleWidth = firstVisibleChild.getRight();
+			if ( firstChildVisibleWidth > ( recyclerViewWidth / 2 ) )
+				recyclerView.smoothScrollToPosition(firstVisibleItemPosition);
+			else if ( firstChildVisibleWidth < ( recyclerViewWidth / 2 ) )
+				recyclerView.smoothScrollToPosition(lastVisibleItemPosition);
 		}
 	}
 
 	/**
 	 * <p>Title: saveInstanceState</p>
 	 * <p>Description: </p>
-	 * @param recyclerView
+	 * @param recyclerViewWord
 	 * @author bubble
 	 * @date 2015-9-11 
 	 */
-	private void saveRecyclerViewPosition(String tableName) {
-		recyclerViewState = recyclerView.getLayoutManager().onSaveInstanceState();
+	private static void saveRecyclerViewPosition(String tableName) {
+		recyclerViewState = recyclerViewWord.getLayoutManager().onSaveInstanceState();
 		hmRecyclerViewState.put(tableName, recyclerViewState);
 		
-		firstVisibleItemPosition = ((LinearLayoutManager)recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+		firstVisibleItemPosition = ((LinearLayoutManager)recyclerViewWord.getLayoutManager()).findFirstVisibleItemPosition();
 		
-		savedFirstVisibleChild = recyclerView.getChildAt(0);
-		//dy正，手指将列表往上拉
-		//dy负，手指将列表往下拉
-		dyTop = savedFirstVisibleChild.getHeight() - savedFirstVisibleChild.getBottom(); 
-		dyBottom = recyclerView.getHeight() - savedFirstVisibleChild.getBottom();
-		
-		prefEditorSettings.putInt(KEY_RECYCLERVIEW_SCROLL_POSITION + tableName, firstVisibleItemPosition);
-		prefEditorSettings.putInt(KEY_RECYCLERVIEW_SCROLL_DY_TOP + tableName, dyTop);
-		prefEditorSettings.putInt(KEY_RECYCLERVIEW_SCROLL_DY_BOTTOM + tableName, dyBottom);
-		prefEditorSettings.commit();
+		if (firstVisibleItemPosition > -1) {
+			firstVisibleChild = recyclerViewWord.getChildAt(0);
+			//dy正，手指将列表往上拉
+			//dy负，手指将列表往下拉
+			dyTop = firstVisibleChild.getHeight() - firstVisibleChild.getBottom(); 
+			dyBottom = recyclerViewWord.getHeight() - firstVisibleChild.getBottom();
+			
+			prefEditorSettings.putInt(KEY_RECYCLERVIEW_SCROLL_POSITION + tableName, firstVisibleItemPosition);
+			prefEditorSettings.putInt(KEY_RECYCLERVIEW_SCROLL_DY_TOP + tableName, dyTop);
+			prefEditorSettings.putInt(KEY_RECYCLERVIEW_SCROLL_DY_BOTTOM + tableName, dyBottom);
+			prefEditorSettings.commit();
+		}
 	}
 	
 	/**
@@ -407,35 +597,35 @@ public class WordBookFragment extends Fragment {
 	 * @author bubble
 	 * @date 2015-9-11 
 	 */
-	private void restoreRecyclerViewPosition(String tableName) {
+	private static void restoreWordRecyclerViewPosition(String tableName) {
 		recyclerViewState = hmRecyclerViewState.get(tableName);
 		if (recyclerViewState != null) {
-			recyclerView.getLayoutManager().onRestoreInstanceState(recyclerViewState);
+			recyclerViewWord.getLayoutManager().onRestoreInstanceState(recyclerViewState);
 		} else {
-			if ( recyclerView != null) {
+			if ( recyclerViewWord != null) {
 				savedFirstVisiblePosition = prefSettings.getInt(KEY_RECYCLERVIEW_SCROLL_POSITION + tableName, 0);
 				dyTop = prefSettings.getInt(KEY_RECYCLERVIEW_SCROLL_DY_TOP + tableName, 0);
 				dyBottom = prefSettings.getInt(KEY_RECYCLERVIEW_SCROLL_DY_BOTTOM + tableName, 0);
 				
-				currentFirstVisiblePosition =  ((LinearLayoutManager)recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+				currentFirstVisiblePosition =  ((LinearLayoutManager)recyclerViewWord.getLayoutManager()).findFirstVisibleItemPosition();
 				
-				recyclerView.scrollToPosition(savedFirstVisiblePosition);
+				recyclerViewWord.scrollToPosition(savedFirstVisiblePosition);
 				
 				if(currentFirstVisiblePosition > -1) {
 					if (currentFirstVisiblePosition >= savedFirstVisiblePosition) {	//savedFirstVisiblePosition在顶部
-						recyclerView.scrollBy(0, dyTop);
+						recyclerViewWord.scrollBy(0, dyTop);
 					} else if (currentFirstVisiblePosition < savedFirstVisiblePosition){	//savedFirstVisiblePosition在底部
 						if (savedFirstVisiblePosition > 4)
-							recyclerView.scrollBy(0, dyBottom);				
+							recyclerViewWord.scrollBy(0, dyBottom);				
 						else {	//第一页的item用handler/smoothScrollBy会有跳转动作显示，暂时会找到合适的办法
-							recyclerView.scrollBy(0, recyclerView.getHeight());
-							recyclerView.scrollToPosition(savedFirstVisiblePosition);
-							recyclerView.smoothScrollBy(0, dyTop);
+							recyclerViewWord.scrollBy(0, recyclerViewWord.getHeight());
+							recyclerViewWord.scrollToPosition(savedFirstVisiblePosition);
+							recyclerViewWord.smoothScrollBy(0, dyTop);
 						}
 					} 
-				} else {	//第一次打开，还未出现界面
-					recyclerView.scrollToPosition(savedFirstVisiblePosition);
-					recyclerView.scrollBy(0, dyTop);
+				} else {	//第一次打开，还未出现界面，会有滑动现象
+					recyclerViewWord.scrollToPosition(savedFirstVisiblePosition);
+					recyclerViewWord.smoothScrollBy(0, dyTop);
 				}
 			}
 		}
@@ -449,19 +639,19 @@ public class WordBookFragment extends Fragment {
 	 * @author bubble
 	 * @date 2015-9-10 下午9:45:11
 	 */
-	private void setRecyclerViewWordType(int type) {
+	private static void setRecyclerViewWordType(int type) {
 		switch (type) {
 		case TYPE_VIEW_HORIZON:
 			prefEditorSettings.putInt(KEY_WORDBOOK_ORIENTATION, type);
 			wordCardAdapter.setItemViewType(type);
-			recyclerView.setLayoutManager(new LinearLayoutManager(activity,LinearLayoutManager.HORIZONTAL,false));
+			recyclerViewWord.setLayoutManager(new LinearLayoutManager(activity,LinearLayoutManager.HORIZONTAL,false));
 			MainActivity.setSlidingAboveMode(SlidingMenu.TOUCHMODE_MARGIN);
 			break;
 		case TYPE_VIEW_VERTICAL:
 		default:
 			prefEditorSettings.putInt(KEY_WORDBOOK_ORIENTATION, type);
 			wordCardAdapter.setItemViewType(type);
-			recyclerView.setLayoutManager(new LinearLayoutManager(activity)); 
+			recyclerViewWord.setLayoutManager(new LinearLayoutManager(activity)); 
 			MainActivity.setSlidingAboveMode(SlidingMenu.TOUCHMODE_FULLSCREEN);
 			break;
 		}
@@ -475,7 +665,7 @@ public class WordBookFragment extends Fragment {
 	 * @author bubble
 	 * @date 2015-9-8 下午6:15:18
 	 */
-	public void showCardMenu(final View v, final int position, final WordCls wordCls) {
+	public static void showCardMenu(final View v, final int position, final WordCls wordCls) {
 		PopupMenu popMenu = new PopupMenu(v.getContext(), v);
 		popMenu.inflate(R.menu.wordbook_card_menu);
 		popMenu.setOnMenuItemClickListener(new OnMenuItemClickListener() {
@@ -508,9 +698,9 @@ public class WordBookFragment extends Fragment {
 	 * @author bubble
 	 * @date 2015-9-9 下午11:41:49
 	 */
-	private void showEditWordDialog(final View v, final int position, final WordCls wordCls) {
+	private static void showEditWordDialog(final View v, final int position, final WordCls wordCls) {
 		// 取得自定义View  
-        LayoutInflater layoutInflater = LayoutInflater.from(getActivity());  
+        LayoutInflater layoutInflater = LayoutInflater.from(activity);  
         View viewDlgEditWord = layoutInflater.inflate(R.layout.wordbook_dlg_edit_word, null);  
         final EditText edtWord = (EditText)viewDlgEditWord.findViewById(R.id.wordbook_dlg_edttxt_word);
         final EditText edtPhonetic = (EditText)viewDlgEditWord.findViewById(R.id.wordbook_dlg_edttxt_phonetic);
@@ -547,7 +737,7 @@ public class WordBookFragment extends Fragment {
 	 * @author bubble
 	 * @date 2015-9-9 下午11:35:12
 	 */
-	private void showChooseBookDialog(final WordCls wordCls) {
+	private static void showChooseBookDialog(final WordCls wordCls) {
 		List<String> list = WordsManager.getTableList();
 		list.remove(tableName);
 		final String[] tableList = list.toArray(new String[list.size()]);
@@ -592,7 +782,7 @@ public class WordBookFragment extends Fragment {
 	 * @author bubble
 	 * @date 2015-9-8 下午5:25:58
 	 */
-	private void showDeleteWordDialog(final WordCls wordCls) {
+	private static void showDeleteWordDialog(final WordCls wordCls) {
         AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
         builder.setIcon(R.mipmap.ic_launcher);
         builder.setTitle("弹出警告框");
@@ -621,7 +811,7 @@ public class WordBookFragment extends Fragment {
 	 * @author bubble
 	 * @date 2015-9-11 下午5:57:06
 	 */
-	private void deleteWord(final WordCls wordCls) {
+	private static void deleteWord(final WordCls wordCls) {
 		wordCardAdapter.deleteItem(wordCls);
     	WordsManager.deleteWord(tableName, wordCls.getWord());
     	
@@ -642,7 +832,7 @@ public class WordBookFragment extends Fragment {
 	 * @author bubble
 	 * @date 2015-9-11 下午6:00:27
 	 */
-	private void editWord(final int position, final WordCls wordCls,
+	private static void editWord(final int position, final WordCls wordCls,
 			final EditText edtWord, final EditText edtPhonetic,
 			final EditText edtDefinition) {
 		wordCls.setWord(edtWord.getText().toString());
@@ -691,5 +881,75 @@ public class WordBookFragment extends Fragment {
 		super.onDestroy();
 		Log.i(getTag(), "WordBookFragment——onDestroy");
 	}
+
+	/**
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-9-19 下午12:56:24
+	 */
+	@Override
+	public void onStartDrag(ViewHolder viewHolder) {
+		touchHelper.startDrag(viewHolder);
+	}
+
+	/**
+	 * <p>Title: createBook</p>
+	 * <p>Description: </p>
+	 * @param edtCreateBook
+	 * @author bubble
+	 * @date 2015-9-19 下午2:23:51
+	 */
+	private void createBook(String tableName) {
+		WordsManager.createTable(tableName);
+		editBookRecyclerViewAdapter.addItem(tableName);
+		recyclerViewEditBook.setLayoutManager(new MyLayoutManager(activity));
+		bookMenuRecyclerViewAdapter.addItem(tableName);
+	}
 	
+	public static void notifyBookMenuItemMoved(int fromPosition, int toPosition) {
+		if ( bookMenuRecyclerViewAdapter != null )
+			bookMenuRecyclerViewAdapter.onItemMove(fromPosition, toPosition);
+	}
+	
+	public static void notifyBookMenuItemRemoved(int position) {
+		if ( bookMenuRecyclerViewAdapter != null ) {
+			bookMenuRecyclerViewAdapter.onItemDismiss(position);
+			
+			if ( tvDropdownPopMenu.getText().toString().matches(getWordbookList().get(position))) {
+				if ( getWordbookList().size() > 1) {
+					String newTableName;
+					if (position == 0)
+						newTableName = getWordbookList().get(1);
+					else 
+						newTableName = getWordbookList().get(0);
+					
+					tvDropdownPopMenu.setText(newTableName);
+					
+					prefEditorSettings.putString(KEY_WORDBOOK_SELECTED_TABLENAME, newTableName);
+					prefEditorSettings.commit();
+					
+					getWordDataset(newTableName);
+					
+					if ( ! isWordRecyclerInit ) {
+						initWordRecyclerView();
+						isWordRecyclerInit = true;
+					}
+					
+					wordCardAdapter.updateDataset(wordsDataset);
+					
+					restoreWordRecyclerViewPosition(newTableName);				
+				} else {
+					tvDropdownPopMenu.setText("");
+					
+					prefEditorSettings.putString(KEY_WORDBOOK_SELECTED_TABLENAME, "");
+					prefEditorSettings.commit();
+					
+					wordsDataset.clear();
+					wordCardAdapter.updateDataset(wordsDataset);
+				}
+			} 
+			
+			WordsManager.deleteTable(getWordbookList().get(position));
+		}
+	}
 }

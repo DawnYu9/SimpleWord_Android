@@ -11,8 +11,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.bubble.simpleword.MainActivity;
 import com.bubble.simpleword.R;
+import com.bubble.simpleword.activity.MainActivity;
 
 /**
  * <p>Title: MenuFragment</p>

@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="lib" path="E:/Software/adt-bundle-windows-x86-20140702/sdk/extras/android/support/v4/android-support-v4.jar" sourcepath="E:/Software/adt-bundle-windows-x86-20140702/sdk/extras/android/support/v4/src"/>
-	<classpathentry kind="lib" path="/cardview_lib_v7/libs/android-support-v7-cardview.jar" sourcepath="D:/coding/Android/lib/platform_frameworks_support-master/v7/cardview/src"/>
-	<classpathentry kind="lib" path="/android-support-v7-appcompat/libs/android-support-v7-appcompat.jar" sourcepath="D:/coding/Android/lib/platform_frameworks_support-master/v7/appcompat/src"/>
+	<classpathentry exported="true" kind="lib" path="D:/coding/Android/lib/jericho-html-3.1.jar" sourcepath="D:/coding/Android/lib/jericho-html-3.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="/recyclerview_lib_v7/libs/android-support-v7-recyclerview.jar" sourcepath="D:/coding/Android/lib/platform_frameworks_support-master/v7/recyclerview/src"/>
+	<classpathentry exported="true" kind="lib" path="E:/Software/adt-bundle-windows-x86-20140702/sdk/extras/android/support/v4/android-support-v4.jar" sourcepath="E:/Software/adt-bundle-windows-x86-20140702/sdk/extras/android/support/v4/src"/>
+	<classpathentry exported="true" kind="lib" path="/cardview_lib_v7/libs/android-support-v7-cardview.jar" sourcepath="D:/coding/Android/lib/platform_frameworks_support-master/v7/cardview/src"/>
+	<classpathentry exported="true" kind="lib" path="/android-support-v7-appcompat/libs/android-support-v7-appcompat.jar" sourcepath="D:/coding/Android/lib/platform_frameworks_support-master/v7/appcompat/src"/>
 	<classpathentry kind="lib" path="/gridlayout_lib_v7/libs/android-support-v7-gridlayout.jar" sourcepath="D:/coding/Android/lib/platform_frameworks_support-master/v7/gridlayout/src"/>
-	<classpathentry kind="lib" path="/recyclerview_lib_v7/libs/android-support-v7-recyclerview.jar" sourcepath="D:/coding/Android/lib/platform_frameworks_support-master/v7/recyclerview/src"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
-	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
-	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

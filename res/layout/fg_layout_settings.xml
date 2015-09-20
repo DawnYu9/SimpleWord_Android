@@ -8,6 +8,26 @@
     android:focusableInTouchMode="true"
     >
 
+    <!-- 选择单词本 -->
+    <RelativeLayout 
+        android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    >
+	    <TextView 
+	        android:text="选择要显示的单词本"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentLeft="true"
+	        />
+	    <Spinner
+	        android:id="@+id/setting_spinner_select_wordbook"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentRight="true"
+	        android:spinnerMode="dropdown"
+	        />
+	</RelativeLayout>
+    
     <!-- 设置显示单词的排序方式 -->
     <RelativeLayout 
         android:layout_width="match_parent"

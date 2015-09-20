@@ -1,4 +1,4 @@
-package com.bubble.simpleword;
+package com.bubble.simpleword.activity;
 
 import java.io.File;
 
@@ -7,6 +7,7 @@ import android.app.AlarmManager;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.PendingIntent;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -18,13 +19,20 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.PersistableBundle;
+import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.WindowManager;
+import android.widget.SearchView;
+import android.widget.SearchView.OnQueryTextListener;
+import android.widget.Toast;
 
+import com.bubble.simpleword.R;
 import com.bubble.simpleword.db.MyDbHelper;
 import com.bubble.simpleword.db.WordCls;
 import com.bubble.simpleword.db.WordsManager;
@@ -47,7 +55,6 @@ public class MainActivity extends SlidingFragmentActivity {
 	private FragmentTransaction transaction;
 	int spinnerWordSortSelection;
 //	static final String KEY_FILE_NAME_SETTINGS = SettingsFragment.KEY_FILE_NAME_SETTINGS;
-	private SharedPreferences prefSettings;
 	private Fragment contentFragment;
 	static SlidingMenu sm;
 	private ActionBar mActionBar;
@@ -87,13 +94,10 @@ public class MainActivity extends SlidingFragmentActivity {
 		
 		loadDatabase();	//load SDcard's database
 		
-//		pref = this.getSharedPreferences(PREFS_FILE_NAME, MODE_PRIVATE);  
 		pref = Util.getSharedPreferences(this);
 		editor = pref.edit();
 
 		isFirstStart = pref.getBoolean(IS_FIRST_START, true);
-		
-		prefSettings = Util.getSharedPreferences(getApplicationContext());
 		
 //		initSwitch();
 		
@@ -124,8 +128,19 @@ public class MainActivity extends SlidingFragmentActivity {
 		super.onResume();
 		Log.i("onResume", "开始");
 //		initSettings();
-		initWordsManager(isFirstStart);
-		initWordClass();
+		
+
+		WordsManager.initDbHelper(this);
+		
+		if ( isFirstStart ) {
+			WordsManager.createInfoTable();
+		}
+		
+		if ( WordsManager.getTableList().size() > 0) {
+			initWordsManager(isFirstStart);
+			initWordClass();
+		}
+		
 
 		Log.i("onResume", "结束");
 	}
@@ -183,6 +198,7 @@ public class MainActivity extends SlidingFragmentActivity {
 	 * @date 2015-8-6
 	 */
 	private void initWordsManager(boolean isFirstStart){
+		
 		if ( isFirstStart ) {
 			WordsManager.initWordsManager(this);
 			WordsManager.setWordInOrder();	//if it is the first time to start the app, the default mode to get word is "in order"
@@ -211,17 +227,17 @@ public class MainActivity extends SlidingFragmentActivity {
 		if ( isSwitchOn(SettingsFragment.KEY_SWITCH_POP_NOTI_WORD) ) {
 			intentService = new Intent(this, ServicePopNotiWord.class);
 			pendingIntentService = PendingIntent.getService(this, 0, intentService, 0);
-			hour = Util.getPrefStr2Int(prefSettings, SettingsFragment.KEY_POP_NOTI_WORD_INTERVAL_HOUR, SettingsFragment.INTERVAL_00);
-			minute = Util.getPrefStr2Int(prefSettings, SettingsFragment.KEY_POP_NOTI_WORD_INTERVAL_MINUTE, SettingsFragment.INTERVAL_00);
-			second = Util.getPrefStr2Int(prefSettings, SettingsFragment.KEY_POP_NOTI_WORD_INTERVAL_SECOND, SettingsFragment.INTERVAL_30);
+			hour = Util.getPrefStr2Int(pref, SettingsFragment.KEY_POP_NOTI_WORD_INTERVAL_HOUR, SettingsFragment.INTERVAL_00);
+			minute = Util.getPrefStr2Int(pref, SettingsFragment.KEY_POP_NOTI_WORD_INTERVAL_MINUTE, SettingsFragment.INTERVAL_00);
+			second = Util.getPrefStr2Int(pref, SettingsFragment.KEY_POP_NOTI_WORD_INTERVAL_SECOND, SettingsFragment.INTERVAL_30);
 			startPendingIntent(pendingIntentService, hour, minute, second, 1);
 		}
 		if ( isSwitchOn(SettingsFragment.KEY_SWITCH_UPDATE_WORD) ) {
 			intentService = new Intent(this, ServiceUpdateWord.class);
 			pendingIntentService = PendingIntent.getService(this, 0, intentService, 0);
-			hour = Util.getPrefStr2Int(prefSettings, SettingsFragment.KEY_UPDATE_WORD_INTERVAL_HOUR, SettingsFragment.INTERVAL_00);
-			minute = Util.getPrefStr2Int(prefSettings, SettingsFragment.KEY_UPDATE_WORD_INTERVAL_MINUTE, SettingsFragment.INTERVAL_00);
-			second = Util.getPrefStr2Int(prefSettings, SettingsFragment.KEY_UPDATE_WORD_INTERVAL_SECOND, SettingsFragment.INTERVAL_30);
+			hour = Util.getPrefStr2Int(pref, SettingsFragment.KEY_UPDATE_WORD_INTERVAL_HOUR, SettingsFragment.INTERVAL_00);
+			minute = Util.getPrefStr2Int(pref, SettingsFragment.KEY_UPDATE_WORD_INTERVAL_MINUTE, SettingsFragment.INTERVAL_00);
+			second = Util.getPrefStr2Int(pref, SettingsFragment.KEY_UPDATE_WORD_INTERVAL_SECOND, SettingsFragment.INTERVAL_30);
 			startPendingIntent(pendingIntentService, hour, minute, second, 0);
 		}
 	}
@@ -236,7 +252,7 @@ public class MainActivity extends SlidingFragmentActivity {
 	 */
 
 	private boolean isSwitchOn(String keySwitch) {
-		return prefSettings.getBoolean(keySwitch, false);
+		return pref.getBoolean(keySwitch, false);
 	}
     public void startPendingIntent(PendingIntent pendingIntent, int hour,int minute, int second,long delayTime) {
 		long alarmInterval = DateUtils.HOUR_IN_MILLIS * hour 
@@ -454,5 +470,61 @@ public class MainActivity extends SlidingFragmentActivity {
 		super.onSaveInstanceState(outState, outPersistentState);
 	}
 	
+	/**
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-9-17 下午9:46:43
+	 */
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.actionbar_menu, menu);
+	    
+	    // Associate searchable configuration with the SearchView
+	    SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+	    SearchView sv = (SearchView) menu.findItem(R.id.actionbar_item_search).getActionView();
+	    sv.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
 
+	    //设置该SearchView默认是否自动缩小为图标
+        sv.setIconifiedByDefault(true);
+        
+        //设置该SearchView显示搜索按钮
+        sv.setSubmitButtonEnabled(true);
+        
+        //设置该SearchView内默认显示的提示文本
+//        sv.setQueryHint("查找");
+        
+        //为该SearchView组件设置事件监听器
+        sv.setOnQueryTextListener(new OnQueryTextListener() {
+			
+			@Override
+			public boolean onQueryTextSubmit(String query) {
+				// 除了输入查询的值，还可额外绑定一些数据
+		        Bundle appSearchData = new Bundle();
+		        appSearchData.putString("KEY", "text");
+
+		        startSearch(null, false, appSearchData, false);
+		        // 必须返回true。否则绑定的数据作废
+		        return true;
+			}
+			
+			@Override
+			public boolean onQueryTextChange(String newText) {
+				return false;
+			}
+		});
+        
+        
+	    
+	    return true;
+	}
+
+	/**
+	 * <p>Title: onOptionsItemSelected</p>
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-9-17 下午11:24:27
+	 */
+	private void onOptionsItemSelected() {
+	}
 }

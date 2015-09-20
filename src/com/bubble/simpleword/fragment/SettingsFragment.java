@@ -1,5 +1,8 @@
 package com.bubble.simpleword.fragment;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.Fragment;
@@ -81,6 +84,14 @@ public class SettingsFragment extends Fragment {
 	private boolean isSwitchOn = false;
 	
 	/** widgets **/
+	
+	//Spinner : "select wordbook"
+	private Spinner spinnerWordbook;
+	private String spinnerWordbookSelected;
+	public static final String KEY_SPINNER_SELECTED_WODEBOOK = "KEY_SPINNER_SELECTED_WODEBOOK";
+	private String tableName;
+	private static ArrayAdapter<String> adapterSpinnerWordbook;
+	private static List<String> dataSpinnerWordbook;
 	
 	//Spinner : "select the word's sort"
 	private int spinnerWordSortSelection;
@@ -187,6 +198,8 @@ public class SettingsFragment extends Fragment {
 	public void onResume() {
 		super.onResume();
 		
+		initSpinnerWordbook(mView);
+		
 		initSpinnerWordSort(mView);
 		
 		initSwitchPopNotiWord(mView);
@@ -195,6 +208,53 @@ public class SettingsFragment extends Fragment {
 		
 		initSwitchUpdateWord(mView);
 		
+	}
+	
+	/**
+	 * <p>Title: initSpinnerWordbook</p>
+	 * <p>Description: </p>
+	 * @param view
+	 * @author bubble
+	 * @date 2015-9-20 下午4:48:47
+	 */
+	private void initSpinnerWordbook(View view) {
+		spinnerWordbook = (Spinner)view.findViewById(R.id.setting_spinner_select_wordbook);
+		List<String> bookList = WordsManager.getTableList();
+		dataSpinnerWordbook = bookList;
+		adapterSpinnerWordbook = new ArrayAdapter<String>(mActivity,android.R.layout.simple_spinner_item, dataSpinnerWordbook);
+		adapterSpinnerWordbook.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		//绑定 Adapter到控件
+		spinnerWordbook .setAdapter(adapterSpinnerWordbook);
+		
+		spinnerWordbookSelected = prefSettings.getString(KEY_SPINNER_SELECTED_WODEBOOK, bookList.get(0));
+		if ( bookList.size() > 0) {
+			if ( bookList.contains(spinnerWordbookSelected) )
+				spinnerWordbook.setSelection(bookList.indexOf(spinnerWordbookSelected));
+			else
+				spinnerWordbook.setSelection(0);
+		}
+		
+		spinnerWordbook.setOnItemSelectedListener(new OnItemSelectedListener() {
+		    @Override
+		    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+		    	tableName = parent.getItemAtPosition(position).toString();		        
+		    	WordsManager.setSelectedTable(tableName, spinnerWordSortSelection);
+		    	
+		    	prefEditorSettings.putString(KEY_SPINNER_SELECTED_WODEBOOK, tableName);
+		    	prefEditorSettings.commit();
+		    }
+		    @Override
+		    public void onNothingSelected(AdapterView<?> parent) {
+		        // Another interface callback
+		    }
+		});
+	}
+	
+	public static void notifySpinnerWordbookItemRemoved(int position) {
+		if ( dataSpinnerWordbook != null ) {
+			dataSpinnerWordbook.remove(position);
+			adapterSpinnerWordbook.notifyDataSetChanged();
+		}
 	}
 	
 	/**
@@ -219,20 +279,22 @@ public class SettingsFragment extends Fragment {
 		spinnerWordsort.setOnItemSelectedListener(new OnItemSelectedListener() {
 		    @Override
 		    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+		    	spinnerWordSortSelection = position;
 		    	String str= parent.getItemAtPosition(position).toString();		        
-		    	switch (str){
-		    	case "正序":
-	    			WordsManager.setWordInOrder();
-		    		break;
-		    	case "逆序":
-	    			WordsManager.setWordReverseOrder();
-		    		break;
-		    	case "随机":
-	    			WordsManager.setWordRandom();
-		    		break;
-		    	default:
-		    		break;
-		    	}
+//		    	switch (str){
+//		    	case "正序":
+//	    			WordsManager.setWordInOrder();
+//		    		break;
+//		    	case "逆序":
+//	    			WordsManager.setWordReverseOrder();
+//		    		break;
+//		    	case "随机":
+//	    			WordsManager.setWordRandom();
+//		    		break;
+//		    	default:
+//		    		break;
+//		    	}
+		    	WordsManager.setWordSort(position);
 		    	
 		    	prefEditorSettings.putInt(KEY_SPINNER_SELECTION_WODE_SORT_MODE, position);
 		    	prefEditorSettings.commit();
@@ -641,7 +703,8 @@ public class SettingsFragment extends Fragment {
 		    		case R.id.setting_edittext_update_word_minute:
 		    		case R.id.setting_edittext_update_word_second:
 		    			renewSwitch(switchUpdateWord);
-		    			renewSwitch(switchFloatWord);
+		    			if ( switchFloatWord.isChecked() )
+		    				renewSwitch(switchFloatWord);
 		    			break;		    			
 		    		}
 		    	}

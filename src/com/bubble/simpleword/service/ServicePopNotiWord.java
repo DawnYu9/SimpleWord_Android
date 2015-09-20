@@ -12,8 +12,8 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-import com.bubble.simpleword.MainActivity;
 import com.bubble.simpleword.R;
+import com.bubble.simpleword.activity.MainActivity;
 import com.bubble.simpleword.db.WordsManager;
 
 /**

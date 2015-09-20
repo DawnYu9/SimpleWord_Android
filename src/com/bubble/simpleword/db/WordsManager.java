@@ -7,10 +7,13 @@ import java.util.List;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import com.bubble.simpleword.MainActivity;
+import com.bubble.simpleword.activity.MainActivity;
+import com.bubble.simpleword.fragment.SettingsFragment;
+import com.bubble.simpleword.util.Util;
 
 
 /**
@@ -24,7 +27,12 @@ import com.bubble.simpleword.MainActivity;
  */
 public class WordsManager {
 	public final static String DB_NAME = "simpleword.db";
-	public final static String TABLE_NAME = "GraduateWords";
+	
+	private static String selectedTable;
+	private static List<String> tableList;
+	
+	public final static String TABLE_INFO_NAME = "table_info";
+	public final static String COLUMN_TABLE_NAME = "name";
 	public final static String COLUMN_WORD = "word";
 	public final static String COLUMN_PHONETIC = "phonetic";
 	public final static String COLUMN_DEFINITION = "definition";
@@ -61,9 +69,9 @@ public class WordsManager {
     private final static String ORDERBY_REVERSE_ORDER = "word desc"; 
     
     public static int MODE_GET_WORD ;
-    private final static int MODE_GET_WORD_RANDOM = 0 ;
-    private final static int MODE_GET_WORD_IN_ORDER = 1;
-    private final static int MODE_GET_WORD_REVERSE_ORDER = 2;
+    private final static int MODE_WORD_SORT_IN_ORDER = 0;
+    private final static int MODE_WORD_SORT_REVERSE_ORDER = 1;
+    private final static int MODE_WORD_SORT_RANDOM = 2;
     
     public static boolean isInOrder = true;
     public static boolean isReverseOrder = false;
@@ -72,6 +80,42 @@ public class WordsManager {
     public static final String IS_REVERSEORDER = "isReverseOrder";
     public static final String IS_RANDOM = "isRandom";
     
+    private static boolean isSelectedTableChanged = false;
+
+	/**
+	 * <p>Title: initDbHelper</p>
+	 * <p>Description: </p>
+	 * @param context
+	 * @author bubble
+	 * @date 2015-9-20 下午4:07:58
+	 */
+	public static void initDbHelper(Context context) {
+		mContext = context;
+		if ( wordsDbHelper == null)
+			wordsDbHelper = new MyDbHelper(mContext, MainActivity.DB_NAME, null, 1);
+	}
+	
+	/**
+	 * <p>Title: setSelectedTable</p>
+	 * <p>Description: </p>
+	 * @param tableName
+	 * @author bubble
+	 * @date 2015-9-20 下午6:17:54
+	 */
+	public static void setSelectedTable(String tableName, int positionWordSort) {
+		isSelectedTableChanged = true;
+		selectedTable = tableName;
+		updateCursor(positionWordSort);
+		updateWordCls();
+	}
+	
+	private static void updateCursor(int positionWordSort) {
+		tableList = getTableList();
+		if ( tableList.contains(selectedTable) ) {
+			setWordSort(positionWordSort);
+		}
+	}
+	
     /**
      * <p>Title: initWordsDB</p>
      * <p>Description: init WordsManager before operate the table</p>
@@ -80,14 +124,19 @@ public class WordsManager {
      * @date 2015-8-7
      */
     public static void initWordsManager(Context context){
-    	mContext = context;
-		wordsDbHelper = new MyDbHelper(mContext, MainActivity.DB_NAME, null, 1);
-		db = wordsDbHelper.getReadableDatabase();
-		cursor = db.query(TABLE_NAME, null, null, null, null, null, null);
-		cursor.moveToFirst();
-		counts = cursor.getCount();
-//		Log.i("Words表的行数counts", Integer.toString(counts));
+    	tableList = getTableList();
+    	
+		if ( tableList.size() > 0) {
+			selectedTable = Util.getSharedPreferences(context).getString(SettingsFragment.KEY_SPINNER_SELECTED_WODEBOOK, tableList.get(0));
+			db = wordsDbHelper.getReadableDatabase();
+			if ( tableList.contains(selectedTable) ) {
+				cursor = db.query(selectedTable, null, null, null, null, null, null);
+				cursor.moveToFirst();
+				counts = cursor.getCount();
+			}
+		}
     }
+
     /**
      * <p>Title: initWordsDB</p>
      * <p>Description: init WordsManager before operate the table</p>
@@ -97,21 +146,26 @@ public class WordsManager {
      * @date 2015-8-20 上午12:32:56
      */
     public static void initWordsManager(Context context, int position){
-    	mContext = context;
-    	wordsDbHelper = new MyDbHelper(mContext, MainActivity.DB_NAME, null, 1);
-    	db = wordsDbHelper.getReadableDatabase();
-    	cursor = db.query(TABLE_NAME, null, null, null, null, null, null);
-    	if ( isInOrder ) {
-    		isInOrder = false;
-    		setWordInOrder();
-    	} else if ( isReverseOrder ) {
-    		isReverseOrder = false;
-    		setWordReverseOrder();
-    	} else if ( isRandom ) {
-    		isRandom = false;
-    		setWordRandom();
+    	tableList = getTableList();
+    	if ( tableList.size() > 0) {
+    		selectedTable = Util.getSharedPreferences(context).getString(SettingsFragment.KEY_SPINNER_SELECTED_WODEBOOK, tableList.get(0));
+    		if ( getTableList().contains(selectedTable) ) {
+    			db = wordsDbHelper.getReadableDatabase();
+    			cursor = db.query(selectedTable, null, null, null, null, null, null);
+    			cursor.moveToFirst();
+		    	if ( isInOrder ) {
+		    		isInOrder = false;
+		    		setWordInOrder();
+		    	} else if ( isReverseOrder ) {
+		    		isReverseOrder = false;
+		    		setWordReverseOrder();
+		    	} else if ( isRandom ) {
+		    		isRandom = false;
+		    		setWordRandom();
+		    	}
+		    	cursor.moveToPosition(position);
+    		}
     	}
-    	cursor.moveToPosition(position);
     }
 
     /**
@@ -122,13 +176,25 @@ public class WordsManager {
      * @date 2015-9-8 下午9:09:02
      */
     public static List<String> getTableList() {
-    	db = wordsDbHelper.getReadableDatabase();
     	List<String> tableList = new ArrayList<String>();
-    	Cursor cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name!='android_metadata' order by name", null);
-    	while(cursor.moveToNext()){
-    		tableList.add(cursor.getString(0));
-    	}
-    	db.close();
+    	Cursor cursor = null;
+    	try {
+			db = wordsDbHelper.getReadableDatabase();
+			cursor = db.rawQuery("SELECT " + COLUMN_TABLE_NAME + " FROM " + 
+					TABLE_INFO_NAME + " order by " + COLUMN_TIME, null);
+			while(cursor.moveToNext()){
+				tableList.add(cursor.getString(0));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally{
+		    if (cursor != null) {
+		    	cursor.close();
+		    }
+		    if (db != null) {
+		    	db.close();
+		    }
+		}
     	return tableList;
     }
 	
@@ -140,21 +206,112 @@ public class WordsManager {
 	 * @date 2015-9-7 下午5:23:48
 	 */
 	public static void createTable(String tableName) {
-		db = wordsDbHelper.getReadableDatabase();
-		String sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
-				COLUMN_WORD + " TEXT NOT NULL," +
-				COLUMN_PHONETIC + " TEXT," +
-				COLUMN_DEFINITION + " TEXT," +
-				COLUMN_DEFINITION_EN + " TEXT," +
-				COLUMN_DEFINITION_CN + " TEXT," +
-				COLUMN_AUDIO_URL_US + " TEXT," +
-				COLUMN_TIME + " TEXT DEFAULT (datetime('now','localtime'))," +
-				COLUMN_IS_REMEMBERED + " INTEGER DEFAULT 0," +
-				COLUMN_IS_LOADED + " INTEGER DEFAULT 0," +
-				"PRIMARY KEY (\"word\" ASC)" +
-						");";    
-        db.execSQL(sql);
-        db.close();
+		try {
+			db = wordsDbHelper.getReadableDatabase();
+			String sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
+					COLUMN_WORD + " TEXT NOT NULL," +
+					COLUMN_PHONETIC + " TEXT," +
+					COLUMN_DEFINITION + " TEXT," +
+					COLUMN_DEFINITION_EN + " TEXT," +
+					COLUMN_DEFINITION_CN + " TEXT," +
+					COLUMN_AUDIO_URL_US + " TEXT," +
+					COLUMN_TIME + " TEXT DEFAULT (datetime('now','localtime'))," +
+					COLUMN_IS_REMEMBERED + " INTEGER DEFAULT 0," +
+					COLUMN_IS_LOADED + " INTEGER DEFAULT 0," +
+					"PRIMARY KEY (\"word\" ASC)" +
+							");";    
+			
+			db.execSQL(sql);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally{
+		    if (db != null) {
+		    	db.close();
+		    }
+		}
+        
+        addTable2Info(tableName);
+	}
+	
+	/**
+	 * <p>Title: createInfoTable</p>
+	 * <p>Description: create a table names TABLE_INFO_NAME to store every table's info ,like  create_time</p>
+	 * @author bubble
+	 * @date 2015-9-19 下午3:27:40
+	 */
+	public static void createInfoTable() {
+		try {
+			db = wordsDbHelper.getReadableDatabase();
+			String sql = "CREATE TABLE IF NOT EXISTS " + TABLE_INFO_NAME + " (" +
+					COLUMN_TABLE_NAME + " TEXT NOT NULL," +
+					COLUMN_TIME + " TEXT DEFAULT (datetime('now','localtime'))" +
+					");";    
+			db.execSQL(sql);
+			
+			Cursor cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name!='android_metadata' order by name", null);
+			cValue = new ContentValues();  
+			while(cursor.moveToNext()) { 
+				if ( ! cursor.getString(0).matches(TABLE_INFO_NAME) ) {
+					cValue.put(COLUMN_TABLE_NAME, cursor.getString(0));  
+			    	db.insert(TABLE_INFO_NAME, null, cValue); 
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally{
+		    if (db != null) {
+		    	db.close();
+		    }
+		}
+	}
+	
+	/**
+	 * <p>Title: addTable2Info</p>
+	 * <p>Description: store every table's create_time when it created</p>
+	 * @param tableName
+	 * @author bubble
+	 * @date 2015-9-19 下午3:30:52
+	 */
+	public static void addTable2Info(String tableName) {
+		cValue = new ContentValues();  
+	    cValue.put(COLUMN_TABLE_NAME, tableName);  
+	   
+	    try {
+			db = wordsDbHelper.getWritableDatabase();
+			db.insert(TABLE_INFO_NAME, null, cValue); 
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally{
+		    if (db != null) {
+		    	db.close();
+		    }
+		}
+	}
+	
+	/**
+	 * <p>Title: editTableInfo</p>
+	 * <p>Description: edit table name in TABLE_INFO_NAME</p>
+	 * @param oldName
+	 * @param newName
+	 * @author bubble
+	 * @date 2015-9-19 下午9:24:15
+	 */
+	public static void editTableInfo(String oldName, String newName) {
+		cValue = new ContentValues();  
+		cValue.put(COLUMN_TABLE_NAME, newName);
+		
+		String[] whereArgs={ oldName };  
+		
+		try {
+			db = wordsDbHelper.getWritableDatabase();
+			db.update(TABLE_INFO_NAME, cValue, COLUMN_TABLE_NAME + " = ?", whereArgs);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally{
+		    if (db != null) {
+		    	db.close();
+		    }
+		}
 	}
 	
 	/**
@@ -165,9 +322,20 @@ public class WordsManager {
 	 * @date 2015-9-8 下午9:37:58
 	 */
 	public static void deleteTable(String tableName) {
-		db = wordsDbHelper.getReadableDatabase();
-		db.execSQL("DROP TABLE IF EXISTS " + tableName );
-		db.close();
+		try {
+			db = wordsDbHelper.getWritableDatabase();
+			db.execSQL("DROP TABLE IF EXISTS " + tableName );
+			
+			String[] whereArgs = { tableName };  
+			db.delete(TABLE_INFO_NAME, COLUMN_TABLE_NAME + " = ?", whereArgs);   
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally{
+		    if (db != null) {
+		    	db.close();
+		    }
+		}
 	}
 	
 	/**
@@ -178,12 +346,22 @@ public class WordsManager {
 	 * @author bubble
 	 * @date 2015-9-8 下午9:41:06
 	 */
-	public static void alterTableName(String oldName, String newName) {
+	public static boolean alterTableName(String oldName, String newName) {
 		if ( ! getTableList().contains(newName) ) {
-			db = wordsDbHelper.getReadableDatabase();
-			db.execSQL("ALTER TABLE " + oldName + " RENAME TO " + newName + ";");
-			db.close();
+			try {
+				db = wordsDbHelper.getReadableDatabase();
+				db.execSQL("ALTER TABLE " + oldName + " RENAME TO " + newName + ";");
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} finally{
+			    if (db != null) {
+			    	db.close();
+			    }
+			}
+			return true;
 		}
+		else
+			return false;
 	}
     
     
@@ -202,9 +380,16 @@ public class WordsManager {
 	    cValue.put(COLUMN_PHONETIC, phonetic);  
 	    cValue.put(COLUMN_DEFINITION, definition);  
 	   
-	    db = wordsDbHelper.getWritableDatabase();
-	    db.insert(tableName, null, cValue); 
-	    db.close();
+	    try {
+			db = wordsDbHelper.getWritableDatabase();
+			db.insert(tableName, null, cValue); 
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally{
+		    if (db != null) {
+		    	db.close();
+		    }
+		}
 	}
 	
 	/**
@@ -221,9 +406,16 @@ public class WordsManager {
 	    cValue.put(COLUMN_PHONETIC, wordCls.getPhonetic());  
 	    cValue.put(COLUMN_DEFINITION, wordCls.getDefinition());  
 	   
-	    db = wordsDbHelper.getWritableDatabase();
-	    db.insert(tableName, null, cValue); 
-	    db.close();
+	    try {
+			db = wordsDbHelper.getWritableDatabase();
+			db.insert(tableName, null, cValue); 
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally{
+		    if (db != null) {
+		    	db.close();
+		    }
+		}
 	}
 	
 	/**
@@ -236,9 +428,16 @@ public class WordsManager {
 	public static void deleteWord(String tableName, String word) {
 		String[] whereArgs = { word };  
 		
-		db = wordsDbHelper.getWritableDatabase();
-		db.delete(tableName, WHERE_CLAUSE_BY_WORD, whereArgs);   
-		db.close();
+		try {
+			db = wordsDbHelper.getWritableDatabase();
+			db.delete(tableName, WHERE_CLAUSE_BY_WORD, whereArgs);   
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally{
+		    if (db != null) {
+		    	db.close();
+		    }
+		}
 	}
 	
 	/**
@@ -281,9 +480,16 @@ public class WordsManager {
 	    
 	    String[] whereArgs={ word };  
 	    
-	    db = wordsDbHelper.getWritableDatabase();
-	    db.update(tableName, cValue, WHERE_CLAUSE_BY_WORD, whereArgs);
-	    db.close();
+	    try {
+			db = wordsDbHelper.getWritableDatabase();
+			db.update(tableName, cValue, WHERE_CLAUSE_BY_WORD, whereArgs);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally{
+		    if (db != null) {
+		    	db.close();
+		    }
+		}
 	}
 	
 	/**
@@ -302,9 +508,16 @@ public class WordsManager {
 		
 		String[] whereArgs={ wordCls.getWord() };  
 		
-		db = wordsDbHelper.getWritableDatabase();
-		db.update(tableName, cValue, WHERE_CLAUSE_BY_WORD, whereArgs);
-		db.close();
+		try {
+			db = wordsDbHelper.getWritableDatabase();
+			db.update(tableName, cValue, WHERE_CLAUSE_BY_WORD, whereArgs);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally{
+		    if (db != null) {
+		    	db.close();
+		    }
+		}
 	}
 	/**
 	 * <p>Title: editWholeWord</p>
@@ -324,9 +537,16 @@ public class WordsManager {
 		
 		String[] whereArgs={ wordCls.getWord() };  
 		
-		db = wordsDbHelper.getWritableDatabase();
-		db.update(tableName, cValue, WHERE_CLAUSE_BY_WORD, whereArgs);
-		db.close();
+		try {
+			db = wordsDbHelper.getWritableDatabase();
+			db.update(tableName, cValue, WHERE_CLAUSE_BY_WORD, whereArgs);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally{
+		    if (db != null) {
+		    	db.close();
+		    }
+		}
 	}
 	
 	
@@ -340,7 +560,6 @@ public class WordsManager {
 	 * @date 2015-9-7 下午3:32:40
 	 */
 	public static ArrayList<WordCls> queryWord(String tableName, String column, String value) {
-		db = wordsDbHelper.getReadableDatabase();
 		String[] columns = { COLUMN_WORD, COLUMN_PHONETIC, COLUMN_DEFINITION };
 		String selection = WHERE_CLAUSE_BY_WORD; 
 		String[] selectionArgs = { value };
@@ -353,6 +572,8 @@ public class WordsManager {
 		default:
 			break;
 		}
+		
+		db = wordsDbHelper.getReadableDatabase();
 		Cursor cursor = db.query(tableName, columns, selection, selectionArgs, null, null, COLUMN_WORD);  
 		
 		ArrayList<WordCls> wordClsList = new ArrayList<WordCls>();
@@ -447,6 +668,22 @@ public class WordsManager {
 		}
 	}
 	
+	public static void setWordSort(int mode) {
+		switch (mode) {
+		case MODE_WORD_SORT_IN_ORDER:
+			setWordInOrder();
+			break;
+		case MODE_WORD_SORT_RANDOM:
+			setWordRandom();
+			break;
+		case MODE_WORD_SORT_REVERSE_ORDER:
+			setWordReverseOrder();
+			break;
+		default:
+			break;
+		}
+	}
+	
 	/**
 	 * <p>Title: setWordRandom</p>
 	 * <p>Description: </p>
@@ -454,12 +691,28 @@ public class WordsManager {
 	 * @date 2015-8-8
 	 */
 	public static void setWordRandom(){
-		if ( ! isRandom ) {
-			MODE_GET_WORD = MODE_GET_WORD_RANDOM;
+		if ( (! isRandom) || isSelectedTableChanged) {
+			if ( ! isRandom ) {
+				MODE_GET_WORD = MODE_WORD_SORT_RANDOM;
+				setWordModeFlag(MODE_GET_WORD);
+			}
+			if ( isSelectedTableChanged ) 
+				isSelectedTableChanged = false;
+			
 			cursor = setWordOrderBy(cursor, ORDERBY_RANDOM);
 			cursor.moveToFirst();
-			setWordModeFlag(MODE_GET_WORD);
 		}
+		
+//		if ( ! isRandom ) {
+//			MODE_GET_WORD = MODE_WORD_SORT_RANDOM;
+//			cursor = setWordOrderBy(cursor, ORDERBY_RANDOM);
+//			cursor.moveToFirst();
+//			setWordModeFlag(MODE_GET_WORD);
+//		} else if (isSelectedTableChanged) {
+//			isSelectedTableChanged = false;
+//			cursor = setWordOrderBy(cursor, ORDERBY_RANDOM);
+//			cursor.moveToFirst();
+//		}
 	}
 	
 	/**
@@ -469,11 +722,16 @@ public class WordsManager {
 	 * @date 2015-8-8
 	 */
 	public static void setWordInOrder(){
-		if ( ! isInOrder ) {
-			MODE_GET_WORD = MODE_GET_WORD_IN_ORDER;
+		if ( (! isInOrder) || isSelectedTableChanged) {
+			if (! isInOrder) {
+				MODE_GET_WORD = MODE_WORD_SORT_IN_ORDER;
+				setWordModeFlag(MODE_GET_WORD);
+			}
+			if ( isSelectedTableChanged ) 
+				isSelectedTableChanged = false;
+			
 			cursor = setWordOrderBy(cursor, ORDERBY_IN_ORDER);
 			cursor.moveToFirst();
-			setWordModeFlag(MODE_GET_WORD);
 		}
 	}
 	
@@ -484,11 +742,16 @@ public class WordsManager {
 	 * @date 2015-8-8
 	 */
 	public static void setWordReverseOrder(){
-		if ( ! isReverseOrder ) {
-			MODE_GET_WORD = MODE_GET_WORD_REVERSE_ORDER;
+		if ( (! isReverseOrder) ||  isSelectedTableChanged) {
+			if (! isReverseOrder) {
+				MODE_GET_WORD = MODE_WORD_SORT_REVERSE_ORDER;
+				setWordModeFlag(MODE_GET_WORD);
+			}
+			if (isSelectedTableChanged)
+				isSelectedTableChanged = false;
+			
 			cursor = setWordOrderBy(cursor,ORDERBY_REVERSE_ORDER);
 			cursor.moveToFirst();
-			setWordModeFlag(MODE_GET_WORD);
 		}
 	}
 	
@@ -500,17 +763,17 @@ public class WordsManager {
 	 */
 	public static void setWordModeFlag(int i) {
 		switch (i) {
-		case MODE_GET_WORD_RANDOM:
+		case MODE_WORD_SORT_RANDOM:
 			isRandom = true;
 			isInOrder = false;
 			isReverseOrder = false;
 			break;
-		case MODE_GET_WORD_IN_ORDER:
+		case MODE_WORD_SORT_IN_ORDER:
 			isInOrder = true;
 			isRandom = false;
 			isReverseOrder = false;
 			break;
-		case MODE_GET_WORD_REVERSE_ORDER:
+		case MODE_WORD_SORT_REVERSE_ORDER:
 			isReverseOrder = true;
 			isInOrder = false;
 			isRandom = false;
@@ -530,7 +793,9 @@ public class WordsManager {
 	 * @date 2015-8-9
 	 */
 	private static Cursor setWordOrderBy(Cursor cur,String orderby){
-		cur = db.query(TABLE_NAME, null, null, null, null, null, orderby);
+		db = wordsDbHelper.getReadableDatabase();
+		cur = db.query(selectedTable, null, null, null, null, null, orderby);
+		
 		return cur;
 	}
 	
@@ -548,6 +813,9 @@ public class WordsManager {
 		wordCls = new WordCls(wordWord, wordPhonetic, wordDefinition);  
 	}
 	
+	public static WordCls getWordCls() {
+		return wordCls;
+	}
 	/**
 	 * <p>Title: setWordCls</p>
 	 * <p>Description: </p>

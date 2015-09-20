@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>  
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"  
+    android:layout_width="wrap_content"  
+    android:layout_height="match_parent"  
+    android:gravity="center_vertical"  
+    android:orientation="horizontal" >  
+    
+    <!-- 下拉列表标题栏，点击出现PopupWindow Menu  -->  
+    <TextView  
+        android:id="@+id/wordbook_actionbar_tv_popmenu"  
+        android:layout_width="wrap_content"  
+        android:layout_height="wrap_content"  
+        android:clickable="true"
+    	/>  
+    	
+          
+</LinearLayout>  
