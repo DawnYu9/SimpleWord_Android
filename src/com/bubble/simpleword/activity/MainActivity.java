@@ -19,7 +19,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.PersistableBundle;
-import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.Display;
@@ -27,10 +26,12 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnFocusChangeListener;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.SearchView;
 import android.widget.SearchView.OnQueryTextListener;
-import android.widget.Toast;
 
 import com.bubble.simpleword.R;
 import com.bubble.simpleword.db.MyDbHelper;
@@ -80,6 +81,10 @@ public class MainActivity extends SlidingFragmentActivity {
     
     private Handler handler = new Handler();
 
+    private MenuItem searchMenuItem;
+    private SearchView searchView;
+    private MenuInflater inflater;
+    private SearchManager searchManager;
     
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -417,9 +422,14 @@ public class MainActivity extends SlidingFragmentActivity {
 	 */
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		
+		switch (keyCode) {
 		//press smartphone's "Menu" button to open and close the slidingmenu
-		if(keyCode==KeyEvent.KEYCODE_MENU){
+		case KeyEvent.KEYCODE_MENU:
 			sm.toggle();
+			break;
+		default:
+			break;
 		}
 		return super.onKeyDown(keyCode, event);
 	}
@@ -476,26 +486,29 @@ public class MainActivity extends SlidingFragmentActivity {
 	 * @date 2015-9-17 下午9:46:43
 	 */
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getMenuInflater();
+	public boolean onCreateOptionsMenu(final Menu menu) {
+		inflater = getMenuInflater();
 	    inflater.inflate(R.menu.actionbar_menu, menu);
 	    
+	    searchMenuItem = menu.findItem(R.id.actionbar_item_search);
+        searchView = (SearchView) searchMenuItem.getActionView();
+	    
 	    // Associate searchable configuration with the SearchView
-	    SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-	    SearchView sv = (SearchView) menu.findItem(R.id.actionbar_item_search).getActionView();
-	    sv.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+	    searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+//	    searchView = (SearchView) menu.findItem(R.id.actionbar_item_search).getActionView();
+	    searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
 
 	    //设置该SearchView默认是否自动缩小为图标
-        sv.setIconifiedByDefault(true);
+        searchView.setIconifiedByDefault(true);
         
         //设置该SearchView显示搜索按钮
-        sv.setSubmitButtonEnabled(true);
+        searchView.setSubmitButtonEnabled(false);
         
         //设置该SearchView内默认显示的提示文本
-//        sv.setQueryHint("查找");
+        searchView.setQueryHint("请输入单词");
         
         //为该SearchView组件设置事件监听器
-        sv.setOnQueryTextListener(new OnQueryTextListener() {
+        searchView.setOnQueryTextListener(new OnQueryTextListener() {
 			
 			@Override
 			public boolean onQueryTextSubmit(String query) {
@@ -514,11 +527,66 @@ public class MainActivity extends SlidingFragmentActivity {
 			}
 		});
         
-        
-	    
 	    return true;
 	}
+	
+	/**
+	 * <p>Description: </p>
+	 * @author bubble 
+	 * @date 2015-9-21 下午3:33:23
+	 */
+	@Override
+	public void onBackPressed() {
+		if ( searchView != null ) {
+            if ( ! closeSearchView() ) {
+                super.onBackPressed();
+            }
+        }
+	}
 
+	/**
+	 * <p>Title: closeSearchView</p>
+	 * <p>Description: </p>
+	 * @return
+	 * @author bubble
+	 * @date 2015-9-21 下午3:52:12
+	 */
+	private boolean closeSearchView() {
+		if ( searchView != null ) {
+		    if ( ! searchView.isIconified() ) {
+		        searchView.setIconified(true);
+		        return true;
+		    }
+		}
+		return false;
+	}
+	
+//	public void setupUI(View view) {
+//
+//	    if(!(view instanceof SearchView)) {
+//
+//	        view.setOnTouchListener(new OnTouchListener() {
+//
+//	            public boolean onTouch(View v, MotionEvent event) {
+//	                searchMenuItem.collapseActionView();
+//	                return false;
+//	            }
+//
+//	        });
+//	    }
+//
+//	    //If a layout container, iterate over children and seed recursion.
+//	    if (view instanceof ViewGroup) {
+//
+//	        for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
+//
+//	            View innerView = ((ViewGroup) view).getChildAt(i);
+//
+//	            setupUI(innerView);
+//	        }
+//	    }
+//	}
+	
 	/**
 	 * <p>Title: onOptionsItemSelected</p>
 	 * <p>Description: </p>
