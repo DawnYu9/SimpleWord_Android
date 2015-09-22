@@ -496,12 +496,12 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 	 * @date 2015-9-10 下午8:10:28
 	 */
 	public class HorizonViewHolder extends BaseViewHolder {
-		TextView tvHint;
-		LinearLayout progressBar;
+		private TextView tvHint;
+		private LinearLayout progressBar;
 		
-		TextView tvDefEN;
-		TextView tvDefCN;
-		LinearLayout llCompleteWord;
+		private TextView tvDefEN;
+		private TextView tvDefCN;
+		private LinearLayout llCompleteWord;
 		
 		public HorizonViewHolder( View v) {  
 			super(v); 

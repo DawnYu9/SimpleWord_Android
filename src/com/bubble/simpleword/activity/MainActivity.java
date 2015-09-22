@@ -1,6 +1,7 @@
 package com.bubble.simpleword.activity;
 
 import java.io.File;
+import java.lang.annotation.Target;
 
 import android.app.ActionBar;
 import android.app.AlarmManager;
@@ -26,10 +27,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.View.OnFocusChangeListener;
 import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.SearchView;
 import android.widget.SearchView.OnQueryTextListener;
 
@@ -512,12 +510,17 @@ public class MainActivity extends SlidingFragmentActivity {
 			
 			@Override
 			public boolean onQueryTextSubmit(String query) {
-				// 除了输入查询的值，还可额外绑定一些数据
-		        Bundle appSearchData = new Bundle();
-		        appSearchData.putString("KEY", "text");
-
-		        startSearch(null, false, appSearchData, false);
-		        // 必须返回true。否则绑定的数据作废
+//				// 除了输入查询的值，还可额外绑定一些数据
+//				Bundle appSearchData = new Bundle();
+//				appSearchData.putString("KEY", "text");
+//				
+//				startSearch(null, false, appSearchData, false);
+				Intent intent = new Intent();  
+		        intent.setClass(MainActivity.this, SearchResultsActivity.class);  
+		        Bundle mBundle = new Bundle();  
+		        mBundle.putString("query", query);//压入数据  
+		        intent.putExtras(mBundle);  
+		        startActivity(intent);  
 		        return true;
 			}
 			

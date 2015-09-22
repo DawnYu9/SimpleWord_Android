@@ -559,33 +559,44 @@ public class WordsManager {
 	 * @author bubble
 	 * @date 2015-9-7 下午3:32:40
 	 */
-	public static ArrayList<WordCls> queryWord(String tableName, String column, String value) {
-		String[] columns = { COLUMN_WORD, COLUMN_PHONETIC, COLUMN_DEFINITION };
-		String selection = WHERE_CLAUSE_BY_WORD; 
-		String[] selectionArgs = { value };
-		switch (column) {
-		case COLUMN_WORD:
-			break;
-		case COLUMN_DEFINITION:
-			selection = COLUMN_DEFINITION + " = ?";
-			break;
-		default:
-			break;
-		}
+	public static List<WordCls> queryWordCh(String tableName, String value) {
+		String[] columns = { COLUMN_WORD, COLUMN_DEFINITION };
+		String selection = COLUMN_DEFINITION + " like ? "; 
+		String[] selectionArgs = new String[]{ "%" + value + "%" };
 		
 		db = wordsDbHelper.getReadableDatabase();
 		Cursor cursor = db.query(tableName, columns, selection, selectionArgs, null, null, COLUMN_WORD);  
 		
-		ArrayList<WordCls> wordClsList = new ArrayList<WordCls>();
+		List<WordCls> wordClsList = null;
+			
+		wordClsList = new ArrayList<>();
         while(cursor.moveToNext()){  
         	WordCls wordCls = new WordCls();
             wordCls.setWord(cursor.getString(cursor.getColumnIndex(COLUMN_WORD)));  
-            wordCls.setPhonetic(cursor.getString(cursor.getColumnIndex(COLUMN_PHONETIC)));  
             wordCls.setDefinition(cursor.getString(cursor.getColumnIndex(COLUMN_DEFINITION)));  
             wordClsList.add(wordCls);
-        }  
+		}
         db.close(); 
         return wordClsList;
+	}
+	
+	public static WordCls queryWordEn(String tableName, String value) {
+		String[] columns = { COLUMN_WORD, COLUMN_PHONETIC, COLUMN_DEFINITION };
+		String selection = WHERE_CLAUSE_BY_WORD; 
+		String[] selectionArgs = { value };
+		
+		db = wordsDbHelper.getReadableDatabase();
+		Cursor cursor = db.query(tableName, columns, selection, selectionArgs, null, null, COLUMN_WORD);  
+		WordCls wordCls = null;
+		if ( cursor.moveToNext() ) {
+			wordCls = new WordCls();
+			wordCls.setWord(cursor.getString(cursor.getColumnIndex(COLUMN_WORD)));  
+			wordCls.setPhonetic(cursor.getString(cursor.getColumnIndex(COLUMN_PHONETIC)));  
+			wordCls.setDefinition(cursor.getString(cursor.getColumnIndex(COLUMN_DEFINITION)));  
+		} 
+			
+		db.close(); 
+		return wordCls;
 	}
 
 	
