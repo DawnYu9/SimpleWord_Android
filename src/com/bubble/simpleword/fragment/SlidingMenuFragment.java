@@ -24,18 +24,18 @@ import com.bubble.simpleword.activity.MainActivity;
  * @date 2015-8-2
  */
 public class SlidingMenuFragment extends ListFragment {
-	CenterFragment centerFragment;
-	HomeFragment homeFragment;
-	WordBookFragment wordBookFragment;
-	BBSFragment bbsFragment;
-	SettingsFragment settingsFragment;
+	public static CenterFragment centerFragment;
+	public static HomeFragment homeFragment;
+	public static WordBookFragment wordBookFragment;
+	public static BBSFragment bbsFragment;
+	public static SettingsFragment settingsFragment;
 	
-	Fragment newContentFragment;
+	public static Fragment newContentFragment;
 	
-	ActionBar actionBar;
+	private ActionBar actionBar;
 	
-	Object object;
-	String str;
+	private Object object;
+	private String str;
 	
 	/**
 	 * <p>Title: </p>

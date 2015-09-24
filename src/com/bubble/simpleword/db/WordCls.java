@@ -233,7 +233,9 @@ public class WordCls {
 	 * @date 2015-9-6 下午9:25:21
 	 */
 	public Spanned getSpannedHtml() {
-		this.htmlString = "<font color='#f50057'>" + word + "</font><font color='#c5cae9'>" + phonetic + "</font>" + definition + "";
+//		this.htmlString = "<font color='#E91E63'>" + word + "</font><font color='#B6B6B6'>" 
+//				+ phonetic + "</font><font color='#727272'>" + definition + "</font>";
+		this.htmlString = word + "<font color='#B6B6B6'>" + phonetic + "</font>" + definition;
 		return Html.fromHtml(htmlString);
 	}
 	

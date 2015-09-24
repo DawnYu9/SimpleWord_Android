@@ -1,20 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
     <style name="AppTheme" parent="AppBaseTheme">
     </style>
     
     <!-- ActionBar -->
-    <style name="CustomActionBarTheme" parent="@android:style/Theme.Holo.Light">  
+    <style name="CustomMainActionBarTheme" parent="@android:style/Theme.Holo.Light">  
         <item name="android:actionBarStyle">@style/MyActionBar</item>  
         <item name="android:homeAsUpIndicator">@drawable/menu</item>
+	    <item name="android:actionButtonStyle">@style/ActionButtonStyle</item>
+        <item name="android:actionBarSize">40dp</item>
     </style>  
+    
     <style name="MyActionBar" parent="@android:style/Widget.Holo.Light.ActionBar">  
-        <item name="android:background">#f4842d</item>  
+        <item name="android:background">@color/pink_light_actionbar</item>  
         <item name="android:titleTextStyle">@style/MyActionBarTitleText</item>
     </style>
+    
     <style name="MyActionBarTitleText" parent="@android:style/TextAppearance.Holo.Widget.ActionBar.Title">  
         <item name="android:textColor">@color/white</item>  
     </style>  
+
+	<style name="ActionButtonStyle" parent="@android:style/Widget.Holo.Light.ActionButton">
+	    <item name="android:minWidth">0dip</item>
+	    <item name="android:paddingStart">3dip</item>
+	    <item name="android:paddingEnd">0dip</item>                  
+	    <item name="android:scaleType">center</item>                  
+	</style>
     
-    
+	<!-- SearchResultActivity ActionBar -->
+	<style name="CustomSearchActivityActionBarTheme" parent="CustomMainActionBarTheme">
+    	<item name="android:homeAsUpIndicator">@drawable/back</item>
+	</style>
+	
 </resources>

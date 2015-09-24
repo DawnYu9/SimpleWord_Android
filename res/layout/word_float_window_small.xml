@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>  
-<LinearLayout  
-    xmlns:android="http://schemas.android.com/apk/res/android"  
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/word_small_float_window_layout"  
     android:layout_width="match_parent"  
     android:layout_height="match_parent"  
-    android:background="@color/orange_bg"  
     android:orientation="horizontal"
+    android:background="@drawable/corners_bg"
 	>  
-    
     <!-- 播放单词读音 -->
     <ImageButton 
         android:id="@+id/word_small_float_window_play_btn"
         android:layout_height="match_parent"
         android:layout_width="wrap_content"
-        android:background="@drawable/play"
+        android:background="@drawable/play_white2"
         />
     
     <!-- 悬浮窗文字显示跑马灯效果 -->
@@ -21,7 +19,7 @@
         android:id="@+id/word_small_float_window_tv"  
         android:layout_width="match_parent"  
         android:layout_height="match_parent"  
-        android:textColor="#ffffff"  
+        android:textColor="@color/white"  
         android:gravity="center_vertical"
         android:singleLine="true"
         android:ellipsize="marquee"
@@ -29,5 +27,5 @@
         android:focusable="true"
         android:focusableInTouchMode="true"
         />  
-        
+       
 </LinearLayout>  

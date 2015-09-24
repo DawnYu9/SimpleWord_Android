@@ -62,11 +62,12 @@ public class MyWindowManager {
                 //LayoutParams.TYPE_SYSTEM_ALERT: display in full screen(contain statusbar,below statusbar)
                 //LayoutParams.TYPE_SYSTEM_ERROR: display in full screen(contain statusbar,above statusbar)
                 smallFloatWindowParams.type = LayoutParams.TYPE_SYSTEM_ERROR;  
-                //the format of picture: transparent background
-                smallFloatWindowParams.format = PixelFormat.RGBA_8888;  
+                //the format of background
+                smallFloatWindowParams.format = PixelFormat.TRANSLUCENT;  
                 //FLAG_NOT_TOUCH_MODAL or FLAG_NOT_FOCUSABLE or both,and FLAG_LAYOUT_IN_SCREEN
                 //if only set FLAG_LAYOUT_IN_SCREEN,the float window's focus will be full screen,the gesture operation outside the float window will be invalid
-                smallFloatWindowParams.flags =  LayoutParams.FLAG_NOT_TOUCH_MODAL | LayoutParams.FLAG_NOT_FOCUSABLE | LayoutParams.FLAG_LAYOUT_IN_SCREEN;  
+                smallFloatWindowParams.flags =  LayoutParams.FLAG_NOT_TOUCH_MODAL | LayoutParams.FLAG_NOT_FOCUSABLE 
+                		| LayoutParams.FLAG_LAYOUT_IN_SCREEN ;  
                 //smallWindowParams.flags =  LayoutParams.FLAG_NOT_TOUCH_MODAL | LayoutParams.FLAG_NOT_FOCUSABLE | LayoutParams.FLAG_LAYOUT_IN_SCREEN
                 // | LayoutParams.FLAG_LAYOUT_INSET_DECOR | LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH; 
                 smallFloatWindowParams.gravity = Gravity.LEFT | Gravity.TOP;  

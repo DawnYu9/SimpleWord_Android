@@ -5,12 +5,29 @@
     <color name="colorPrimary">#4285f4</color>
     <color name="windowBackground">#eeeeee</color>
     
-    <item name="white" type="color">#FFFFFFFF</item>
-    <item name="black" type="color">#000000</item>
-    <item name="orange_text" type="color">#FF7F24</item>
-    <item name="orange_bg" type="color">#FF9933</item>
-    <item name="gray_btn" type="color">#F2F2F2</item>
-    <item name="gray_shadow" type="color">#999999</item>
-    <item name="gray_text" type="color">#666666</item>
+    <color name="white" type="color">#FFFFFFFF</color>
+    <color name="black" type="color">#000000</color>
+    <color name="orange_text" type="color">#FF7F24</color>
+    <color name="orange_bg" type="color">#FF9933</color>
+    <color name="gray_btn" type="color">#F2F2F2</color>
+    <color name="gray_shadow" type="color">#999999</color>
+    <color name="gray_text" type="color">#666666</color>
  
+    <color name="blue_light" type="color">#03A9F4</color>
+    <color name="blue" type="color">#0288D1</color>
+    
+    
+    <color name="gray_dark_text" type="color">#727272</color>
+    <color name="gray_light_text" type="color">#B6B6B6</color>
+    
+    <color name="pink_dark_actionbar" type="color">#C2185B</color>
+    <color name="pink_light_text" type="color">#E91E63</color>
+    <color name="pink_light_actionbar" type="color">#FF5252</color>
+    <color name="pink_light_window" type="color">#F06292</color>
+    
+    <color name="gray_light_bg" type="color">#F5F5F5</color>
+    
+    <color name="translucent_background">#70000000</color>
+    
+    
 </resources> 

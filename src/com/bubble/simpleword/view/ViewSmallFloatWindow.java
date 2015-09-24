@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.bubble.simpleword.R;
 import com.bubble.simpleword.db.WordsManager;
+import com.bubble.simpleword.util.Util;
 
 /**
  * <p>Title: FloatWindowSmallView</p>
@@ -91,7 +92,8 @@ public class ViewSmallFloatWindow extends LinearLayout implements OnTouchListene
         btnPlay.setOnTouchListener(this);
         
         TextView tvWordCls = (TextView) findViewById(R.id.word_small_float_window_tv);  
-        tvWordCls.setText(WordsManager.wordCls.getSpannedHtml());  
+//        tvWordCls.setText(WordsManager.wordCls.getSpannedHtml());  
+        tvWordCls.setText(WordsManager.getWordCls().getSpannedHtml());  
     }  
   
 	/**
@@ -124,6 +126,7 @@ public class ViewSmallFloatWindow extends LinearLayout implements OnTouchListene
 					break;
 				case R.id.word_small_float_window_play_btn:
 					Log.d(VIEW_LOG_TAG, "点击了btn");
+					Util.pronounce(WordsManager.getWordCls(), mContext);
 					break;
 				default:
 					break;

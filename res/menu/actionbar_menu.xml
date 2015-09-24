@@ -1,11 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    
+        	
 	<item 
-	    android:id="@+id/actionbar_item_search"
+	    android:id="@+id/actionbar_menu_search"
         android:title="搜索"
-        android:icon="@drawable/menu"
+        android:icon="@drawable/search"
         android:showAsAction="always"
-        android:actionViewClass="android.widget.SearchView" />
+        android:actionViewClass="android.widget.SearchView" 
+        />
+	
+	<item 
+	    android:id="@+id/actionbar_menu_wordbook_add_word"
+        android:title="添加单词"
+        android:icon="@drawable/add"
+        android:showAsAction="always"
+        />
+	
+	<item 
+	    android:id="@+id/actionbar_menu_wordbook_switch"
+        android:title="切换视图"
+        android:icon="@drawable/orientation"
+        android:showAsAction="always"
+        />
+
     
 </menu>

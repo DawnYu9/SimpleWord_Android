@@ -1,7 +1,6 @@
 package com.bubble.simpleword.activity;
 
 import java.io.File;
-import java.lang.annotation.Target;
 
 import android.app.ActionBar;
 import android.app.AlarmManager;
@@ -20,6 +19,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.PersistableBundle;
+import android.text.InputType;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.Display;
@@ -31,6 +31,8 @@ import android.view.WindowManager;
 import android.widget.SearchView;
 import android.widget.SearchView.OnQueryTextListener;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
 import com.bubble.simpleword.R;
 import com.bubble.simpleword.db.MyDbHelper;
 import com.bubble.simpleword.db.WordCls;
@@ -38,8 +40,10 @@ import com.bubble.simpleword.db.WordsManager;
 import com.bubble.simpleword.fragment.HomeFragment;
 import com.bubble.simpleword.fragment.SettingsFragment;
 import com.bubble.simpleword.fragment.SlidingMenuFragment;
+import com.bubble.simpleword.fragment.WordBookFragment;
 import com.bubble.simpleword.service.ServicePopNotiWord;
 import com.bubble.simpleword.service.ServiceUpdateWord;
+import com.bubble.simpleword.util.SearchViewFormatter;
 import com.bubble.simpleword.util.Util;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
@@ -51,20 +55,32 @@ import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
  * @date 2015-8-2
  */
 public class MainActivity extends SlidingFragmentActivity {
+	public static RequestQueue mQueue; 
+	
 	private FragmentTransaction transaction;
 	int spinnerWordSortSelection;
 //	static final String KEY_FILE_NAME_SETTINGS = SettingsFragment.KEY_FILE_NAME_SETTINGS;
 	private Fragment contentFragment;
-	static SlidingMenu sm;
+	public static SlidingMenu sm;
+	private Point size;
+	private WindowManager wm;
+	private Display display;
 	private ActionBar mActionBar;
+	
 	private SQLiteDatabase db;
+	
+	public static final String PACKAGE_NAME = "com.bubble.simpleword";
+	public static final String BASE_DIRECTORY = File.separator + "data"
+			+ Environment.getDataDirectory().getAbsolutePath() + File.separator
+			+ PACKAGE_NAME;
+	
 	public static final String DB_NAME = "simpleword.db"; //the database file's name
-    public static final String PACKAGE_NAME = "com.bubble.simpleword";
-    public static final String FOLDER_NAME = "databases";
-    public static final String DB_DIRECTORY = File.separator + "data"
-            + Environment.getDataDirectory().getAbsolutePath() + File.separator
-            + PACKAGE_NAME + File.separator
-            + FOLDER_NAME ;  //the path to save database
+	public static final String DB_FOLDER_NAME = "databases";
+	public static final String DB_DIRECTORY = BASE_DIRECTORY + File.separator + DB_FOLDER_NAME ;  //the path to save database
+    
+	public static final String DOWNLOAD_FOLDER_NAME = "download";
+    public static final String DOWNLOAD_DIRECTORY = BASE_DIRECTORY + File.separator + DOWNLOAD_FOLDER_NAME ;  //the path to save database
+    
     public static WordCls word ;
     
     private SharedPreferences pref;
@@ -79,15 +95,25 @@ public class MainActivity extends SlidingFragmentActivity {
     
     private Handler handler = new Handler();
 
-    private MenuItem searchMenuItem;
-    private SearchView searchView;
     private MenuInflater inflater;
+    
+    private MenuItem menuitemSwiOrientation;
+    
+    private MenuItem menuitemSearch;
+    private SearchView searchView;
     private SearchManager searchManager;
+    
+    private MenuItem menuitemBtnAddWord;
+    
+    public static String URL_SHANBAY = "https://api.shanbay.com/bdc/search/?word=";
     
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.i("onCreate", "开始");
+		
+		mQueue = Volley.newRequestQueue(this);
+		
 		sm = getSlidingMenu();
 		initSlidingMenu(savedInstanceState);
 		
@@ -304,9 +330,9 @@ public class MainActivity extends SlidingFragmentActivity {
 		sm.setFadeDegree(0);
 		sm.setBehindScrollScale(0);
 		
-		Point size = new Point();
-    	WindowManager wm = (WindowManager)this.getSystemService(Context.WINDOW_SERVICE);
-    	Display display = wm.getDefaultDisplay();
+		size = new Point();
+    	wm = (WindowManager)this.getSystemService(Context.WINDOW_SERVICE);
+    	display = wm.getDefaultDisplay();
     	display.getSize(size);
     	int slidingWidth = size.x * 2 / 5;
 		sm.setBehindWidth(slidingWidth);
@@ -375,6 +401,17 @@ public class MainActivity extends SlidingFragmentActivity {
 	    		transaction.hide(contentFragment).show(newFragment).commit();
 	   	    }
 	   	    contentFragment = newFragment;
+	   	    
+	   	    if ( contentFragment == SlidingMenuFragment.wordBookFragment) {
+	   	    	menuitemSwiOrientation.setVisible(true);
+	   	    	menuitemBtnAddWord.setVisible(true);
+	   	    }
+	   	    else {
+	   	    	menuitemSwiOrientation.setVisible(false);
+	   	    	menuitemBtnAddWord.setVisible(false);
+	   	    	setSlidingAboveMode(SlidingMenu.TOUCHMODE_FULLSCREEN);
+	   	    }
+	   	    	
    	    }
    	    
    	    handler.post(new Runnable() {
@@ -488,8 +525,8 @@ public class MainActivity extends SlidingFragmentActivity {
 		inflater = getMenuInflater();
 	    inflater.inflate(R.menu.actionbar_menu, menu);
 	    
-	    searchMenuItem = menu.findItem(R.id.actionbar_item_search);
-        searchView = (SearchView) searchMenuItem.getActionView();
+	    menuitemSearch = menu.findItem(R.id.actionbar_menu_search);
+        searchView = (SearchView) menuitemSearch.getActionView();
 	    
 	    // Associate searchable configuration with the SearchView
 	    searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
@@ -502,8 +539,17 @@ public class MainActivity extends SlidingFragmentActivity {
         //设置该SearchView显示搜索按钮
         searchView.setSubmitButtonEnabled(false);
         
-        //设置该SearchView内默认显示的提示文本
-        searchView.setQueryHint("请输入单词");
+        new SearchViewFormatter()
+        .setSearchBackGroundResource(R.drawable.corners_bg)
+        .setSearchIconResource(R.drawable.search, true, true) //true to icon inside edittext, false to outside
+        .setSearchCloseIconResource(R.drawable.clear)
+        .setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS)
+        .setSearchTextColorResource(R.color.white)
+        .setSearchHintColorResource(R.color.gray_light_text)
+        .setSearchHintText("请输入单词")
+        .setCursorResource(R.drawable.cursor)
+        .format(searchView);
+        
         
         //为该SearchView组件设置事件监听器
         searchView.setOnQueryTextListener(new OnQueryTextListener() {
@@ -530,6 +576,35 @@ public class MainActivity extends SlidingFragmentActivity {
 			}
 		});
         
+        menuitemBtnAddWord = menu.findItem(R.id.actionbar_menu_wordbook_add_word);
+        menuitemBtnAddWord.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+			
+			@Override
+			public boolean onMenuItemClick(MenuItem item) {
+				WordBookFragment.showEditWordDialog(0, word, WordBookFragment.TYPE_ADD_WORD);
+				return false;
+			}
+		});
+        menuitemBtnAddWord.setVisible(false);
+        
+        menuitemSwiOrientation = menu.findItem(R.id.actionbar_menu_wordbook_switch);
+	    menuitemSwiOrientation.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+			
+			@Override
+			public boolean onMenuItemClick(MenuItem item) {
+				switch (WordBookFragment.getItemViewType()) {
+				case WordBookFragment.VIEW_TYPE_HORIZON:
+					WordBookFragment.setRecyclerViewWordType(WordBookFragment.VIEW_TYPE_VERTICAL);
+					break;
+				case WordBookFragment.VIEW_TYPE_VERTICAL:
+					WordBookFragment.setRecyclerViewWordType(WordBookFragment.VIEW_TYPE_HORIZON);
+				}
+				return true;
+			}
+		});
+	    
+	    menuitemSwiOrientation.setVisible(false);
+	    
 	    return true;
 	}
 	

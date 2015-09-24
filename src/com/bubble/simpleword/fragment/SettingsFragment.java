@@ -1,6 +1,5 @@
 package com.bubble.simpleword.fragment;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
@@ -129,7 +128,7 @@ public class SettingsFragment extends Fragment {
 	//SeekBar : "change the width of the float word window"
 	public static SeekBar seekbarWidthFloatWord;
 	public static final String KEY_SEEKBAR_WIDTH_FLOAT_WORD = "KEY_SEEKBAR_WIDTH_FLOAT_WORD";
-	public static final int WIDTH_FLOAT_WORD = 50;
+	public static final int WIDTH_FLOAT_WORD = 100;
 	private static int widthFloatWord;
 	
 	//Switch : "auto update word"
@@ -175,6 +174,7 @@ public class SettingsFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
 		mView=inflater.inflate(R.layout.fg_layout_settings,container, false);  
+		
 		
 		mContext = getActivity();
 		mActivity = getActivity();

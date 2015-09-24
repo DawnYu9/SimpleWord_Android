@@ -17,7 +17,7 @@
 		  <LinearLayout 
 		      android:layout_weight="0"
 		      android:layout_width="match_parent"
-    android:background="@android:color/holo_green_light"
+    android:background="@android:color/white"
 		      android:layout_height="wrap_content"
 	        	android:orientation="vertical"
 		      >

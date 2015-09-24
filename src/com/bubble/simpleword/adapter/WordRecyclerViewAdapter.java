@@ -1,16 +1,11 @@
 package com.bubble.simpleword.adapter;
 
-import java.net.URL;
 import java.util.List;
 
-import net.htmlparser.jericho.Source;
-
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
-import android.os.AsyncTask;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -20,13 +15,19 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.bubble.simpleword.R;
+import com.bubble.simpleword.activity.MainActivity;
 import com.bubble.simpleword.db.WordCls;
 import com.bubble.simpleword.db.WordsManager;
 import com.bubble.simpleword.util.Util;
@@ -42,25 +43,28 @@ import com.bubble.simpleword.util.Util;
  */
 public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerViewAdapter.BaseViewHolder> {  
 
-	private Context mContext;  
+	private Context context;  
 	private List<WordCls> wordsList;  
 	private String tableName;
 	private OnRecyclerViewItemClickListener onItemClickListener = null;
 	private OnRecyclerViewItemLongClickListener onItemLongClickListener = null;
 	
 	private int viewType = 0;
-	public static final int TYPE_VIEW_VERTICAL = LinearLayoutManager.HORIZONTAL;
-    public static final int TYPE_VIEW_HORIZON = LinearLayoutManager.VERTICAL;
+	public static final int VIEW_TYPE_VERTICAL = LinearLayoutManager.HORIZONTAL;
+    public static final int VIEW_TYPE_HORIZON = LinearLayoutManager.VERTICAL;
     
     private int currentPosition;
     
     private WordCls wordCls;
     
+    private String url;
+    private JsonObjectRequest jsonRequest;
+    
     boolean isJsonSucceed;
     boolean isLoadedSucceed = false;
-	
+    
 	public WordRecyclerViewAdapter( Context context , String tableName, List<WordCls> wordsList) {  
-	    this.mContext = context;  
+	    this.context = context;  
 	    this.tableName = tableName;
 	    this.wordsList = wordsList;  
 	}  
@@ -168,11 +172,11 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 	    View v ;
 	    
 	    switch (viewType) {
-		case TYPE_VIEW_HORIZON:
+		case VIEW_TYPE_HORIZON:
 			v = LayoutInflater.from(parent.getContext()).inflate(R.layout.wordbook_item_horizontal_cardview, parent, false);  
 			viewHolder = new HorizonViewHolder(v);
 			break;
-		case TYPE_VIEW_VERTICAL:
+		case VIEW_TYPE_VERTICAL:
 		default:
 			v = LayoutInflater.from(parent.getContext()).inflate(R.layout.wordbook_item_vertical_cardview, parent, false);  
 			
@@ -228,7 +232,7 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 		baseViewHolder.tvDefinition.setText(wordCls.getDefinition());  
 		
 		switch (baseViewHolder.getItemViewType()) {
-		case TYPE_VIEW_HORIZON:
+		case VIEW_TYPE_HORIZON:
 			final HorizonViewHolder horizonViewHolder = (HorizonViewHolder) baseViewHolder;
 			
 			if ( wordCls.isLoaded() ) {
@@ -243,25 +247,58 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 				
 				@Override
 				public void onClick(View v) {
-					WordCls wordCls = wordsList.get(position);
+					final WordCls wordCls = wordsList.get(position);
 					Log.i(tableName, "tvHint-onClick——" + String.valueOf(position) + "——" +wordCls.getWord());
 					switch (v.getId()) {
 					case R.id.wordbook_horizon_tv_hint:
-						if ( ! wordCls.isLoaded() ) {
-							Handler handler = new Handler(){
-								
-								@Override
-								public void handleMessage(Message msg) {
-									if (msg.what == position)
-										horizonViewHolder.tvHint.setVisibility(View.INVISIBLE);
-									else
-										horizonViewHolder.tvHint.setText("数据获取失败，请重试");
-								}
-								
-							};
-							ParseJsonTask parseJsonTask = new ParseJsonTask(horizonViewHolder, wordCls, position, handler);
-							parseJsonTask.execute();
-						} 
+//						if ( ! wordCls.isLoaded() ) {
+//							Handler handler = new Handler(){
+//								
+//								@Override
+//								public void handleMessage(Message msg) {
+//									if (msg.what == position)
+//										horizonViewHolder.tvHint.setVisibility(View.INVISIBLE);
+//									else
+//										horizonViewHolder.tvHint.setText("数据获取失败，请重试");
+//								}
+//								
+//							};
+//							ParseJsonTask parseJsonTask = new ParseJsonTask(horizonViewHolder, wordCls, position, handler);
+//							parseJsonTask.execute();
+//						} 
+						horizonViewHolder.progressBar.setVisibility(View.VISIBLE);
+						
+						url = MainActivity.URL_SHANBAY + wordCls.getWord(); 
+						  
+						jsonRequest = new JsonObjectRequest
+						        (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+						            @Override
+						            public void onResponse(JSONObject response) {
+						                // the response is already constructed as a JSONObject!
+						                try {
+						                    
+						                	Util.parseJsonPartData(wordCls, response);
+						                	WordsManager.addWordLoadInfo(tableName, wordCls);
+						                	updateItem(position, wordCls);
+						                	
+						                	horizonViewHolder.progressBar.setVisibility(View.INVISIBLE);
+						                	horizonViewHolder.tvHint.setVisibility(View.INVISIBLE);
+						                } catch (JSONException e) {
+						                    e.printStackTrace();
+						                }
+						            }
+						        }, new Response.ErrorListener() {
+						  
+						            @Override
+						            public void onErrorResponse(VolleyError error) {
+						            	horizonViewHolder.progressBar.setVisibility(View.INVISIBLE);
+						            	horizonViewHolder.tvHint.setText("数据获取失败，请重试");
+						                error.printStackTrace();
+						            }
+						        });
+						
+						  
+						MainActivity.mQueue.add(jsonRequest);  
 						break;
 
 					default:
@@ -269,16 +306,17 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 					}
 				}
 			});
-			
-			
 			break;
-		case TYPE_VIEW_VERTICAL:
+			
+		case VIEW_TYPE_VERTICAL:
 		default:
 			VerticalViewHolder verticalViewHolder = (VerticalViewHolder) baseViewHolder;
-			verticalViewHolder.imgBtnAddDel.setOnClickListener(new OnClickListener() {
+			verticalViewHolder.imgBtnPronounce.setOnClickListener(new OnClickListener() {
 				
 				@Override
 				public void onClick(View v) {
+					WordCls wordCls = wordsList.get(position);
+					Util.pronounce(wordCls, context);
 				}
 			});
 			break;
@@ -289,83 +327,83 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 	 * @date 2015-9-17 上午12:37:04
 	 * @author bubble
 	 */
-	class ParseJsonTask extends AsyncTask<String, Void, Boolean> {
-		HorizonViewHolder horizonViewHolder;
-		WordCls wordCls;
-		int position;
-		
-		String definitionEN;
-		String definitionCN;
-		String audioUrlUS;
-		
-		Handler handler;
-		
-        public ParseJsonTask(HorizonViewHolder horizonViewHolder,
-				WordCls wordCls, int position, Handler handler) {
-			super();
-			this.horizonViewHolder = horizonViewHolder;
-			this.wordCls = wordCls;
-			this.position = position;
-			this.handler = handler;
-		}
-
-		@Override
-        protected void onPreExecute() {
-        	horizonViewHolder.progressBar.setVisibility(View.VISIBLE);
-            super.onPreExecute();
-        }
-
-        @Override
-        protected void onPostExecute(Boolean result) {
-        	Message msg = handler.obtainMessage();
-        	
-        	horizonViewHolder.progressBar.setVisibility(View.INVISIBLE);
-            if (result) {
-            	wordCls.setDefinitionEN(definitionEN);
-            	wordCls.setDefinitionCN(definitionCN);
-            	wordCls.setAudioUrlUS(audioUrlUS);
-            	wordCls.setLoaded(true);
-            	WordsManager.addWordLoadInfo(tableName, wordCls);
-            	updateItem(position, wordCls);
-            	
-            	msg.what = position;
-            }else {
-            	msg.what = 0;
-            	Log.i(wordCls.getWord(), "获取失败");
-            }
-            
-            handler.sendMessage(msg);
-            
-            super.onPostExecute(result);
-        }
-
-        @Override
-        protected Boolean doInBackground(String... params) {
-            String path = "https://api.shanbay.com/bdc/search/?word=" + wordCls.getWord();
-            try {
-            	URL url = new URL(path);
-                Source source = new Source(url.openConnection());	//jericho-html-3.1.jar
-                String jsonstr = source.toString();
-                 
-                JSONObject jsonObj = new JSONObject(jsonstr);
-                 
-                JSONObject data = jsonObj.getJSONObject("data");
-                 
-                JSONObject defEN = data.getJSONObject("en_definition");
-                definitionEN = defEN.getString("pos") + "." + defEN.getString("defn"); 
-                 
-                JSONObject defCN = data.getJSONObject("cn_definition");
-                definitionCN = defCN.getString("pos") + defCN.getString("defn"); 
-                 
-                audioUrlUS = data.getString("us_audio");
-                 
-                return true;
-            } catch (Exception e) {
-            	Toast.makeText(mContext, "获取数据失败", Toast.LENGTH_SHORT).show();
-                return false;
-            }
-    	}
-	}
+//	class ParseJsonTask extends AsyncTask<String, Void, Boolean> {
+//		HorizonViewHolder horizonViewHolder;
+//		WordCls wordCls;
+//		int position;
+//		
+//		String definitionEN;
+//		String definitionCN;
+//		String audioUrlUS;
+//		
+//		Handler handler;
+//		
+//        public ParseJsonTask(HorizonViewHolder horizonViewHolder,
+//				WordCls wordCls, int position, Handler handler) {
+//			super();
+//			this.horizonViewHolder = horizonViewHolder;
+//			this.wordCls = wordCls;
+//			this.position = position;
+//			this.handler = handler;
+//		}
+//
+//		@Override
+//        protected void onPreExecute() {
+//        	horizonViewHolder.progressBar.setVisibility(View.VISIBLE);
+//            super.onPreExecute();
+//        }
+//
+//        @Override
+//        protected void onPostExecute(Boolean result) {
+//        	Message msg = handler.obtainMessage();
+//        	
+//        	horizonViewHolder.progressBar.setVisibility(View.INVISIBLE);
+//            if (result) {
+//            	wordCls.setDefinitionEN(definitionEN);
+//            	wordCls.setDefinitionCN(definitionCN);
+//            	wordCls.setAudioUrlUS(audioUrlUS);
+//            	wordCls.setLoaded(true);
+//            	WordsManager.addWordLoadInfo(tableName, wordCls);
+//            	updateItem(position, wordCls);
+//            	
+//            	msg.what = position;
+//            }else {
+//            	msg.what = 0;
+//            	Log.i(wordCls.getWord(), "获取失败");
+//            }
+//            
+//            handler.sendMessage(msg);
+//            
+//            super.onPostExecute(result);
+//        }
+//
+//        @Override
+//        protected Boolean doInBackground(String... params) {
+//            String path = "https://api.shanbay.com/bdc/search/?word=" + wordCls.getWord();
+//            try {
+//            	URL url = new URL(path);
+//                Source source = new Source(url.openConnection());	//jericho-html-3.1.jar
+//                String jsonstr = source.toString();
+//                 
+//                JSONObject jsonObj = new JSONObject(jsonstr);
+//                 
+//                JSONObject data = jsonObj.getJSONObject("data");
+//                 
+//                JSONObject defEN = data.getJSONObject("en_definition");
+//                definitionEN = defEN.getString("pos") + "." + defEN.getString("defn"); 
+//                 
+//                JSONObject defCN = data.getJSONObject("cn_definition");
+//                definitionCN = defCN.getString("pos") + defCN.getString("defn"); 
+//                 
+//                audioUrlUS = data.getString("us_audio");
+//                 
+//                return true;
+//            } catch (Exception e) {
+//            	Toast.makeText(context, "获取数据失败", Toast.LENGTH_SHORT).show();
+//                return false;
+//            }
+//    	}
+//	}
 	
 	/**
 	 * <p>Title: getWordCls</p>
@@ -460,6 +498,8 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 		notifyDataSetChanged();
 	}
 	
+
+
 	/**
 	 * @author bubble
 	 * @date 2015-9-10 下午8:33:49
@@ -468,6 +508,7 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 		public TextView tvWord;  
 		public TextView tvPhonetic;  
 		public TextView tvDefinition;  
+		
 		public BaseViewHolder(View v) {
 			super(v);
 //			Log.i("BaseViewHolder——getLayoutPosition", String.valueOf(getLayoutPosition()));
@@ -479,7 +520,7 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 	 * @date 2015-9-10
 	 */
 	public class VerticalViewHolder extends BaseViewHolder {
-		public ImageButton imgBtnAddDel;
+		public ImageButton imgBtnPronounce;
 		
 	    public VerticalViewHolder( View v) {  
 	        super(v); 
@@ -487,7 +528,7 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 			tvWord = (TextView) v.findViewById(R.id.wordcard_vertical_tv_word);  
 			tvPhonetic = (TextView) v.findViewById(R.id.wordcard_vertical_tv_phonetic);  
 			tvDefinition = (TextView) v.findViewById(R.id.wordcard_vertical_tv_definition);  
-			imgBtnAddDel = (ImageButton) v.findViewById(R.id.wordcard_vertical_imgbtn_add_delete);  
+			imgBtnPronounce = (ImageButton) v.findViewById(R.id.wordcard_vertical_imgbtn_pronounce);  
 	    }
 	}  
 	

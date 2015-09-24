@@ -1,5 +1,14 @@
 package com.bubble.simpleword.fragment;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +20,8 @@ import android.app.Fragment;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
@@ -26,12 +37,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.PopupMenu;
@@ -39,7 +45,6 @@ import android.widget.PopupMenu.OnMenuItemClickListener;
 import android.widget.PopupWindow;
 import android.widget.Spinner;
 import android.widget.Switch;
-import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -86,8 +91,8 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
     private WordCls word ;
     
     private Switch swi;
-    public static final int TYPE_VIEW_VERTICAL = WordRecyclerViewAdapter.TYPE_VIEW_VERTICAL;
-    public static final int TYPE_VIEW_HORIZON = WordRecyclerViewAdapter.TYPE_VIEW_HORIZON;
+    public static final int VIEW_TYPE_VERTICAL = WordRecyclerViewAdapter.VIEW_TYPE_VERTICAL;
+    public static final int VIEW_TYPE_HORIZON = WordRecyclerViewAdapter.VIEW_TYPE_HORIZON;
     
     private static final String KEY_WORDBOOK_ORIENTATION = "KEY_WORDBOOK_ORIENTATION";
     private static int viewHolderType;
@@ -132,13 +137,18 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
     private RecyclerView recyclerViewEditBook;
     private EditBookRecyclerViewAdapter editBookRecyclerViewAdapter;
     
-    Button btnCreateBook;
+    private Button btnCreateBook;
     
-    ItemTouchHelper.Callback callback;
-	ItemTouchHelper touchHelper;
+    private ItemTouchHelper.Callback callback;
+    private ItemTouchHelper touchHelper;
     private OnStartDragListener mDragStartListener;
     
     private static String tableName;
+    
+    public static final int TYPE_EDIT_WORD = 0;
+    public static final int TYPE_ADD_WORD = 1;
+    
+    private static final String DOWNLOAD_DIRECTORY = MainActivity.DOWNLOAD_DIRECTORY;
     
     /**
 	 * <p>Title: </p>
@@ -153,39 +163,24 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 		Log.i(getTag(), "WordBookFragment——onCreateView");
 		view=inflater.inflate(R.layout.fg_layout_wordbook,container, false); 
 		
-		
 		activity = getActivity();
 		
 		prefSettings = Util.getSharedPreferences(getActivity());
     	prefEditorSettings = prefSettings.edit();
         
-    	initActionBar(inflater);        
-        
-        swi = (Switch)view.findViewById(R.id.switch_layout);
-        swi.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-			
-			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				if ( !isChecked ) {
-					setRecyclerViewWordType(TYPE_VIEW_VERTICAL);
-				} else {
-					setRecyclerViewWordType(TYPE_VIEW_HORIZON);
-				}
-			}
-		});
+    	initActionBar();        
         
 		return view; 
 	}
 
-	public void initActionBar(LayoutInflater inflater) {
+	public void initActionBar() {
 		actionBar = activity.getActionBar();
         actionBar.setDisplayShowCustomEnabled(true);	//make custom actionbar view works
         
 //      actionbarLayout = LayoutInflater.from(activity).inflate(R.layout.wordbook_actionbar, null);  
 		actionbarLayout = view.inflate(activity,R.layout.wordbook_actionbar_2, null);  
       
-		initPopMenu(inflater);
-//		initSpinner();
+		initPopMenu();
 		
         actionBar.setCustomView(actionbarLayout);  
 	}
@@ -196,11 +191,11 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 	 * @author bubble
 	 * @date 2015-9-17 下午4:24:38
 	 */
-	private void initPopMenu(LayoutInflater inflater) {
+	private void initPopMenu() {
 		tableName = prefSettings.getString(KEY_WORDBOOK_SELECTED_TABLENAME, getWordbookList().get(0));
 		
 		tvDropdownPopMenu = (TextView) actionbarLayout.findViewById(R.id.wordbook_actionbar_tv_popmenu);
-		tvDropdownPopMenu.setWidth(Util.getScreenWidth()/2);
+		tvDropdownPopMenu.setWidth(Util.getScreenWidth()/3);
 		tvDropdownPopMenu.setText(tableName);
 		tvDropdownPopMenu.setOnClickListener(new OnClickListener() {
 			
@@ -226,10 +221,7 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 		
 		getWordDataset(tableName);
     	
-    	if ( ! isWordRecyclerInit ) {
-    		initWordRecyclerView();
-    		isWordRecyclerInit = true;
-    	}
+		initWordRecyclerView();
     	
     	restoreWordRecyclerViewPosition(tableName);
 		
@@ -377,72 +369,6 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 		return wordsDataset;
 	}
 		
-	/**
-     * <p>Title: initSpinner</p>
-     * <p>Description: </p>
-     * @author bubble
-     * @date 2015-8
-     */
-    private void initSpinner() {  
-
-        spnWordbook = (Spinner) actionbarLayout.findViewById(R.id.wordbook_actionbar_spinner);  
-          
-//        initSpinnerDataMethod1();  
-          
-        initSpinnerDataMethod2();  
-        
-        tableName = prefSettings.getString(KEY_WORDBOOK_SELECTED_TABLENAME, getWordbookList().get(0));
-        spnSelectedPosition = getWordbookList().indexOf(tableName);
-        spnWordbook.setSelection(spnSelectedPosition);
-          
-        spnWordbook.setOnItemSelectedListener(new OnItemSelectedListener() {
-        	
-			@Override
-			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-				tableName= parent.getItemAtPosition(position).toString(); 
-	        	prefEditorSettings.putString(KEY_WORDBOOK_SELECTED_TABLENAME, tableName);
-	        	prefEditorSettings.commit();
-	        	
-	        	getWordDataset(tableName);
-	        	
-	        	if ( ! isWordRecyclerInit ) {
-	        		initWordRecyclerView();
-	        		isWordRecyclerInit = true;
-	        	}
-	        	
-	        	wordCardAdapter.updateDataset(wordsDataset);
-	        	Toast.makeText(activity, "你点击的是:"+tableName, Toast.LENGTH_SHORT).show();   
-	        	
-	        	
-	        	restoreWordRecyclerViewPosition(tableName);
-			}
-
-			@Override
-			public void onNothingSelected(AdapterView<?> parent) {
-			}
-		});
-          
-    }
-
-    /** 
-     * 建立数据源 方法一  
-     */  
-/*    private void initSpinnerDataMethod1() {  
-         String[] mItems = getResources().getStringArray(R.array.spinner_page);  
-         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(activity,android.R.layout.simple_spinner_item, mItems);  
-         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);  
-         mActionbarSpinner.setAdapter(spinnerAdapter);  
-           
-    }  */
-      
-    /** 
-     * 建立数据源 方法二  
-     */  
-    private void initSpinnerDataMethod2() {  
-        spnWordbook.setAdapter(  
-                new ArrayAdapter<String>(activity,   
-                        android.R.layout.simple_expandable_list_item_1,getWordbookList()));    
-    }
 
 	/** 
 	 * 下拉列表数据源 
@@ -488,10 +414,10 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 				switch (newState) {
 	            case RecyclerView.SCROLL_STATE_IDLE:
 	            	switch (wordCardAdapter.getItemViewType()) {
-					case TYPE_VIEW_HORIZON:
+					case VIEW_TYPE_HORIZON:
 						scrollToCenter(recyclerView);
 						break;
-					case TYPE_VIEW_VERTICAL:
+					case VIEW_TYPE_VERTICAL:
 					default:
 						break;
 					}
@@ -508,7 +434,7 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 	
 		});
 		
-		viewHolderType = prefSettings.getInt(KEY_WORDBOOK_ORIENTATION, TYPE_VIEW_VERTICAL);
+		viewHolderType = prefSettings.getInt(KEY_WORDBOOK_ORIENTATION, VIEW_TYPE_VERTICAL);
 		setRecyclerViewWordType(viewHolderType);
 		
 	    recyclerViewWord.setItemAnimator(new DefaultItemAnimator());  
@@ -519,15 +445,16 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 			@Override
 			public void onItemClick(View view, int position, WordCls wordCls) {
 				switch (wordCardAdapter.getItemViewType(position)) {
-				case TYPE_VIEW_HORIZON:
+				case VIEW_TYPE_HORIZON:
 					Log.i(tableName, "onItemClick——" + String.valueOf(position) + "——" + wordCls.getWord());
 					//水平为全屏卡片模式，单击发音
+					Util.pronounce(wordCls, activity);
 					Toast.makeText(activity, "发音" + wordCls.getWord(), Toast.LENGTH_SHORT).show();
 					break;
-				case TYPE_VIEW_VERTICAL:
+				case VIEW_TYPE_VERTICAL:
 					//垂直为小卡片list模式，单击进入大卡片的该单词position，联网获取完整释义
 				default:
-					setRecyclerViewWordType(TYPE_VIEW_HORIZON);
+					setRecyclerViewWordType(VIEW_TYPE_HORIZON);
 					recyclerViewWord.scrollToPosition(position);
 					break;
 				}
@@ -540,6 +467,70 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 				showCardMenu(view, position, wordCls);
 			}
 		});
+	}
+	
+	/**
+	 * <p>Title: downloadAudio</p>
+	 * <p>Description: </p>
+	 * @param wordCls
+	 * @author bubble
+	 * @date 2015-9-24 下午12:39:43
+	 */
+	private static String getAudioPath(WordCls wordCls) {
+		try {
+			String urlString = wordCls.getAudioUrlUS();
+			URL url = new URL(urlString);
+			//打开到url的连接
+			final HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+			//以下为java IO部分，大体来说就是先检查文件夹是否存在，不存在则创建,然后的文件名重复问题，没有考虑
+			String filename=urlString.substring(urlString.lastIndexOf("/")+1);
+			                 
+			File dir=new File(DOWNLOAD_DIRECTORY);
+			if (!dir.exists()) {
+				dir.mkdir();
+			}
+			String downAudioDir = DOWNLOAD_DIRECTORY + File.separator + "audio";
+			dir = new File(downAudioDir);
+			if (!dir.exists()) {
+				dir.mkdir();
+			}
+			final String filePath = downAudioDir + File.separator + filename;
+			final File file=new File(filePath);
+			if (file.exists())
+				return filePath;
+			
+			file.createNewFile();
+			
+			final Handler handler = new Handler();
+			handler.post(new Runnable() {
+				
+				@Override
+				public void run() {
+					try {
+						OutputStream output=new FileOutputStream(file);
+						byte[] buffer=new byte[1024*4];
+						InputStream istream=connection.getInputStream();
+						while (istream.read(buffer)!=-1) {
+							output.write(buffer);
+						}
+						output.flush();
+						output.close();
+						istream.close();
+						
+					} catch (Exception e) {
+						e.printStackTrace();
+					} 
+				}
+			});
+			return filePath;
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 	/**
@@ -599,11 +590,14 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 	 */
 	private static void restoreWordRecyclerViewPosition(String tableName) {
 		recyclerViewState = hmRecyclerViewState.get(tableName);
+		savedFirstVisiblePosition = prefSettings.getInt(KEY_RECYCLERVIEW_SCROLL_POSITION + tableName, 0);
 		if (recyclerViewState != null) {
-			recyclerViewWord.getLayoutManager().onRestoreInstanceState(recyclerViewState);
+			if ( getItemViewType() == VIEW_TYPE_VERTICAL) 
+				recyclerViewWord.getLayoutManager().onRestoreInstanceState(recyclerViewState);
+			else
+				recyclerViewWord.scrollToPosition(savedFirstVisiblePosition);
 		} else {
 			if ( recyclerViewWord != null) {
-				savedFirstVisiblePosition = prefSettings.getInt(KEY_RECYCLERVIEW_SCROLL_POSITION + tableName, 0);
 				dyTop = prefSettings.getInt(KEY_RECYCLERVIEW_SCROLL_DY_TOP + tableName, 0);
 				dyBottom = prefSettings.getInt(KEY_RECYCLERVIEW_SCROLL_DY_BOTTOM + tableName, 0);
 				
@@ -611,21 +605,23 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 				
 				recyclerViewWord.scrollToPosition(savedFirstVisiblePosition);
 				
-				if(currentFirstVisiblePosition > -1) {
-					if (currentFirstVisiblePosition >= savedFirstVisiblePosition) {	//savedFirstVisiblePosition在顶部
-						recyclerViewWord.scrollBy(0, dyTop);
-					} else if (currentFirstVisiblePosition < savedFirstVisiblePosition){	//savedFirstVisiblePosition在底部
-						if (savedFirstVisiblePosition > 4)
-							recyclerViewWord.scrollBy(0, dyBottom);				
-						else {	//第一页的item用handler/smoothScrollBy会有跳转动作显示，暂时会找到合适的办法
-							recyclerViewWord.scrollBy(0, recyclerViewWord.getHeight());
-							recyclerViewWord.scrollToPosition(savedFirstVisiblePosition);
-							recyclerViewWord.smoothScrollBy(0, dyTop);
-						}
-					} 
-				} else {	//第一次打开，还未出现界面，会有滑动现象
-					recyclerViewWord.scrollToPosition(savedFirstVisiblePosition);
-					recyclerViewWord.smoothScrollBy(0, dyTop);
+				if ( getItemViewType() == VIEW_TYPE_VERTICAL) {
+					if(currentFirstVisiblePosition > -1) {
+						if (currentFirstVisiblePosition >= savedFirstVisiblePosition) {	//savedFirstVisiblePosition在顶部
+							recyclerViewWord.scrollBy(0, dyTop);
+						} else if (currentFirstVisiblePosition < savedFirstVisiblePosition){	//savedFirstVisiblePosition在底部
+							if (savedFirstVisiblePosition > 4)
+								recyclerViewWord.scrollBy(0, dyBottom);				
+							else {	//第一页的item用handler/smoothScrollBy会有跳转动作显示，暂时会找到合适的办法
+								recyclerViewWord.scrollBy(0, recyclerViewWord.getHeight());
+								recyclerViewWord.scrollToPosition(savedFirstVisiblePosition);
+								recyclerViewWord.smoothScrollBy(0, dyTop);
+							}
+						} 
+					} else {	//第一次打开，还未出现界面，会有滑动现象
+						recyclerViewWord.scrollToPosition(savedFirstVisiblePosition);
+						recyclerViewWord.smoothScrollBy(0, dyTop);
+					}
 				}
 			}
 		}
@@ -639,23 +635,28 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 	 * @author bubble
 	 * @date 2015-9-10 下午9:45:11
 	 */
-	private static void setRecyclerViewWordType(int type) {
-		switch (type) {
-		case TYPE_VIEW_HORIZON:
-			prefEditorSettings.putInt(KEY_WORDBOOK_ORIENTATION, type);
-			wordCardAdapter.setItemViewType(type);
-			recyclerViewWord.setLayoutManager(new LinearLayoutManager(activity,LinearLayoutManager.HORIZONTAL,false));
-			MainActivity.setSlidingAboveMode(SlidingMenu.TOUCHMODE_MARGIN);
-			break;
-		case TYPE_VIEW_VERTICAL:
-		default:
-			prefEditorSettings.putInt(KEY_WORDBOOK_ORIENTATION, type);
-			wordCardAdapter.setItemViewType(type);
-			recyclerViewWord.setLayoutManager(new LinearLayoutManager(activity)); 
-			MainActivity.setSlidingAboveMode(SlidingMenu.TOUCHMODE_FULLSCREEN);
-			break;
+	public static void setRecyclerViewWordType(int type) {
+		if ( recyclerViewWord != null ) {
+			switch (type) {
+			case VIEW_TYPE_HORIZON:
+				prefEditorSettings.putInt(KEY_WORDBOOK_ORIENTATION, type);
+				wordCardAdapter.setItemViewType(type);
+				recyclerViewWord.setLayoutManager(new LinearLayoutManager(activity,LinearLayoutManager.HORIZONTAL,false));
+				MainActivity.setSlidingAboveMode(SlidingMenu.TOUCHMODE_MARGIN);
+				break;
+			case VIEW_TYPE_VERTICAL:
+				prefEditorSettings.putInt(KEY_WORDBOOK_ORIENTATION, type);
+				wordCardAdapter.setItemViewType(type);
+				recyclerViewWord.setLayoutManager(new LinearLayoutManager(activity)); 
+				MainActivity.setSlidingAboveMode(SlidingMenu.TOUCHMODE_FULLSCREEN);
+				break;
+			default:
+				break;
+			}
+			restoreWordRecyclerViewPosition(tableName);
+
+			prefEditorSettings.commit();
 		}
-		prefEditorSettings.commit();
 	}
 	
     /**
@@ -674,7 +675,7 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 			public boolean onMenuItemClick(MenuItem item) {
 				switch (item.getItemId()) {
 				case R.id.wordbook_card_menu_edit:
-					showEditWordDialog(v, position,wordCls);
+					showEditWordDialog(position,wordCls, TYPE_EDIT_WORD);
 					break;
 				case R.id.wordbook_card_menu_delete:
 					showDeleteWordDialog(wordCls);
@@ -698,35 +699,59 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 	 * @author bubble
 	 * @date 2015-9-9 下午11:41:49
 	 */
-	private static void showEditWordDialog(final View v, final int position, final WordCls wordCls) {
+	public static void showEditWordDialog(final int position, final WordCls wordCls, final int type) {
 		// 取得自定义View  
         LayoutInflater layoutInflater = LayoutInflater.from(activity);  
         View viewDlgEditWord = layoutInflater.inflate(R.layout.wordbook_dlg_edit_word, null);  
         final EditText edtWord = (EditText)viewDlgEditWord.findViewById(R.id.wordbook_dlg_edttxt_word);
         final EditText edtPhonetic = (EditText)viewDlgEditWord.findViewById(R.id.wordbook_dlg_edttxt_phonetic);
         final EditText edtDefinition = (EditText)viewDlgEditWord.findViewById(R.id.wordbook_dlg_edttxt_definition);
-        edtWord.setText(wordCls.getWord());
-        edtPhonetic.setText(wordCls.getPhonetic());
-        edtDefinition.setText(wordCls.getDefinition());
         
         AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext()); 
-        builder.setTitle("编辑单词")
-                .setIcon(R.mipmap.ic_launcher)
-                .setView(viewDlgEditWord)  
-                .setPositiveButton("提交", new DialogInterface.OnClickListener() {  
+        
+        switch (type) {
+		case TYPE_EDIT_WORD:
+			builder.setTitle("编辑单词");
+			edtWord.setText(wordCls.getWord());
+			edtPhonetic.setText(wordCls.getPhonetic());
+			edtDefinition.setText(wordCls.getDefinition());
+			break;
+		case TYPE_ADD_WORD:
+			builder.setTitle("请输入单词");
+			edtWord.setHint("请输入单词");
+			edtPhonetic.setHint("请输入音标");
+			edtDefinition.setHint("请输入释义");
+			break;
+		default:
+			break;
+		}
+        
+	    builder.setIcon(R.mipmap.ic_launcher)
+	    .setView(viewDlgEditWord)  
+	    .setPositiveButton("提交", new DialogInterface.OnClickListener() {  
+	  
+            @Override  
+            public void onClick(DialogInterface dialog, int which) {  
+            	switch (type) {
+				case TYPE_EDIT_WORD:
+					editWord(position, wordCls, edtWord, edtPhonetic, edtDefinition);
+					break;
+				case TYPE_ADD_WORD:
+					addWord(edtWord, edtPhonetic, edtDefinition);
+					break;
+				default:
+					break;
+				}
+            }  
+        })  
+        .setNegativeButton("取消", new DialogInterface.OnClickListener() {  
   
-                    @Override  
-                    public void onClick(DialogInterface dialog, int which) {  
-                    	editWord(position, wordCls, edtWord, edtPhonetic, edtDefinition);
-                    }  
-                })  
-                .setNegativeButton("取消", new DialogInterface.OnClickListener() {  
-  
-                    @Override  
-                    public void onClick(DialogInterface dialog, int which) {  
-                    }  
-                }).  
-                create();  
+            @Override  
+            public void onClick(DialogInterface dialog, int which) {  
+            }  
+        }) 
+        .create();  
+	    
         builder.show(); 
 	}
 	
@@ -835,17 +860,36 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 	private static void editWord(final int position, final WordCls wordCls,
 			final EditText edtWord, final EditText edtPhonetic,
 			final EditText edtDefinition) {
-		wordCls.setWord(edtWord.getText().toString());
-		wordCls.setPhonetic(edtPhonetic.getText().toString());
-		wordCls.setDefinition(edtDefinition.getText().toString());
 		
-		WordsManager.editWord(tableName, wordCls);
-		
-		wordCardAdapter.updateItem(position, wordCls);
-		
-		saveRecyclerViewPosition(tableName);
-		
-		hmIsDatasetEdit.put(tableName, true);
+		if ( ( edtWord.getText().toString() != null ) && ( edtWord.getText().toString() != "" ) ) {
+			wordCls.setWord(edtWord.getText().toString());
+			wordCls.setPhonetic(edtPhonetic.getText().toString());
+			wordCls.setDefinition(edtDefinition.getText().toString());
+			
+			WordsManager.editWord(tableName, wordCls);
+			
+			wordCardAdapter.updateItem(position, wordCls);
+			
+			saveRecyclerViewPosition(tableName);
+			
+			hmIsDatasetEdit.put(tableName, true);
+		}
+	}
+	
+	private static void addWord(final EditText edtWord, final EditText edtPhonetic,
+			final EditText edtDefinition) {
+		WordCls wordCls = new WordCls();
+		if ( ( edtWord.getText().toString() != null ) && ( edtWord.getText().toString() != "" ) ) {
+			wordCls.setWord(edtWord.getText().toString());
+			wordCls.setPhonetic(edtPhonetic.getText().toString());
+			wordCls.setDefinition(edtDefinition.getText().toString());
+			
+			WordsManager.addWord(tableName, wordCls);
+			
+			wordCardAdapter.addItem(wordCls);
+			
+			hmIsDatasetEdit.put(tableName, true);
+		}
 	}
     
 	/**
@@ -951,5 +995,44 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 			
 			WordsManager.deleteTable(getWordbookList().get(position));
 		}
+	}
+	/**
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-9-23 下午9:30:40
+	 */
+//	@Override
+//	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+//		super.onCreateOptionsMenu(menu, inflater);
+//	    inflater.inflate(R.menu.actionbar_menu, menu);
+//	    
+//	    MenuItem switchOrientation = menu.findItem(R.id.actionbar_menu_wordbook_switch);
+//	    switchOrientation.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+//			
+//			@Override
+//			public boolean onMenuItemClick(MenuItem item) {
+//				switch (wordCardAdapter.getItemViewType()) {
+//				case VIEW_TYPE_HORIZON:
+//					setRecyclerViewWordType(VIEW_TYPE_VERTICAL);
+//					break;
+//				case VIEW_TYPE_VERTICAL:
+//					setRecyclerViewWordType(VIEW_TYPE_HORIZON);
+//				}
+//				return true;
+//			}
+//		});
+//	}
+	
+	/**
+	 * <p>Title: getItemViewType</p>
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-9-23 下午10:35:01
+	 */
+	public static int getItemViewType() {
+		if ( wordCardAdapter != null )
+			return wordCardAdapter.getItemViewType();
+		else 
+			return VIEW_TYPE_VERTICAL;
 	}
 }
