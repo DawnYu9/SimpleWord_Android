@@ -48,13 +48,13 @@ public final class R {
 		public static final int background_progress = 0x7f020043;
 		public static final int background_switch_ball_uncheck = 0x7f020044;
 		public static final int background_transparent = 0x7f020045;
-		public static final int dialog_background = 0x7f02004a;
-		public static final int float_button1_shadowp = 0x7f02004b;
-		public static final int float_button_shadow1 = 0x7f02004c;
-		public static final int ic_reloj_max = 0x7f02004d;
-		public static final int shadow_down = 0x7f020055;
-		public static final int shadow_right = 0x7f020056;
-		public static final int sprite_check = 0x7f020057;
+		public static final int dialog_background = 0x7f02004c;
+		public static final int float_button1_shadowp = 0x7f02004d;
+		public static final int float_button_shadow1 = 0x7f02004e;
+		public static final int ic_reloj_max = 0x7f02004f;
+		public static final int shadow_down = 0x7f020057;
+		public static final int shadow_right = 0x7f020058;
+		public static final int sprite_check = 0x7f020059;
 	}
 	public static final class id {
 		public static final int blue = 0x7f0c005a;
@@ -71,7 +71,7 @@ public final class R {
 		public static final int progressBarCircularIndetermininate = 0x7f0c007e;
 		public static final int red = 0x7f0c0058;
 		public static final int rootSelector = 0x7f0c0055;
-		public static final int shape_bacground = 0x7f0c00bc;
+		public static final int shape_bacground = 0x7f0c00c0;
 		public static final int snackbar = 0x7f0c009a;
 		public static final int text = 0x7f0c007a;
 		public static final int title = 0x7f0c0032;

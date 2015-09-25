@@ -6,6 +6,21 @@
 	<dimen name="list_padding">5dp</dimen>
 	<dimen name="shadow_width">5dp</dimen>
 	<dimen name="slidingmenu_offset">60dp</dimen>
+	
+	<dimen name="divider_size">1dp</dimen>
+	<dimen name="divider_margin">0dp</dimen>
+	
+	<dimen name="list_padding_horizon">7dp</dimen>
+	<dimen name="list_item_padding_vertical">4dp</dimen>
+	
+	<dimen name="btn_padding">5dp</dimen>
+	
+	<dimen name="text_list_item">18sp</dimen>
+	<dimen name="text_list_title">20sp</dimen>
+	
+	<dimen name="actionbar_height">40dp</dimen>
+	
+	
     <integer name="num_cols">1</integer>
 	
 </resources>

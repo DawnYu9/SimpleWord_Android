@@ -4,7 +4,7 @@
     android:layout_width="match_parent"  
     android:layout_height="match_parent"  
     android:orientation="horizontal"
-    android:background="@drawable/corners_bg"
+    android:background="@drawable/bg_corners_gray_translucent"
 	>  
     <!-- 播放单词读音 -->
     <ImageButton 

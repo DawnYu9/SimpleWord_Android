@@ -20,8 +20,6 @@ import android.app.Fragment;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.drawable.BitmapDrawable;
-import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
@@ -37,7 +35,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.PopupMenu;
@@ -60,6 +57,7 @@ import com.bubble.simpleword.db.WordsManager;
 import com.bubble.simpleword.drag.SimpleItemTouchHelperCallback;
 import com.bubble.simpleword.util.MyLayoutManager;
 import com.bubble.simpleword.util.Util;
+import com.bubble.simpleword.view.HorizontalDividerItemDecoration;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 
 /**
@@ -126,18 +124,18 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
     private static Parcelable recyclerViewState;
 	
     private PopupWindow dropdownPopMenu;
-    private View dropdownPopMenuView;
+    private View viewDropdownPopMenu;
     private static TextView tvDropdownPopMenu;
     private RecyclerView recyclerviewBookList;
     private List<String> datasetBookList;
     private static BookMenuRecyclerViewAdapter bookMenuRecyclerViewAdapter;
-    private Button btnPopMenuEditWordbook;
+    private TextView btnPopMenuEditWordbook;
+    
     private PopupWindow popWindowEditBook;
     private View viewEditBookPopWindow;
     private RecyclerView recyclerViewEditBook;
     private EditBookRecyclerViewAdapter editBookRecyclerViewAdapter;
-    
-    private Button btnCreateBook;
+    private TextView btnCreateBook;
     
     private ItemTouchHelper.Callback callback;
     private ItemTouchHelper touchHelper;
@@ -205,19 +203,25 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 			}
 		});
 
-		dropdownPopMenuView = LayoutInflater.from(activity).inflate(R.layout.wordbook_actionbar_popmenu_ll, null);
-		dropdownPopMenu = new PopupWindow(dropdownPopMenuView, Util.getScreenWidth()/2, LayoutParams.WRAP_CONTENT);
+		viewDropdownPopMenu = LayoutInflater.from(activity).inflate(R.layout.wordbook_actionbar_popmenu_ll, null);
+		dropdownPopMenu = new PopupWindow(viewDropdownPopMenu, Util.getScreenWidth()/2, LayoutParams.WRAP_CONTENT);
 		dropdownPopMenu.setFocusable(true);
 		dropdownPopMenu.setOutsideTouchable(true);
 		dropdownPopMenu.setBackgroundDrawable(new BitmapDrawable()); 
 		dropdownPopMenu.update();
 		
-		recyclerviewBookList = (RecyclerView) dropdownPopMenuView.findViewById(R.id.wordbook_actionbar_popmenu_recyclerview);
+		recyclerviewBookList = (RecyclerView) viewDropdownPopMenu.findViewById(R.id.wordbook_actionbar_popmenu_recyclerview);
 		bookMenuRecyclerViewAdapter = new BookMenuRecyclerViewAdapter(activity, getWordbookList());
 		recyclerviewBookList.setLayoutManager(new MyLayoutManager(activity));
 		recyclerviewBookList.setItemAnimator(new DefaultItemAnimator());  
 		recyclerviewBookList.setHasFixedSize(true);
 		recyclerviewBookList.setAdapter(bookMenuRecyclerViewAdapter);
+		recyclerviewBookList.addItemDecoration(new HorizontalDividerItemDecoration.Builder(activity)
+				.colorResId(R.color.gray_divider)
+				.size(getResources().getDimensionPixelSize(R.dimen.divider_size))
+				.margin(getResources().getDimensionPixelSize(R.dimen.divider_margin),
+                        getResources().getDimensionPixelSize(R.dimen.divider_margin))
+                        .build());
 		
 		getWordDataset(tableName);
     	
@@ -251,19 +255,19 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 			}
 		});
 		
-		btnPopMenuEditWordbook = (Button) dropdownPopMenuView.findViewById(R.id.wordbook_actionbar_popmenu_btn_edit);
+		btnPopMenuEditWordbook = (TextView) viewDropdownPopMenu.findViewById(R.id.wordbook_actionbar_popmenu_tv_edit);
 		btnPopMenuEditWordbook.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
 				dropdownPopMenu.dismiss();
-				popWindowEditBook.showAsDropDown(v);
+				popWindowEditBook.showAsDropDown(tvDropdownPopMenu);
 			}
 		});
 		
 		viewEditBookPopWindow = LayoutInflater.from(activity).inflate(R.layout.wordbook_popwindow_edit_book, null);
 		
-		popWindowEditBook = new PopupWindow(viewEditBookPopWindow, Util.getScreenWidth() * 3/5, LayoutParams.WRAP_CONTENT);
+		popWindowEditBook = new PopupWindow(viewEditBookPopWindow, Util.getScreenWidth() / 2, LayoutParams.WRAP_CONTENT);
 		popWindowEditBook.setFocusable(true);
 		popWindowEditBook.setOutsideTouchable(true);
 		popWindowEditBook.setBackgroundDrawable(new BitmapDrawable()); 
@@ -275,6 +279,12 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 		recyclerViewEditBook.setAdapter(editBookRecyclerViewAdapter);
 		recyclerViewEditBook.setItemAnimator(new DefaultItemAnimator());  
 		recyclerViewEditBook.setHasFixedSize(true);
+		recyclerViewEditBook.addItemDecoration(new HorizontalDividerItemDecoration.Builder(activity)
+			.colorResId(R.color.gray_divider)
+			.size(getResources().getDimensionPixelSize(R.dimen.divider_size))
+			.margin(getResources().getDimensionPixelSize(R.dimen.divider_margin),
+	                getResources().getDimensionPixelSize(R.dimen.divider_margin))
+	                .build());
 		
 		editBookRecyclerViewAdapter.setOnItemClickListener(new EditBookRecyclerViewAdapter.OnRecyclerViewItemClickListener() {
 			
@@ -319,7 +329,7 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 		touchHelper = new ItemTouchHelper(callback);
 		touchHelper.attachToRecyclerView(recyclerViewEditBook);
 		
-		btnCreateBook = (Button) viewEditBookPopWindow.findViewById(R.id.wordbook_btn_add_book);
+		btnCreateBook = (TextView) viewEditBookPopWindow.findViewById(R.id.wordbook_tv_add_book);
 		btnCreateBook.setOnClickListener(new OnClickListener() {
 			
 			@Override

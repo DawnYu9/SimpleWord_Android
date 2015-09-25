@@ -118,16 +118,17 @@ public class MyWindowManager {
         screenWidth = Util.getScreenWidth();  
         screenHeight = Util.getScreenHeight();  
         if (bigFloatWindow == null) {  
-            bigFloatWindow = new ViewBigFloatWindow(context);  
+            bigFloatWindow = new ViewBigFloatWindow(context);
+            
             if (bigFloatWindowParams == null) {  
                 bigFloatWindowParams = new LayoutParams();  
-                bigFloatWindowParams.x = screenWidth / 2 - ViewBigFloatWindow.viewWidth / 2;  
-                bigFloatWindowParams.y = screenHeight / 2 - ViewBigFloatWindow.viewHeight / 2;  
+                bigFloatWindowParams.width = screenWidth * 2/3;  
+                bigFloatWindowParams.height = screenHeight / 3;  
+                bigFloatWindowParams.x = screenWidth / 2 - bigFloatWindowParams.width / 2;  
+                bigFloatWindowParams.y = screenHeight / 2 - bigFloatWindowParams.height / 2;  
                 bigFloatWindowParams.type = LayoutParams.TYPE_PHONE;  
-                bigFloatWindowParams.format = PixelFormat.RGBA_8888;  
+                bigFloatWindowParams.format = PixelFormat.TRANSLUCENT;  
                 bigFloatWindowParams.gravity = Gravity.LEFT | Gravity.TOP;  
-                bigFloatWindowParams.width = ViewBigFloatWindow.viewWidth;  
-                bigFloatWindowParams.height = ViewBigFloatWindow.viewHeight;  
             }  
             mWindowManager.addView(bigFloatWindow, bigFloatWindowParams);  
         }  
@@ -192,7 +193,7 @@ public class MyWindowManager {
     public static void updateWordCls(Context context) {  
         if (smallFloatWindow != null) {  
             tvWordCls = (TextView) smallFloatWindow.findViewById(R.id.word_small_float_window_tv);  
-            tvWordCls.setText(WordsManager.wordCls.getSpannedHtml());  
+            tvWordCls.setText(WordsManager.wordCls.getWindowSpannedHtml());  
         }  
     }  
 }  

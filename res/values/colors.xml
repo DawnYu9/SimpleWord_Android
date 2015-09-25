@@ -19,6 +19,7 @@
     
     <color name="gray_dark_text" type="color">#727272</color>
     <color name="gray_light_text" type="color">#B6B6B6</color>
+    <color name="gray_divider" type="color">#CCCCCC</color>
     
     <color name="pink_dark_actionbar" type="color">#C2185B</color>
     <color name="pink_light_text" type="color">#E91E63</color>
@@ -27,7 +28,8 @@
     
     <color name="gray_light_bg" type="color">#F5F5F5</color>
     
-    <color name="translucent_background">#70000000</color>
+    <color name="gray_translucent_background">#70000000</color>
+    <color name="white_translucent_background">#70FFFFFF</color>
     
     
 </resources> 

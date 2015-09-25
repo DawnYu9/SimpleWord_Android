@@ -222,6 +222,7 @@ public class WordsManager {
 							");";    
 			
 			db.execSQL(sql);
+			addTable2Info(tableName);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally{
@@ -230,7 +231,6 @@ public class WordsManager {
 		    }
 		}
         
-        addTable2Info(tableName);
 	}
 	
 	/**
@@ -278,11 +278,22 @@ public class WordsManager {
 	   
 	    try {
 			db = wordsDbHelper.getWritableDatabase();
-			db.insert(TABLE_INFO_NAME, null, cValue); 
+			
+			String[] columns = { COLUMN_TABLE_NAME };
+			String selection = COLUMN_TABLE_NAME + " = ?"; 
+			String[] selectionArgs = new String[]{ tableName };
+			
+			db = wordsDbHelper.getReadableDatabase();
+			Cursor cursor = db.query(TABLE_INFO_NAME, columns, selection, selectionArgs, null, null, COLUMN_WORD);  
+		    if ( ! cursor.moveToNext())
+		    	db.insert(TABLE_INFO_NAME, null, cValue); 
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally{
-		    if (db != null) {
+			if ( cursor != null ) {
+				cursor.close();
+			}
+		    if ( db != null ) {
 		    	db.close();
 		    }
 		}

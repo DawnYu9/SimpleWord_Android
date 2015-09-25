@@ -26,6 +26,11 @@ import com.bubble.simpleword.util.Util;
  */
 public class ViewSmallFloatWindow extends LinearLayout implements OnTouchListener{
 	private Context mContext; 
+	
+	private View view;
+	private ImageButton btnPlay;
+	private TextView tvWordCls;
+    		
 	 /** 
      * 记录小悬浮窗的宽度 
      */  
@@ -81,19 +86,19 @@ public class ViewSmallFloatWindow extends LinearLayout implements OnTouchListene
         mContext = context;
         windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);  
         LayoutInflater.from(context).inflate(R.layout.word_float_window_small, this);  
-        View view = findViewById(R.id.word_small_float_window_layout);
+        view = findViewById(R.id.word_small_float_window_layout);
         view.setOnTouchListener(this);
         
         viewWidth = view.getLayoutParams().width;  
         viewHeight = view.getLayoutParams().height;  
         
         
-        ImageButton btnPlay = (ImageButton) findViewById(R.id.word_small_float_window_play_btn);
+        btnPlay = (ImageButton) findViewById(R.id.word_small_float_window_play_btn);
         btnPlay.setOnTouchListener(this);
         
-        TextView tvWordCls = (TextView) findViewById(R.id.word_small_float_window_tv);  
+        tvWordCls = (TextView) findViewById(R.id.word_small_float_window_tv);  
 //        tvWordCls.setText(WordsManager.wordCls.getSpannedHtml());  
-        tvWordCls.setText(WordsManager.getWordCls().getSpannedHtml());  
+        tvWordCls.setText(WordsManager.getWordCls().getWindowSpannedHtml());  
     }  
   
 	/**

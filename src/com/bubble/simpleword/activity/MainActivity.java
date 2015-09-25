@@ -540,7 +540,7 @@ public class MainActivity extends SlidingFragmentActivity {
         searchView.setSubmitButtonEnabled(false);
         
         new SearchViewFormatter()
-        .setSearchBackGroundResource(R.drawable.corners_bg)
+        .setSearchBackGroundResource(R.drawable.bg_corners_gray_translucent)
         .setSearchIconResource(R.drawable.search, true, true) //true to icon inside edittext, false to outside
         .setSearchCloseIconResource(R.drawable.clear)
         .setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS)

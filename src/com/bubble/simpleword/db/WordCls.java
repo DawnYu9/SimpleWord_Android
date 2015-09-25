@@ -232,10 +232,35 @@ public class WordCls {
 	 * @author bubble
 	 * @date 2015-9-6 下午9:25:21
 	 */
-	public Spanned getSpannedHtml() {
+	public Spanned getWindowSpannedHtml() {
 //		this.htmlString = "<font color='#E91E63'>" + word + "</font><font color='#B6B6B6'>" 
 //				+ phonetic + "</font><font color='#727272'>" + definition + "</font>";
 		this.htmlString = word + "<font color='#B6B6B6'>" + phonetic + "</font>" + definition;
+		return Html.fromHtml(htmlString);
+	}
+	
+	/**
+	 * <p>Title: getNotiSpannedHtml</p>
+	 * <p>Description: </p>
+	 * @return
+	 * @author bubble
+	 * @date 2015-9-24 下午10:53:27
+	 */
+	public Spanned getNotiTitleSpannedHtml() {
+		this.htmlString = "<big><font color='#E91E63'>" + word + "</font></big>" +
+				"<small><font color='#B6B6B6'>" + phonetic + "</font></small>";
+		return Html.fromHtml(htmlString);
+	}
+	
+	/**
+	 * <p>Title: getNotiTextSpannedHtml</p>
+	 * <p>Description: </p>
+	 * @return
+	 * @author bubble
+	 * @date 2015-9-24 下午10:59:31
+	 */
+	public Spanned getNotiTextSpannedHtml() {
+		this.htmlString = definition;
 		return Html.fromHtml(htmlString);
 	}
 	

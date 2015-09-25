@@ -1,5 +1,6 @@
 package com.bubble.simpleword.adapter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONException;
@@ -455,6 +456,9 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 	 * @date 2015-9-9 下午2:24:11
 	 */
 	public void addItem(WordCls wordCls) {
+		if ( wordsList == null )
+			wordsList = new ArrayList<WordCls>();
+		
 		wordsList.add(wordCls);
 		int position = wordsList.indexOf(wordCls);
 		notifyItemInserted(position);
