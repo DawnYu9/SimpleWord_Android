@@ -71,6 +71,18 @@ public class SearchResultsActivity extends Activity implements OnClickListener{
 	private LinearLayout llChinese;
 	private TextView tvChinese;
 	private TextView tvWordset;
+
+	private Bundle bundle;
+
+	private String query;
+
+	private List<WordCls> wordClsList;
+
+	private StringBuilder sb;
+
+	private Bundle appData;
+
+	private String testValue;
 	
 //	private ParseJsonTask parseJsonTask;
 	
@@ -123,7 +135,7 @@ public class SearchResultsActivity extends Activity implements OnClickListener{
 			
 			@Override
 			public void onClick(View v) {
-				Util.pronounce(wordCls, getApplicationContext());
+				Util.pronounceWord(wordCls, getApplicationContext());
 			}
 		});
 		tvSmallHint.setOnClickListener(this);
@@ -149,54 +161,50 @@ public class SearchResultsActivity extends Activity implements OnClickListener{
  
     private void handleIntent(Intent intent) {
  
-//        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-//        	String query = intent.getStringExtra(SearchManager.QUERY);
-        	Bundle bundle = getIntent().getExtras();    
-            String query = bundle.getString("query");
-            //use the query to search your data somehow
-            if ( query.matches("[a-zA-Z]+") ) {
-            	wordCls = WordsManager.queryWordEn("GraduateWords", query);
-            	if ( wordCls != null ) {
-            		tvBigHint.setVisibility(View.INVISIBLE);
-	            	tvWord.setText(wordCls.getWord());
-	            	tvPhonetic.setText(wordCls.getPhonetic());
-	            	tvDefinition.setText(wordCls.getDefinition());
-            	} else {
-            		wordCls = new WordCls();
-            		wordCls.setWord(query);
-            		tvBigHint.setVisibility(View.VISIBLE);
-            		tvBigHint.setText("本地未搜索到该单词。请点击联网查询");
-            	}
-            } else if ( query.matches("[\u4e00-\u9fa5]+") ) {
-            	List<WordCls> wordClsList = WordsManager.queryWordCh("GraduateWords", query);
-            	if ( wordClsList != null) {
-            		tvBigHint.setVisibility(View.INVISIBLE);
-            		tvSmallHint.setVisibility(View.INVISIBLE);
-            		llChinese.setVisibility(View.VISIBLE);
-            		StringBuilder sb = new StringBuilder();
-            		for ( int i = 0; i < wordClsList.size(); i++) {
-            			wordCls = wordClsList.get(i);
-            			sb.append(wordCls.getWord()).append("\n");
-            		}
-            		if ( ! sb.toString().isEmpty() ) {
-	            		tvChinese.setText(query);
-	            		tvWordset.setText(sb.toString());
-            		} else {
-            			tvBigHint.setVisibility(View.VISIBLE);
-            			tvBigHint.setText("本地未搜索到该单词。");
-            		}
-            	} else {
-            		tvBigHint.setVisibility(View.VISIBLE);
-            		tvBigHint.setText("本地未搜索到该单词。");
-            	}
-            }
+    	bundle = getIntent().getExtras();    
+        query = bundle.getString("query");
+        //use the query to search your data somehow
+        if ( query.matches("[a-zA-Z]+") ) {
+        	wordCls = WordsManager.queryWordEn("GraduateWords", query);
+        	if ( wordCls != null ) {
+        		tvBigHint.setVisibility(View.INVISIBLE);
+            	tvWord.setText(wordCls.getWord());
+            	tvPhonetic.setText(wordCls.getPhonetic());
+            	tvDefinition.setText(wordCls.getDefinition());
+        	} else {
+        		wordCls = new WordCls();
+        		wordCls.setWord(query);
+        		tvBigHint.setVisibility(View.VISIBLE);
+        		tvBigHint.setText("本地未搜索到该单词。请点击联网查询");
+        	}
+        } else if ( query.matches("[\u4e00-\u9fa5]+") ) {
+        	wordClsList = WordsManager.queryWordCh("GraduateWords", query);
+        	if ( wordClsList != null) {
+        		tvBigHint.setVisibility(View.INVISIBLE);
+        		tvSmallHint.setVisibility(View.INVISIBLE);
+        		llChinese.setVisibility(View.VISIBLE);
+        		sb = new StringBuilder();
+        		for ( int i = 0; i < wordClsList.size(); i++) {
+        			wordCls = wordClsList.get(i);
+        			sb.append(wordCls.getWord()).append("\n");
+        		}
+        		if ( ! sb.toString().isEmpty() ) {
+            		tvChinese.setText(query);
+            		tvWordset.setText(sb.toString());
+        		} else {
+        			tvBigHint.setVisibility(View.VISIBLE);
+        			tvBigHint.setText("本地未搜索到该单词。");
+        		}
+        	} else {
+        		tvBigHint.setVisibility(View.VISIBLE);
+        		tvBigHint.setText("本地未搜索到该单词。");
+        	}
+        }
 //        }
         
-        // 获得额外递送过来的值
-        Bundle appData = intent.getBundleExtra(SearchManager.APP_DATA);
+        appData = intent.getBundleExtra(SearchManager.APP_DATA);
         if (appData != null) {
-            String testValue = appData.getString("KEY");
-            System.out.println("extra data = " + testValue);
+            testValue = appData.getString("KEY");
         }
     }
     

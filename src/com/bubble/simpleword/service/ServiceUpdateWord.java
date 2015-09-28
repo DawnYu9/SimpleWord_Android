@@ -20,6 +20,9 @@ import com.bubble.simpleword.util.Util;
  * @date 2015-8-21 上午10:14:29
  */
 public class ServiceUpdateWord extends Service {
+	private int cursorIndex;
+	private Editor editor;
+
 	/**
 	 * <p>Title: </p>
 	 * <p>Description: </p>
@@ -56,8 +59,8 @@ public class ServiceUpdateWord extends Service {
 	 */
 	private void UpdateWord() {
 		WordsManager.updateWordCls();
-		int cursorIndex = WordsManager.getCursorPosition();
-		Editor editor = Util.getSharedPreferencesEditor(getApplicationContext());  
+		cursorIndex = WordsManager.getCursorPosition();
+		editor = Util.getSharedPreferencesEditor(getApplicationContext());  
 		editor.putInt(MainActivity.CURSOR_INDEX, cursorIndex);
 		editor.commit();
 	}

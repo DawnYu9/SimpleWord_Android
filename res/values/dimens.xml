@@ -15,8 +15,14 @@
 	
 	<dimen name="btn_padding">5dp</dimen>
 	
+	<dimen name="text_default">20sp</dimen>
 	<dimen name="text_list_item">18sp</dimen>
 	<dimen name="text_list_title">20sp</dimen>
+	<dimen name="text_card_word">25sp</dimen>
+	<dimen name="text_card_phonetic">18sp</dimen>
+	<dimen name="text_card_definition">20sp</dimen>
+	<dimen name="text_title_hint">16sp</dimen>
+	<dimen name="text_hint">18sp</dimen>
 	
 	<dimen name="actionbar_height">40dp</dimen>
 	

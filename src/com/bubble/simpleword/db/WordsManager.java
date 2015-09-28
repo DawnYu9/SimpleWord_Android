@@ -836,6 +836,9 @@ public class WordsManager {
 	}
 	
 	public static WordCls getWordCls() {
+		if ( wordCls == null )
+			wordCls = updateWordCls();
+		
 		return wordCls;
 	}
 	/**

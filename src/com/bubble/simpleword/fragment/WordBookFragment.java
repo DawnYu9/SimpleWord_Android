@@ -136,7 +136,13 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
     private RecyclerView recyclerViewEditBook;
     private EditBookRecyclerViewAdapter editBookRecyclerViewAdapter;
     private TextView btnCreateBook;
-    
+    private static AlertDialog.Builder builder;
+	private static LayoutInflater layoutInflater;
+	private View viewDlgEditBook;
+	private EditText edtBook;
+	private View viewDlgAddBook;
+	private EditText edtCreateBook;
+	
     private ItemTouchHelper.Callback callback;
     private ItemTouchHelper touchHelper;
     private OnStartDragListener mDragStartListener;
@@ -147,6 +153,24 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
     public static final int TYPE_ADD_WORD = 1;
     
     private static final String DOWNLOAD_DIRECTORY = MainActivity.DOWNLOAD_DIRECTORY;
+	private static String urlString;
+	private static URL url;
+	private static HttpURLConnection connection;
+	private static String filename;
+	private static File dir;
+	private static String downloadAudioDir;
+	private static String filePath;
+	private static File file;
+	private static Handler handler2;
+	private static PopupMenu cardPopMenu;
+	private static View viewDlgEditWord;
+	private static EditText edtWord;
+	private static EditText edtPhonetic;
+	private static EditText edtDefinition;
+	private static List<String> tableList;
+	private static String[] tableListArrays;
+	private static boolean[] selectedBookArrays;
+	private static String newTableName;
     
     /**
 	 * <p>Title: </p>
@@ -181,6 +205,10 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 		initPopMenu();
 		
         actionBar.setCustomView(actionbarLayout);  
+	}
+	
+	private void setTable(String tableName) {
+		this.tableName = tableName;
 	}
 	
 	/**
@@ -233,9 +261,8 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 			
 			@Override
 			public void onItemClick(View view, int position, String tableName) {
-				tableName = tableName;
+				setTable(tableName);
 				tvDropdownPopMenu.setText(tableName);
-				view.setBackgroundColor(getResources().getColor(R.color.background_material_dark));
 				dropdownPopMenu.dismiss();
 				
 	        	prefEditorSettings.putString(KEY_WORDBOOK_SELECTED_TABLENAME, tableName);
@@ -290,20 +317,22 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 			
 			@Override
 			public void onItemClick(View view, final int position, final String tableName) {
-				LayoutInflater layoutInflater = LayoutInflater.from(activity);  
-		        View viewDlgEditBook = layoutInflater.inflate(R.layout.wordbook_dlg_create_book, null);  
-		        final EditText edtBook = (EditText)viewDlgEditBook.findViewById(R.id.wordbook_edt_create_book);
+				layoutInflater = LayoutInflater.from(activity);  
+		        viewDlgEditBook = layoutInflater.inflate(R.layout.wordbook_dlg_create_book, null);  
+		        edtBook = (EditText)viewDlgEditBook.findViewById(R.id.wordbook_edt_create_book);
 		        edtBook.setText(tableName);
 		        
-		        AlertDialog.Builder builder = new AlertDialog.Builder(activity); 
+		        builder = new AlertDialog.Builder(activity); 
 		        builder.setTitle("编辑单词本")
 		                .setIcon(R.mipmap.ic_launcher)
 		                .setView(viewDlgEditBook)  
 		                .setPositiveButton("提交", new DialogInterface.OnClickListener() {  
 		  
-		                    @Override  
+		                    private String newName;
+
+							@Override  
 		                    public void onClick(DialogInterface dialog, int which) { 
-		                    	String newName = edtBook.getText().toString();
+		                    	newName = edtBook.getText().toString();
 		                    	if ( WordsManager.alterTableName(tableName, newName) ) {
 		                    		editBookRecyclerViewAdapter.updateItem(position, newName);
 		                    		WordsManager.editTableInfo(tableName, newName);
@@ -332,13 +361,15 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 		btnCreateBook = (TextView) viewEditBookPopWindow.findViewById(R.id.wordbook_tv_add_book);
 		btnCreateBook.setOnClickListener(new OnClickListener() {
 			
+			
+
 			@Override
 			public void onClick(View v) {
-				LayoutInflater layoutInflater = LayoutInflater.from(getActivity());  
-		        View viewDlgAddBook = layoutInflater.inflate(R.layout.wordbook_dlg_create_book, null);  
-		        final EditText edtCreateBook = (EditText)viewDlgAddBook.findViewById(R.id.wordbook_edt_create_book);
+				layoutInflater = LayoutInflater.from(getActivity());  
+		        viewDlgAddBook = layoutInflater.inflate(R.layout.wordbook_dlg_create_book, null);  
+		        edtCreateBook = (EditText)viewDlgAddBook.findViewById(R.id.wordbook_edt_create_book);
 		        
-		        AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext()); 
+		        builder = new AlertDialog.Builder(view.getContext()); 
 		        builder.setTitle("请输入新的单词本名称")
 		                .setIcon(R.mipmap.ic_launcher)
 		                .setView(viewDlgAddBook)  
@@ -458,7 +489,7 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 				case VIEW_TYPE_HORIZON:
 					Log.i(tableName, "onItemClick——" + String.valueOf(position) + "——" + wordCls.getWord());
 					//水平为全屏卡片模式，单击发音
-					Util.pronounce(wordCls, activity);
+					Util.pronounceWord(wordCls, activity);
 					Toast.makeText(activity, "发音" + wordCls.getWord(), Toast.LENGTH_SHORT).show();
 					break;
 				case VIEW_TYPE_VERTICAL:
@@ -488,31 +519,29 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 	 */
 	private static String getAudioPath(WordCls wordCls) {
 		try {
-			String urlString = wordCls.getAudioUrlUS();
-			URL url = new URL(urlString);
-			//打开到url的连接
-			final HttpURLConnection connection = (HttpURLConnection)url.openConnection();
-			//以下为java IO部分，大体来说就是先检查文件夹是否存在，不存在则创建,然后的文件名重复问题，没有考虑
-			String filename=urlString.substring(urlString.lastIndexOf("/")+1);
+			urlString = wordCls.getAudioUrlUS();
+			url = new URL(urlString);
+			connection = (HttpURLConnection)url.openConnection();
+			filename = urlString.substring(urlString.lastIndexOf("/")+1);
 			                 
-			File dir=new File(DOWNLOAD_DIRECTORY);
+			dir = new File(DOWNLOAD_DIRECTORY);
 			if (!dir.exists()) {
 				dir.mkdir();
 			}
-			String downAudioDir = DOWNLOAD_DIRECTORY + File.separator + "audio";
-			dir = new File(downAudioDir);
+			downloadAudioDir = DOWNLOAD_DIRECTORY + File.separator + "audio";
+			dir = new File(downloadAudioDir);
 			if (!dir.exists()) {
 				dir.mkdir();
 			}
-			final String filePath = downAudioDir + File.separator + filename;
-			final File file=new File(filePath);
+			filePath = downloadAudioDir + File.separator + filename;
+			file = new File(filePath);
 			if (file.exists())
 				return filePath;
 			
 			file.createNewFile();
 			
-			final Handler handler = new Handler();
-			handler.post(new Runnable() {
+			handler2 = new Handler();
+			handler2.post(new Runnable() {
 				
 				@Override
 				public void run() {
@@ -677,9 +706,9 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 	 * @date 2015-9-8 下午6:15:18
 	 */
 	public static void showCardMenu(final View v, final int position, final WordCls wordCls) {
-		PopupMenu popMenu = new PopupMenu(v.getContext(), v);
-		popMenu.inflate(R.menu.wordbook_card_menu);
-		popMenu.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+		cardPopMenu = new PopupMenu(v.getContext(), v);
+		cardPopMenu.inflate(R.menu.wordbook_card_menu);
+		cardPopMenu.setOnMenuItemClickListener(new OnMenuItemClickListener() {
 			
 			@Override
 			public boolean onMenuItemClick(MenuItem item) {
@@ -699,7 +728,7 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 			    return true;
 			}
 		});
-		popMenu.show();
+		cardPopMenu.show();
 	} 
 	
 	/**
@@ -711,13 +740,13 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 	 */
 	public static void showEditWordDialog(final int position, final WordCls wordCls, final int type) {
 		// 取得自定义View  
-        LayoutInflater layoutInflater = LayoutInflater.from(activity);  
-        View viewDlgEditWord = layoutInflater.inflate(R.layout.wordbook_dlg_edit_word, null);  
-        final EditText edtWord = (EditText)viewDlgEditWord.findViewById(R.id.wordbook_dlg_edttxt_word);
-        final EditText edtPhonetic = (EditText)viewDlgEditWord.findViewById(R.id.wordbook_dlg_edttxt_phonetic);
-        final EditText edtDefinition = (EditText)viewDlgEditWord.findViewById(R.id.wordbook_dlg_edttxt_definition);
+        layoutInflater = LayoutInflater.from(activity);  
+        viewDlgEditWord = layoutInflater.inflate(R.layout.wordbook_dlg_edit_word, null);  
+        edtWord = (EditText)viewDlgEditWord.findViewById(R.id.wordbook_dlg_edttxt_word);
+        edtPhonetic = (EditText)viewDlgEditWord.findViewById(R.id.wordbook_dlg_edttxt_phonetic);
+        edtDefinition = (EditText)viewDlgEditWord.findViewById(R.id.wordbook_dlg_edttxt_definition);
         
-        AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext()); 
+        builder = new AlertDialog.Builder(view.getContext()); 
         
         switch (type) {
 		case TYPE_EDIT_WORD:
@@ -773,29 +802,29 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 	 * @date 2015-9-9 下午11:35:12
 	 */
 	private static void showChooseBookDialog(final WordCls wordCls) {
-		List<String> list = WordsManager.getTableList();
-		list.remove(tableName);
-		final String[] tableList = list.toArray(new String[list.size()]);
-		final boolean[] selectedBookArray = new boolean[tableList.length];
+		tableList = WordsManager.getTableList();
+		tableList.remove(tableName);
+		tableListArrays = tableList.toArray(new String[tableList.size()]);
+		selectedBookArrays = new boolean[tableListArrays.length];
 		
-		AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+		builder = new AlertDialog.Builder(view.getContext());
 		builder.setTitle("请选择单词本")  
 				.setIcon(R.mipmap.ic_launcher)  
-                .setMultiChoiceItems(tableList, selectedBookArray, new DialogInterface.OnMultiChoiceClickListener() {  
+                .setMultiChoiceItems(tableListArrays, selectedBookArrays, new DialogInterface.OnMultiChoiceClickListener() {  
                       
                     @Override  
                     public void onClick(DialogInterface dialog, int which, boolean isChecked) {  
-                        selectedBookArray[which] = isChecked;  
+                        selectedBookArrays[which] = isChecked;  
                     }  
                 })  
                 .setPositiveButton("确认", new DialogInterface.OnClickListener() {  
   
                     @Override  
                     public void onClick(DialogInterface dialog, int which) {  
-                    	for (int i = 0; i < selectedBookArray.length; i++) {
-                    		if ( selectedBookArray[i] ) {
-                    			WordsManager.addWord(tableList[i], wordCls);
-                    			hmIsDatasetEdit.put(tableList[i], true);
+                    	for (int i = 0; i < selectedBookArrays.length; i++) {
+                    		if ( selectedBookArrays[i] ) {
+                    			WordsManager.addWord(tableListArrays[i], wordCls);
+                    			hmIsDatasetEdit.put(tableListArrays[i], true);
                     		}
                     	}
                         Toast.makeText(view.getContext(), "添加成功", Toast.LENGTH_SHORT).show();  
@@ -818,7 +847,7 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 	 * @date 2015-9-8 下午5:25:58
 	 */
 	private static void showDeleteWordDialog(final WordCls wordCls) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+        builder = new AlertDialog.Builder(view.getContext());
         builder.setIcon(R.mipmap.ic_launcher);
         builder.setTitle("弹出警告框");
         builder.setMessage("确定删除吗？");
@@ -971,7 +1000,6 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 			
 			if ( tvDropdownPopMenu.getText().toString().matches(getWordbookList().get(position))) {
 				if ( getWordbookList().size() > 1) {
-					String newTableName;
 					if (position == 0)
 						newTableName = getWordbookList().get(1);
 					else 

@@ -131,7 +131,7 @@ public class ViewSmallFloatWindow extends LinearLayout implements OnTouchListene
 					break;
 				case R.id.word_small_float_window_play_btn:
 					Log.d(VIEW_LOG_TAG, "点击了btn");
-					Util.pronounce(WordsManager.getWordCls(), mContext);
+					Util.pronounceWord(WordsManager.getWordCls(), mContext);
 					break;
 				default:
 					break;

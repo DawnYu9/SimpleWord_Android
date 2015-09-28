@@ -43,6 +43,11 @@ public class EditBookRecyclerViewAdapter extends Adapter<EditBookRecyclerViewAda
 	private OnRecyclerViewItemClickListener onItemClickListener = null;
 	
 	private final OnStartDragListener mDragStartListener;
+	private View v;
+	private ViewHolder viewHolder;
+	private String tableName;
+	private int position;
+	private String prev;
 	
 	/**
 	 * @date 2015-9-19 下午9:01:03
@@ -104,8 +109,8 @@ public class EditBookRecyclerViewAdapter extends Adapter<EditBookRecyclerViewAda
 	 */
 	@Override
 	public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-		View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.wordbook_recyclerview_item_edit_book, parent, false);
-		final ViewHolder viewHolder = new ViewHolder(v);
+		v = LayoutInflater.from(parent.getContext()).inflate(R.layout.wordbook_recyclerview_item_edit_book, parent, false);
+		viewHolder = new ViewHolder(v);
 		
 		v.setOnClickListener(new OnClickListener() {
 			
@@ -127,7 +132,7 @@ public class EditBookRecyclerViewAdapter extends Adapter<EditBookRecyclerViewAda
 	 */
 	@Override
 	public void onBindViewHolder(final ViewHolder holder, int position) {
-		String tableName = bookList.get(position);
+		tableName = bookList.get(position);
 		holder.itemView.setTag(tableName);
 		holder.tvBook.setText(tableName);
 	}
@@ -150,7 +155,7 @@ public class EditBookRecyclerViewAdapter extends Adapter<EditBookRecyclerViewAda
 	 * @date 2015-9-18 下午9:22:45
 	 */
 	public void deleteItem(String tableName) {
-	    int position = bookList.indexOf(tableName);
+	    position = bookList.indexOf(tableName);
 	    bookList.remove(position);
 	    notifyItemRemoved(position);
 	}
@@ -164,7 +169,7 @@ public class EditBookRecyclerViewAdapter extends Adapter<EditBookRecyclerViewAda
 	 */
 	public void addItem(String tableName) {
 		bookList.add(tableName);
-		int position = bookList.indexOf(tableName);
+		position = bookList.indexOf(tableName);
 		notifyItemInserted(position);
 	}
 	
@@ -180,9 +185,7 @@ public class EditBookRecyclerViewAdapter extends Adapter<EditBookRecyclerViewAda
 	 */
 	@Override
 	public void onItemMove(int fromPosition, int toPosition) {
-//		Collections.swap(bookList, fromPosition, toPosition);
-//	    notifyItemMoved(fromPosition, toPosition);
-		String prev = bookList.remove(fromPosition);
+		prev = bookList.remove(fromPosition);
         bookList.add(toPosition > fromPosition ? toPosition - 1 : toPosition, prev);
         notifyItemMoved(fromPosition, toPosition);
         WordBookFragment.notifyBookMenuItemMoved(fromPosition, toPosition);
@@ -195,7 +198,7 @@ public class EditBookRecyclerViewAdapter extends Adapter<EditBookRecyclerViewAda
 	 */
 	@Override
 	public void onItemDismiss(int position) {
-		String tableName = bookList.get(position);
+		tableName = bookList.get(position);
 		bookList.remove(position);
 	    notifyItemRemoved(position);
 	    WordBookFragment.notifyBookMenuItemRemoved(position);

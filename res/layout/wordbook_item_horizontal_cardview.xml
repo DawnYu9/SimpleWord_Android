@@ -31,7 +31,7 @@
 			         android:layout_height="wrap_content"  
 			         android:textColor="@color/pink_light_text"  
 			         android:layout_gravity="center_horizontal"
-			         android:textSize="28sp" 
+			         android:textSize="@dimen/text_card_word" 
 			         />  
 				<TextView  
 					android:id="@+id/wordcard_horizon_tv_phonetic"  
@@ -39,7 +39,7 @@
 					android:layout_height="wrap_content"  
 					android:textColor="@color/gray_light_text"  
 			        android:layout_gravity="center_horizontal"
-					android:textSize="20sp" 
+					android:textSize="@dimen/text_card_phonetic" 
 					android:drawableRight="@drawable/play_gray"
 					android:drawablePadding="2dp"
 					/>
@@ -49,7 +49,7 @@
 					android:layout_height="wrap_content"  
 					android:textColor="@color/gray_dark_text"  
 			        android:layout_gravity="center_horizontal"
-					android:textSize="20sp" />  
+					android:textSize="@dimen/text_card_definition" />  
 			</LinearLayout>
 		</android.support.v7.widget.CardView>
 	    
@@ -63,7 +63,6 @@
 		      android:layout_height="match_parent"
 			    >
 		        
-			    <!-- test -->
 			    <LinearLayout 
 			        android:id="@+id/wordbook_horizon_ll_complete_word"
 			        android:layout_width="match_parent"
@@ -79,13 +78,13 @@
 			            android:layout_height="wrap_content"
 			            android:text="英文释义"
 			            android:textColor="@color/gray_light_text"
-			            android:textSize="16sp"
+			            android:textSize="@dimen/text_title_hint"
 			            />
 			        <TextView 
 			            android:id="@+id/wordbook_horizon_tv_def_en"
 			            android:layout_width="match_parent"
 			            android:layout_height="wrap_content"
-			            android:textSize="20sp"
+			            android:textSize="@dimen/text_card_definition"
 			            android:textColor="@color/gray_dark_text"
 			            />
 			        <TextView 
@@ -93,14 +92,14 @@
 			            android:layout_height="wrap_content"
 			            android:text="中文释义"
 			            android:textColor="@color/gray_light_text"
-			            android:textSize="16sp"
+			            android:textSize="@dimen/text_title_hint"
 			            />
 			        <TextView 
 			            android:id="@+id/wordbook_horizon_tv_def_cn"
 			            android:layout_width="match_parent"
 			            android:layout_height="wrap_content"
 			            android:textColor="@color/gray_dark_text"
-			            android:textSize="20sp"
+			            android:textSize="@dimen/text_card_definition"
 			            />
 			        
 			        
@@ -115,7 +114,7 @@
 		    	    android:background="@color/white"
 		    	    android:gravity="center"
 		    	    android:clickable="true"
-		    	    android:textSize="18sp"
+		    	    android:textSize="@dimen/text_hint"
 	    	    />
 			    
 				<LinearLayout

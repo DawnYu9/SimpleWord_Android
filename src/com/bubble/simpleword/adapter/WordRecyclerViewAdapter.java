@@ -61,8 +61,11 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
     private String url;
     private JsonObjectRequest jsonRequest;
     
-    boolean isJsonSucceed;
-    boolean isLoadedSucceed = false;
+    private boolean isJsonSucceed;
+    private boolean isLoadedSucceed = false;
+	private VerticalViewHolder verticalViewHolder;
+	private HorizonViewHolder horizonViewHolder;
+	private int position;
     
 	public WordRecyclerViewAdapter( Context context , String tableName, List<WordCls> wordsList) {  
 	    this.context = context;  
@@ -234,7 +237,7 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 		
 		switch (baseViewHolder.getItemViewType()) {
 		case VIEW_TYPE_HORIZON:
-			final HorizonViewHolder horizonViewHolder = (HorizonViewHolder) baseViewHolder;
+			horizonViewHolder = (HorizonViewHolder) baseViewHolder;
 			
 			if ( wordCls.isLoaded() ) {
 				horizonViewHolder.tvHint.setVisibility(View.INVISIBLE);
@@ -311,13 +314,13 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 			
 		case VIEW_TYPE_VERTICAL:
 		default:
-			VerticalViewHolder verticalViewHolder = (VerticalViewHolder) baseViewHolder;
+			verticalViewHolder = (VerticalViewHolder) baseViewHolder;
 			verticalViewHolder.imgBtnPronounce.setOnClickListener(new OnClickListener() {
 				
 				@Override
 				public void onClick(View v) {
 					WordCls wordCls = wordsList.get(position);
-					Util.pronounce(wordCls, context);
+					Util.pronounceWord(wordCls, context);
 				}
 			});
 			break;
@@ -460,7 +463,7 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 			wordsList = new ArrayList<WordCls>();
 		
 		wordsList.add(wordCls);
-		int position = wordsList.indexOf(wordCls);
+		position = wordsList.indexOf(wordCls);
 		notifyItemInserted(position);
 	}
 	
@@ -472,7 +475,7 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 	 * @date 2015-9-9 下午2:20:55
 	 */
 	public void deleteItem(WordCls wordCls) {
-	    int position = wordsList.indexOf(wordCls);
+	    position = wordsList.indexOf(wordCls);
 	    wordsList.remove(position);
 	    notifyItemRemoved(position);
 	}

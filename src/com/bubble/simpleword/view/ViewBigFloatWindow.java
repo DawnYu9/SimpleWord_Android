@@ -60,7 +60,7 @@ public class ViewBigFloatWindow extends LinearLayout {
 			
 			@Override
 			public void onClick(View v) {
-				Util.pronounce(WordsManager.getWordCls(), context);
+				Util.pronounceWord(WordsManager.getWordCls(), context);
 			}
 		});
         

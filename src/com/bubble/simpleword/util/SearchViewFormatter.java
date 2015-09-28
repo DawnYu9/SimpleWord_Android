@@ -36,6 +36,10 @@ public class SearchViewFormatter {
     protected Field mCursorDrawableRes; 
     
     protected Resources mResources;
+	private Drawable searchIconDrawable;
+	private int searchIconSize;
+	private SpannableStringBuilder hintBuilder;
+	private int searchImgId;
 
     public SearchViewFormatter setSearchBackGroundResource(int searchBackGroundResource) {
         mSearchBackGroundResource = searchBackGroundResource;
@@ -161,15 +165,15 @@ public class SearchViewFormatter {
             ImageView imageView = (ImageView) searchView.findViewById(getIdentifier("search_mag_icon"));
 
             if (mSearchIconInside) {
-                Drawable searchIconDrawable = mResources.getDrawable(mSearchIconResource);
-                int size = (int) (view.getTextSize() * 1.30f);
-                searchIconDrawable.setBounds(0, 0, size, size);
+                searchIconDrawable = mResources.getDrawable(mSearchIconResource);
+                searchIconSize = (int) (view.getTextSize() * 1.35f);
+                searchIconDrawable.setBounds(0, 0, searchIconSize, searchIconSize);
 
                 if (mSearchHintTextResource != 0) {
                     mSearchHintText = mResources.getString(mSearchHintTextResource);
                 }
 
-                SpannableStringBuilder hintBuilder = new SpannableStringBuilder("   ");
+                hintBuilder = new SpannableStringBuilder("   ");
                 hintBuilder.append(mSearchHintText);
                 hintBuilder.setSpan(
                         new ImageSpan(searchIconDrawable),
@@ -182,7 +186,7 @@ public class SearchViewFormatter {
                 imageView.setLayoutParams(new LinearLayout.LayoutParams(0, 0));
             }
             if (mSearchIconOutside) {
-                int searchImgId = getIdentifier("search_button");
+                searchImgId = getIdentifier("search_button");
                 imageView = (ImageView) searchView.findViewById(searchImgId);
 
                 imageView.setImageResource(mSearchIconResource);

@@ -30,7 +30,7 @@
 	            android:layout_alignParentLeft="true"
 	            android:layout_centerVertical="true"
 	            android:textColor="@color/pink_light_text"  
-	            android:textSize="25sp" />  
+	            android:textSize="@dimen/text_card_word" />  
 	        <TextView  
 	            android:id="@+id/wordcard_vertical_tv_phonetic"  
 	            android:layout_width="wrap_content"  
@@ -38,7 +38,7 @@
 	            android:layout_toRightOf="@id/wordcard_vertical_tv_word"
 	            android:layout_centerVertical="true"
 	            android:textColor="@color/gray_light_text"  
-	            android:textSize="18sp" />  
+	            android:textSize="@dimen/text_card_phonetic" />  
             <ImageButton 
                 android:id="@+id/wordcard_vertical_imgbtn_pronounce"
                 android:layout_width="wrap_content"
@@ -55,7 +55,7 @@
     	    android:layout_weight="1" 
 	        android:gravity="left|bottom"  
 	        android:textColor="@color/gray_dark_text"  
-	        android:textSize="20sp" />  
+	        android:textSize="@dimen/text_card_definition" />  
   
     </LinearLayout>  
 </android.support.v7.widget.CardView>  

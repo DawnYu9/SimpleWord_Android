@@ -18,6 +18,8 @@ import android.content.Intent;
  */
 public class BroadcastReceiverUpdateWord extends BroadcastReceiver {
 
+	private Intent i;
+
 	/**
 	 * <p>Title: </p>
 	 * <p>Description: </p>
@@ -32,7 +34,7 @@ public class BroadcastReceiverUpdateWord extends BroadcastReceiver {
 	 */
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		Intent i = new Intent(context, ServiceUpdateWord.class);
+		i = new Intent(context, ServiceUpdateWord.class);
 		context.startService(i);
 	}
 

@@ -19,6 +19,11 @@ public class BookMenuRecyclerViewAdapter extends Adapter<BookMenuRecyclerViewAda
 	private List<String> bookList;
 	
 	private OnRecyclerViewItemClickListener onItemClickListener = null;
+	private View v;
+	private ViewHolder viewHolder;
+	private String tableName;
+	private int position;
+	private String prev;
 	
 	
 	public static interface OnRecyclerViewItemClickListener {
@@ -53,8 +58,8 @@ public class BookMenuRecyclerViewAdapter extends Adapter<BookMenuRecyclerViewAda
 	 */
 	@Override
 	public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-		View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.wordbook_recyclerview_item_edit_book, parent, false);
-		final ViewHolder viewHolder = new ViewHolder(v);
+		v = LayoutInflater.from(parent.getContext()).inflate(R.layout.wordbook_recyclerview_item_edit_book, parent, false);
+		viewHolder = new ViewHolder(v);
 		
 		v.setOnClickListener(new OnClickListener() {
 			
@@ -76,7 +81,7 @@ public class BookMenuRecyclerViewAdapter extends Adapter<BookMenuRecyclerViewAda
 	 */
 	@Override
 	public void onBindViewHolder(final ViewHolder viewHolder, int position) {
-		String tableName = bookList.get(position);
+		tableName = bookList.get(position);
 		viewHolder.itemView.setTag(tableName);
 		viewHolder.tvBook.setText(tableName);
 	}
@@ -87,14 +92,14 @@ public class BookMenuRecyclerViewAdapter extends Adapter<BookMenuRecyclerViewAda
 	}
 	
 	public void removeItem(String tableName) {
-	    int position = bookList.indexOf(tableName);
+	    position = bookList.indexOf(tableName);
 	    bookList.remove(position);
 	    notifyItemRemoved(position);
 	}
 	
 	public void addItem(String tableName) {
 		bookList.add(tableName);
-		int position = bookList.indexOf(tableName);
+		position = bookList.indexOf(tableName);
 		notifyItemInserted(position);
 	}
 	
@@ -104,9 +109,7 @@ public class BookMenuRecyclerViewAdapter extends Adapter<BookMenuRecyclerViewAda
 	}
 	
 	public void onItemMove(int fromPosition, int toPosition) {
-//		Collections.swap(bookList, fromPosition, toPosition);
-//	    notifyItemMoved(fromPosition, toPosition);
-		String prev = bookList.remove(fromPosition);
+		prev = bookList.remove(fromPosition);
         bookList.add(toPosition > fromPosition ? toPosition - 1 : toPosition, prev);
         notifyItemMoved(fromPosition, toPosition);
 	}

@@ -59,6 +59,22 @@ public class Util {
 	private static JSONObject defCN;
 	private static String definitionCN; 
 	private static String audioUrlUS;
+
+	private static Uri uri;
+
+	private static MediaPlayer player;
+
+	private static Class<?> cls;
+
+	private static Object obj;
+
+	private static Field field;
+
+	private static int x;
+
+	private static DisplayMetrics mDisplayMetrics2;
+
+	private static String audioUrlUS2;
 	
 	/**
 	 * <p>Title: </p>
@@ -117,10 +133,10 @@ public class Util {
     public static int getStatusBarHeight(Context context) {  
         if (statusBarHeight == 0) {  
             try {  
-                Class<?> c = Class.forName("com.android.internal.R$dimen");  
-                Object o = c.newInstance();  
-                Field field = c.getField("status_bar_height");  
-                int x = (Integer) field.get(o);  
+                cls = Class.forName("com.android.internal.R$dimen");  
+                obj = cls.newInstance();  
+                field = cls.getField("status_bar_height");  
+                x = (Integer) field.get(obj);  
                 statusBarHeight = context.getResources().getDimensionPixelSize(x);  
             } catch (Exception e) {  
                 e.printStackTrace();  
@@ -138,12 +154,10 @@ public class Util {
 	 */
 	public static void getScreenSize() {
 		if ( screenWidth == 0 || screenHeight == 0 ) {
-//			mDisplayMetrics = new DisplayMetrics();
-//			getMyWindowManager(context).getDefaultDisplay().getMetrics(mDisplayMetrics);
-			DisplayMetrics mDisplayMetrics = Resources.getSystem().getDisplayMetrics();
+			mDisplayMetrics2 = Resources.getSystem().getDisplayMetrics();
 			
-			screenWidth = mDisplayMetrics.widthPixels;
-			screenHeight = mDisplayMetrics.heightPixels;
+			screenWidth = mDisplayMetrics2.widthPixels;
+			screenHeight = mDisplayMetrics2.heightPixels;
 		}
 	}
     
@@ -216,11 +230,11 @@ public class Util {
 	 * @author bubble
 	 * @date 2015-9-24 上午11:41:30
 	 */
-	public static void pronounce(final WordCls wordCls, final Context context) {
+	public static void pronounceWord(final WordCls wordCls, final Context context) {
 		if ( wordCls.isLoaded() ) {
-			String path=wordCls.getAudioUrlUS();   
-            Uri uri = Uri.parse(path);
-            MediaPlayer player = new MediaPlayer().create(context, uri);
+			audioUrlUS2 = wordCls.getAudioUrlUS();   
+            uri = Uri.parse(audioUrlUS2);
+            player = new MediaPlayer().create(context, uri);
             player.start();
 		} else {
 			url = MainActivity.URL_SHANBAY + wordCls.getWord(); 
@@ -233,7 +247,7 @@ public class Util {
 			                try {
 			                    
 			                	Util.parseJsonPartData(wordCls, response);
-			                	pronounce(wordCls, context);
+			                	pronounceWord(wordCls, context);
 //			                	WordsManager.addWordLoadInfo(tableName, wordCls);
 //			                	updateItem(position, wordCls);
 //			                	
@@ -255,6 +269,19 @@ public class Util {
 			  
 			MainActivity.mQueue.add(jsonRequest);  
 		}
+	}
+	
+	/**
+	 * <p>Title: pronounceSentence</p>
+	 * <p>Description: </p>
+	 * @param url
+	 * @author bubble
+	 * @date 2015-9-26 下午10:47:46
+	 */
+	public static void pronounceSentence(Context context, String url) {
+        uri = Uri.parse(url);
+        player = new MediaPlayer().create(context, uri);
+        player.start();
 	}
 	
 	/**

@@ -58,7 +58,7 @@ public class MainActivity extends SlidingFragmentActivity {
 	public static RequestQueue mQueue; 
 	
 	private FragmentTransaction transaction;
-	int spinnerWordSortSelection;
+	private int spinnerWordSortSelection;
 //	static final String KEY_FILE_NAME_SETTINGS = SettingsFragment.KEY_FILE_NAME_SETTINGS;
 	private Fragment contentFragment;
 	public static SlidingMenu sm;
@@ -107,26 +107,48 @@ public class MainActivity extends SlidingFragmentActivity {
     
     public static String URL_SHANBAY = "https://api.shanbay.com/bdc/search/?word=";
     
+	private Intent intentService;
+	private PendingIntent pendingIntentService;
+	private int hour;
+	private int minute;
+	private int second;
+
+	private long alarmInterval;
+
+	private long alarmFirstWake;
+
+	private AlarmManager am;
+    
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.i("onCreate", "开始");
 		
-		mQueue = Volley.newRequestQueue(this);
+		pref = Util.getSharedPreferences(this);
+		editor = pref.edit();
 		
-		sm = getSlidingMenu();
-		initSlidingMenu(savedInstanceState);
+		isFirstStart = pref.getBoolean(IS_FIRST_START, true);
+		
+		loadDatabase();	//load SDcard's database
+		WordsManager.initDbHelper(this);
+		
+		if ( isFirstStart ) {
+			WordsManager.createInfoTable();
+		}
+		
+		if ( WordsManager.getTableList().size() > 0) {
+			initWordsManager(isFirstStart);
+			initWordClass();
+		}
+		
+		mQueue = Volley.newRequestQueue(this);
 		
 		mActionBar = getActionBar();
 		mActionBar.setDisplayHomeAsUpEnabled(true);//show back button
 		mActionBar.setDisplayShowHomeEnabled(false);//don't show app's img
 		
-		loadDatabase();	//load SDcard's database
-		
-		pref = Util.getSharedPreferences(this);
-		editor = pref.edit();
-
-		isFirstStart = pref.getBoolean(IS_FIRST_START, true);
+		sm = getSlidingMenu();
+		initSlidingMenu(savedInstanceState);
 		
 //		initSwitch();
 		
@@ -158,19 +180,6 @@ public class MainActivity extends SlidingFragmentActivity {
 		Log.i("onResume", "开始");
 //		initSettings();
 		
-
-		WordsManager.initDbHelper(this);
-		
-		if ( isFirstStart ) {
-			WordsManager.createInfoTable();
-		}
-		
-		if ( WordsManager.getTableList().size() > 0) {
-			initWordsManager(isFirstStart);
-			initWordClass();
-		}
-		
-
 		Log.i("onResume", "结束");
 	}
 	
@@ -247,11 +256,6 @@ public class MainActivity extends SlidingFragmentActivity {
 	 * @author bubble
 	 * @date 2015-8-22 上午10:07:04
 	 */
-	Intent intentService;
-	PendingIntent pendingIntentService;
-	int hour;
-	int minute;
-	int second;
 	private void initSwitch() {
 		if ( isSwitchOn(SettingsFragment.KEY_SWITCH_POP_NOTI_WORD) ) {
 			intentService = new Intent(this, ServicePopNotiWord.class);
@@ -284,12 +288,12 @@ public class MainActivity extends SlidingFragmentActivity {
 		return pref.getBoolean(keySwitch, false);
 	}
     public void startPendingIntent(PendingIntent pendingIntent, int hour,int minute, int second,long delayTime) {
-		long alarmInterval = DateUtils.HOUR_IN_MILLIS * hour 
+		alarmInterval = DateUtils.HOUR_IN_MILLIS * hour 
     		+ DateUtils.MINUTE_IN_MILLIS * minute
     		+ DateUtils.SECOND_IN_MILLIS * second;
     	
-    	long alarmFirstWake = System.currentTimeMillis() + delayTime;
-    	AlarmManager am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+    	alarmFirstWake = System.currentTimeMillis() + delayTime;
+    	am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
     	am.setRepeating(AlarmManager.RTC, alarmFirstWake, alarmInterval, pendingIntent);
     }
 	

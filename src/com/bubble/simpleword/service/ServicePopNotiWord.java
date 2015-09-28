@@ -26,17 +26,17 @@ import com.bubble.simpleword.db.WordsManager;
  * @date 2015-8-20 下午5:40:23
  */
 public class ServicePopNotiWord extends Service {
-	NotificationCompat.Builder mBuilder;
-	NotificationManager mNotificationManager;
-	Notification notification;
-	Intent resultIntent;
-	TaskStackBuilder stackBuilder;
-	PendingIntent resultPendingIntent;
-	int notifyID = 1;
+	private NotificationCompat.Builder mBuilder;
+	private NotificationManager mNotificationManager;
+	private Notification notification;
+	private Intent resultIntent;
+	private TaskStackBuilder stackBuilder;
+	private PendingIntent resultPendingIntent;
+	private int notifyID = 1;
 	private static AlarmManager am;
     private static PendingIntent pendingIntent;
     
-    Intent intentServiseUpdateWord;
+    private Intent intentServiseUpdateWord;
 	/**
 	 * <p>Title: </p>
 	 * <p>Description: </p>

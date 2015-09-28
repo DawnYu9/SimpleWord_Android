@@ -29,6 +29,11 @@ public class MyDbHelper extends SQLiteOpenHelper {
 	
 	private final static int BUFFER_SIZE = 400000;
     private static SQLiteDatabase mDatabase;
+	private static File dbFile;
+	private static File dbDir;
+	private static InputStream is;
+	private static FileOutputStream fos;
+	private static byte[] buffers;
 
 	/**
 	 * <p>Title: </p>
@@ -86,21 +91,20 @@ public class MyDbHelper extends SQLiteOpenHelper {
      */
     public static void loadDatabase(Context context, String dbFilePath) {
         try {
-        	File dbFile = new File(dbFilePath);
-        	//判断数据库文件夹databases是否存在，不存在则创建
-        	File dbFolder = dbFile.getParentFile();
-        	if ( ! dbFolder.isDirectory() ){
+        	dbFile = new File(dbFilePath);
+        	dbDir = dbFile.getParentFile();
+        	if ( ! dbDir.isDirectory() ){
         			Log.i("databases", dbFile.getParent() + "不存在");
-        			dbFolder .mkdir();
+        			dbDir .mkdir();
     		} 
         	//判断数据库文件是否存在，若不存在则执行导入，否则直接打开数据库
-            if ( dbFolder.exists() && ! (new File(dbFilePath).exists()) ) {	
-                InputStream is = context.getResources().openRawResource(R.raw.simpleword); //欲导入的数据库
-                FileOutputStream fos = new FileOutputStream(dbFilePath);
-                byte[] buffer = new byte[BUFFER_SIZE];
+            if ( dbDir.exists() && ! (new File(dbFilePath).exists()) ) {	
+                is = context.getResources().openRawResource(R.raw.simpleword);
+                fos = new FileOutputStream(dbFilePath);
+                buffers = new byte[BUFFER_SIZE];
                 int count = 0;
-                while ((count = is.read(buffer)) > 0) {
-                    fos.write(buffer, 0, count);
+                while ((count = is.read(buffers)) > 0) {
+                    fos.write(buffers, 0, count);
                 }
                 fos.close();
                 is.close();

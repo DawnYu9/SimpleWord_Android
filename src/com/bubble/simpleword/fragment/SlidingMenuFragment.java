@@ -36,6 +36,10 @@ public class SlidingMenuFragment extends ListFragment {
 	
 	private Object object;
 	private String str;
+	private View view;
+	private String[] menuItems;
+	private ArrayAdapter<String> menuAdapter;
+	private MainActivity mainActivity;
 	
 	/**
 	 * <p>Title: </p>
@@ -46,7 +50,7 @@ public class SlidingMenuFragment extends ListFragment {
 	}
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view=inflater.inflate(R.layout.menu_listview,container, false);  
+		view = inflater.inflate(R.layout.menu_listview,container, false);  
 		actionBar = getActivity().getActionBar();
         return view;
 	}
@@ -55,10 +59,10 @@ public class SlidingMenuFragment extends ListFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		
-		String[] menuItem = getResources().getStringArray(R.array.menu);
+		menuItems = new String[] {"首页", "单词本", "设置"};
 		
-		ArrayAdapter<String> menuAdapter = new ArrayAdapter<String>(getActivity(), 
-				android.R.layout.simple_list_item_1, android.R.id.text1, menuItem);
+		menuAdapter = new ArrayAdapter<String>(getActivity(), 
+				android.R.layout.simple_list_item_1, android.R.id.text1, menuItems);
 		
 		setListAdapter(menuAdapter);
 	}
@@ -107,8 +111,8 @@ public class SlidingMenuFragment extends ListFragment {
 			return;
 		
 		if (getActivity() instanceof MainActivity) {
-			MainActivity main = (MainActivity) getActivity();
-			main.switchContent(fragment);
+			mainActivity = (MainActivity) getActivity();
+			mainActivity.switchContent(fragment);
 		} 
 	}
 	
