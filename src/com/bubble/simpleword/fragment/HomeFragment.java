@@ -1,5 +1,8 @@
 package com.bubble.simpleword.fragment;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -11,6 +14,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.Html.ImageGetter;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -25,7 +29,6 @@ import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.ImageLoader.ImageListener;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.NetworkImageView;
 import com.bubble.simpleword.R;
 import com.bubble.simpleword.activity.MainActivity;
 import com.bubble.simpleword.db.WordsManager;
@@ -56,7 +59,7 @@ public class HomeFragment extends Fragment implements OnClickListener{
 	private ProgressBar progressBarSmall;
 	private ProgressBar progressBarBig;
 	
-	private static final String dailysentenceURL = "http://open.iciba.com/dsapi";
+	private static final String dailysentenceURL = "http://open.iciba.com/dsapi/?date=";
 	private JsonObjectRequest jsonObjectRequest;
 	
 	private String engSentence;
@@ -119,18 +122,18 @@ public class HomeFragment extends Fragment implements OnClickListener{
 		tvBigHint.setText("正在获取数据，请稍等");
 		progressBarBig.setVisibility(View.VISIBLE);
 		
-		getJsonData();
+		getDailySentenceJsonData();
 		
 		return view; 
 	}
 	
 	/**
 	 * <p>Title: getJsonData</p>
-	 * <p>Description: </p>
+	 * <p>Description: 金山词霸每日一句</p>
 	 * @author bubble
 	 * @date 2015-9-26 下午10:33:16
 	 */
-	private void getJsonData() {
+	private void getDailySentenceJsonData() {
 		jsonObjectRequest = new JsonObjectRequest(dailysentenceURL, null,
 				new Response.Listener<JSONObject>() {
 					@Override
@@ -233,7 +236,7 @@ public class HomeFragment extends Fragment implements OnClickListener{
 		case R.id.home_tv_big_hint:
 			progressBarBig.setVisibility(View.VISIBLE);
 			tvBigHint.setText("正在加载……");
-			getJsonData();
+			getDailySentenceJsonData();
 			break;
 		default:
 			break;

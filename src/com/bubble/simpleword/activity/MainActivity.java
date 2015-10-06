@@ -134,6 +134,7 @@ public class MainActivity extends SlidingFragmentActivity {
 		
 		if ( isFirstStart ) {
 			WordsManager.createInfoTable();
+			WordsManager.createMainTable();
 		}
 		
 		if ( WordsManager.getTableList().size() > 0) {

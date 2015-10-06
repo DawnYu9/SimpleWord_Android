@@ -229,6 +229,8 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 //		setWordCls(wordCls);
 		Log.i(tableName, "onBindViewHolder——" + String.valueOf(position) + "——" +wordCls.getWord());
 		
+		wordCls = WordsManager.getWordCls(wordCls.getWord(), 1);
+		
 		baseViewHolder.itemView.setTag(wordCls);
 		
 		baseViewHolder.tvWord.setText(wordCls.getWord());  

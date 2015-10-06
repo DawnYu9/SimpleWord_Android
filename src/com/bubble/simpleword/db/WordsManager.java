@@ -1,7 +1,6 @@
 package com.bubble.simpleword.db;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import android.content.ContentValues;
@@ -31,7 +30,17 @@ public class WordsManager {
 	private static String selectedTable;
 	private static List<String> tableList;
 	
-	public final static String TABLE_INFO_NAME = "table_info";
+	
+	/**
+	 * the table to store all words's information
+	 */
+	public final static String NAME_MAIN_TABLE = "main_table";
+	
+	/**
+	 * the table to store the "wordbook tables" 's information, such as : name and create time 
+	 */
+	public final static String NAME_INFO_TABLE = "table_infos";
+	
 	public final static String COLUMN_TABLE_NAME = "name";
 	public final static String COLUMN_WORD = "word";
 	public final static String COLUMN_PHONETIC = "phonetic";
@@ -81,6 +90,10 @@ public class WordsManager {
     public static final String IS_RANDOM = "isRandom";
     
     private static boolean isSelectedTableChanged = false;
+
+	private static String sql;
+
+	private static Cursor cursorMainTable;
 
 	/**
 	 * <p>Title: initDbHelper</p>
@@ -176,12 +189,12 @@ public class WordsManager {
      * @date 2015-9-8 下午9:09:02
      */
     public static List<String> getTableList() {
-    	List<String> tableList = new ArrayList<String>();
+    	tableList = new ArrayList<String>();
     	Cursor cursor = null;
     	try {
 			db = wordsDbHelper.getReadableDatabase();
 			cursor = db.rawQuery("SELECT " + COLUMN_TABLE_NAME + " FROM " + 
-					TABLE_INFO_NAME + " order by " + COLUMN_TIME, null);
+					NAME_INFO_TABLE + " order by " + COLUMN_TIME, null);
 			while(cursor.moveToNext()){
 				tableList.add(cursor.getString(0));
 			}
@@ -208,20 +221,21 @@ public class WordsManager {
 	public static void createTable(String tableName) {
 		try {
 			db = wordsDbHelper.getReadableDatabase();
-			String sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
+			sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
 					COLUMN_WORD + " TEXT NOT NULL," +
-					COLUMN_PHONETIC + " TEXT," +
-					COLUMN_DEFINITION + " TEXT," +
-					COLUMN_DEFINITION_EN + " TEXT," +
-					COLUMN_DEFINITION_CN + " TEXT," +
-					COLUMN_AUDIO_URL_US + " TEXT," +
-					COLUMN_TIME + " TEXT DEFAULT (datetime('now','localtime'))," +
-					COLUMN_IS_REMEMBERED + " INTEGER DEFAULT 0," +
-					COLUMN_IS_LOADED + " INTEGER DEFAULT 0," +
-					"PRIMARY KEY (\"word\" ASC)" +
+//					COLUMN_PHONETIC + " TEXT," +
+//					COLUMN_DEFINITION + " TEXT," +
+//					COLUMN_DEFINITION_EN + " TEXT," +
+//					COLUMN_DEFINITION_CN + " TEXT," +
+//					COLUMN_AUDIO_URL_US + " TEXT," +
+//					COLUMN_TIME + " TEXT DEFAULT (datetime('now','localtime'))," +
+//					COLUMN_IS_REMEMBERED + " INTEGER DEFAULT 0," +
+//					COLUMN_IS_LOADED + " INTEGER DEFAULT 0," +
+					"PRIMARY KEY (\"" + COLUMN_WORD + "\" ASC)" +
 							");";    
 			
 			db.execSQL(sql);
+			
 			addTable2Info(tableName);
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -242,7 +256,7 @@ public class WordsManager {
 	public static void createInfoTable() {
 		try {
 			db = wordsDbHelper.getReadableDatabase();
-			String sql = "CREATE TABLE IF NOT EXISTS " + TABLE_INFO_NAME + " (" +
+			sql = "CREATE TABLE IF NOT EXISTS " + NAME_INFO_TABLE + " (" +
 					COLUMN_TABLE_NAME + " TEXT NOT NULL," +
 					COLUMN_TIME + " TEXT DEFAULT (datetime('now','localtime'))" +
 					");";    
@@ -251,17 +265,70 @@ public class WordsManager {
 			Cursor cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name!='android_metadata' order by name", null);
 			cValue = new ContentValues();  
 			while(cursor.moveToNext()) { 
-				if ( ! cursor.getString(0).matches(TABLE_INFO_NAME) ) {
+				if ( ! cursor.getString(0).matches(NAME_INFO_TABLE) ) {
 					cValue.put(COLUMN_TABLE_NAME, cursor.getString(0));  
-			    	db.insert(TABLE_INFO_NAME, null, cValue); 
+			    	db.insert(NAME_INFO_TABLE, null, cValue); 
 				}
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally{
+			if (cursor != null) {
+				cursor.close();
+			}
 		    if (db != null) {
 		    	db.close();
 		    }
+		}
+	}
+	
+	/**
+	 * <p>Title: createMainTable</p>
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-10-6 下午11:51:48
+	 */
+	public static void createMainTable() {
+		try {
+			db = wordsDbHelper.getReadableDatabase();
+			sql = "CREATE TABLE IF NOT EXISTS " + NAME_MAIN_TABLE + " (" +
+					COLUMN_WORD + " TEXT NOT NULL," +
+					COLUMN_PHONETIC + " TEXT," +
+					COLUMN_DEFINITION + " TEXT," +
+					COLUMN_DEFINITION_EN + " TEXT," +
+					COLUMN_DEFINITION_CN + " TEXT," +
+					COLUMN_AUDIO_URL_US + " TEXT," +
+					COLUMN_TIME + " TEXT DEFAULT (datetime('now','localtime'))," +
+					COLUMN_IS_REMEMBERED + " INTEGER DEFAULT 0," +
+					COLUMN_IS_LOADED + " INTEGER DEFAULT 0," +
+					"PRIMARY KEY (\"" + COLUMN_WORD + "\" ASC)" +
+							");";    
+			db.execSQL(sql);
+			
+			getTableList();
+			db = wordsDbHelper.getWritableDatabase();
+			for ( int i = 0; i < tableList.size(); i++ ) {
+				sql = "insert into " + NAME_MAIN_TABLE +" select * from " + tableList.get(i);
+				db.execSQL(sql);
+				
+				sql = "CREATE TABLE IF NOT EXISTS " + tableList.get(i) + tableList.get(i) + 
+						" as select " + COLUMN_WORD +
+						" from " + tableList.get(i);
+				db.execSQL(sql);
+				
+				sql = "drop table if exists " + tableList.get(i);
+				db.execSQL(sql);
+				
+				sql = "alter table " + tableList.get(i) + tableList.get(i) + " rename to " + tableList.get(i);
+				db.execSQL(sql);
+			}
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally{
+			if (db != null) {
+				db.close();
+			}
 		}
 	}
 	
@@ -273,20 +340,18 @@ public class WordsManager {
 	 * @date 2015-9-19 下午3:30:52
 	 */
 	public static void addTable2Info(String tableName) {
-		cValue = new ContentValues();  
-	    cValue.put(COLUMN_TABLE_NAME, tableName);  
-	   
 	    try {
-			db = wordsDbHelper.getWritableDatabase();
-			
+	    	cValue = new ContentValues();  
+	    	cValue.put(COLUMN_TABLE_NAME, tableName);  
+	    	
 			String[] columns = { COLUMN_TABLE_NAME };
 			String selection = COLUMN_TABLE_NAME + " = ?"; 
 			String[] selectionArgs = new String[]{ tableName };
 			
-			db = wordsDbHelper.getReadableDatabase();
-			Cursor cursor = db.query(TABLE_INFO_NAME, columns, selection, selectionArgs, null, null, COLUMN_WORD);  
-		    if ( ! cursor.moveToNext())
-		    	db.insert(TABLE_INFO_NAME, null, cValue); 
+			db = wordsDbHelper.getWritableDatabase();
+			Cursor cursor = db.query(NAME_INFO_TABLE, columns, selection, selectionArgs, null, null, null);  
+		    if ( ! cursor.moveToNext() )
+		    	db.insert(NAME_INFO_TABLE, null, cValue); 
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally{
@@ -315,7 +380,7 @@ public class WordsManager {
 		
 		try {
 			db = wordsDbHelper.getWritableDatabase();
-			db.update(TABLE_INFO_NAME, cValue, COLUMN_TABLE_NAME + " = ?", whereArgs);
+			db.update(NAME_INFO_TABLE, cValue, COLUMN_TABLE_NAME + " = ?", whereArgs);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally{
@@ -338,7 +403,7 @@ public class WordsManager {
 			db.execSQL("DROP TABLE IF EXISTS " + tableName );
 			
 			String[] whereArgs = { tableName };  
-			db.delete(TABLE_INFO_NAME, COLUMN_TABLE_NAME + " = ?", whereArgs);   
+			db.delete(NAME_INFO_TABLE, COLUMN_TABLE_NAME + " = ?", whereArgs);   
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -386,14 +451,18 @@ public class WordsManager {
 	 * @date 2015-9-7 下午1:50:23
 	 */
 	public static void addWord(String tableName, String word, String phonetic, String definition) {
-	    cValue = new ContentValues();  
-	    cValue.put(COLUMN_WORD, word);  
-	    cValue.put(COLUMN_PHONETIC, phonetic);  
-	    cValue.put(COLUMN_DEFINITION, definition);  
-	   
-	    try {
+		try {
 			db = wordsDbHelper.getWritableDatabase();
-			db.insert(tableName, null, cValue); 
+			
+		    cValue = new ContentValues();  
+		    
+		    cValue.put(COLUMN_WORD, word);  
+		    db.insert(tableName, null, cValue); 
+		    
+		    cValue.put(COLUMN_PHONETIC, phonetic);  
+		    cValue.put(COLUMN_DEFINITION, definition);  
+	   
+			db.insert(NAME_MAIN_TABLE, null, cValue); 
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally{
@@ -412,14 +481,18 @@ public class WordsManager {
 	 * @date 2015-9-9 下午8:10:02
 	 */
 	public static void addWord(String tableName, WordCls wordCls) {
-		cValue = new ContentValues();  
-	    cValue.put(COLUMN_WORD, wordCls.getWord());  
-	    cValue.put(COLUMN_PHONETIC, wordCls.getPhonetic());  
-	    cValue.put(COLUMN_DEFINITION, wordCls.getDefinition());  
-	   
-	    try {
+		try {
 			db = wordsDbHelper.getWritableDatabase();
-			db.insert(tableName, null, cValue); 
+			
+			cValue = new ContentValues();  
+			
+		    cValue.put(COLUMN_WORD, wordCls.getWord());  
+		    db.insert(tableName, null, cValue); 
+		    
+		    cValue.put(COLUMN_PHONETIC, wordCls.getPhonetic());  
+		    cValue.put(COLUMN_DEFINITION, wordCls.getDefinition());  
+	   
+			db.insert(NAME_MAIN_TABLE, null, cValue); 
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally{
@@ -493,7 +566,7 @@ public class WordsManager {
 	    
 	    try {
 			db = wordsDbHelper.getWritableDatabase();
-			db.update(tableName, cValue, WHERE_CLAUSE_BY_WORD, whereArgs);
+			db.update(NAME_MAIN_TABLE, cValue, WHERE_CLAUSE_BY_WORD, whereArgs);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally{
@@ -521,7 +594,7 @@ public class WordsManager {
 		
 		try {
 			db = wordsDbHelper.getWritableDatabase();
-			db.update(tableName, cValue, WHERE_CLAUSE_BY_WORD, whereArgs);
+			db.update(NAME_MAIN_TABLE, cValue, WHERE_CLAUSE_BY_WORD, whereArgs);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally{
@@ -550,7 +623,7 @@ public class WordsManager {
 		
 		try {
 			db = wordsDbHelper.getWritableDatabase();
-			db.update(tableName, cValue, WHERE_CLAUSE_BY_WORD, whereArgs);
+			db.update(NAME_MAIN_TABLE, cValue, WHERE_CLAUSE_BY_WORD, whereArgs);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally{
@@ -570,34 +643,42 @@ public class WordsManager {
 	 * @author bubble
 	 * @date 2015-9-7 下午3:32:40
 	 */
-	public static List<WordCls> queryWordCh(String tableName, String value) {
+	public static List<WordCls> queryWordCh(String value) {
 		String[] columns = { COLUMN_WORD, COLUMN_DEFINITION };
 		String selection = COLUMN_DEFINITION + " like ? "; 
 		String[] selectionArgs = new String[]{ "%" + value + "%" };
 		
-		db = wordsDbHelper.getReadableDatabase();
-		Cursor cursor = db.query(tableName, columns, selection, selectionArgs, null, null, COLUMN_WORD);  
-		
 		List<WordCls> wordClsList = null;
+		try {
+			db = wordsDbHelper.getReadableDatabase();
+			Cursor cursor = db.query(NAME_MAIN_TABLE, columns, selection, selectionArgs, null, null, COLUMN_WORD);  
 			
-		wordClsList = new ArrayList<>();
-        while(cursor.moveToNext()){  
-        	WordCls wordCls = new WordCls();
-            wordCls.setWord(cursor.getString(cursor.getColumnIndex(COLUMN_WORD)));  
-            wordCls.setDefinition(cursor.getString(cursor.getColumnIndex(COLUMN_DEFINITION)));  
-            wordClsList.add(wordCls);
+			wordClsList = new ArrayList<>();
+			while(cursor.moveToNext()){  
+				WordCls wordCls = new WordCls();
+			    wordCls.setWord(cursor.getString(cursor.getColumnIndex(COLUMN_WORD)));  
+			    wordCls.setDefinition(cursor.getString(cursor.getColumnIndex(COLUMN_DEFINITION)));  
+			    wordClsList.add(wordCls);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (cursor != null )
+				cursor.close();
+			if ( db != null )
+				db.close();
 		}
-        db.close(); 
+		
         return wordClsList;
 	}
 	
-	public static WordCls queryWordEn(String tableName, String value) {
+	public static WordCls queryWordEn(String value) {
 		String[] columns = { COLUMN_WORD, COLUMN_PHONETIC, COLUMN_DEFINITION };
 		String selection = WHERE_CLAUSE_BY_WORD; 
 		String[] selectionArgs = { value };
 		
 		db = wordsDbHelper.getReadableDatabase();
-		Cursor cursor = db.query(tableName, columns, selection, selectionArgs, null, null, COLUMN_WORD);  
+		Cursor cursor = db.query(NAME_MAIN_TABLE, columns, selection, selectionArgs, null, null, COLUMN_WORD);  
 		WordCls wordCls = null;
 		if ( cursor.moveToNext() ) {
 			wordCls = new WordCls();
@@ -627,10 +708,14 @@ public class WordsManager {
 		db = wordsDbHelper.getReadableDatabase();
 		Cursor cur = db.query(tableName, null, null, null, null, null, null);
 		cur.moveToFirst();
+		
 		ArrayList<WordCls> wordsDataset = new ArrayList<WordCls>();
+		WordCls wordCls;
 		if (cur != null && cur.moveToFirst()) {  
 		    do {  
-		        setWordCls(cur, 0);
+//		        setWordCls(cur, 1);
+		    	wordCls = new WordCls();
+		    	wordCls.setWord(cur.getString(cur.getColumnIndex(COLUMN_WORD)));
 		        wordsDataset.add(wordCls);  
 		    } while (cur.moveToNext()); 
 		    cur.close();
@@ -660,7 +745,7 @@ public class WordsManager {
 				return updateWordCls();
 			}
 		} else {
-			setWordCls(cursor);
+			setWordCls(cursor, 0);
 			cursor.moveToNext();
 			return wordCls;
 		}
@@ -684,7 +769,7 @@ public class WordsManager {
 				return updateWordCls();
 			}
 		} else {
-			setWordCls(cursor);
+			setWordCls(cursor, 0);
 			cursor.moveToNext();
 			return wordCls;
 		}
@@ -828,12 +913,29 @@ public class WordsManager {
 	 * @author bubble
 	 * @date 2015-8-8
 	 */
-	public static void setWordCls(Cursor cur){
-		wordWord = cur.getString(cur.getColumnIndex(COLUMN_WORD));  
-		wordPhonetic = cur.getString(cur.getColumnIndex(COLUMN_PHONETIC));  
-		wordDefinition = cur.getString(cur.getColumnIndex(COLUMN_DEFINITION));  
-		wordCls = new WordCls(wordWord, wordPhonetic, wordDefinition);  
-	}
+//	public static void setWordCls(Cursor cur){
+//		try {
+//			wordWord = cur.getString(cur.getColumnIndex(COLUMN_WORD));  
+//			
+//			sql = "select * from " + NAME_MAIN_TABLE + " where " + COLUMN_WORD + "=?";
+//			db = wordsDbHelper.getReadableDatabase();
+//			cursorMainTable = db.rawQuery(sql, new String[]{ wordWord });
+//			if ( cursorMainTable.moveToNext() ) {
+//				wordPhonetic = cursorMainTable.getString(cursorMainTable.getColumnIndex(COLUMN_PHONETIC));  
+//				wordDefinition = cursorMainTable.getString(cursorMainTable.getColumnIndex(COLUMN_DEFINITION));  
+//				wordCls = new WordCls(wordWord, wordPhonetic, wordDefinition);
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		} finally{
+//		    if (cursorMainTable != null) {
+//		    	cursorMainTable.close();
+//		    }
+//		    if (db != null) {
+//		    	db.close();
+//		    }
+//		}
+//	}
 	
 	public static WordCls getWordCls() {
 		if ( wordCls == null )
@@ -845,27 +947,95 @@ public class WordsManager {
 	 * <p>Title: setWordCls</p>
 	 * <p>Description: </p>
 	 * @param cur
-	 * @param type 0: 完整释义
+	 * @param type 0: 简洁释义; 1: 完整释义
 	 * @author bubble
 	 * @date 2015-9-16 下午9:29:56
 	 */
 	public static void setWordCls(Cursor cur,int type){
-		switch (type) {
-		case 0:
+		try {
 			wordWord = cur.getString(cur.getColumnIndex(COLUMN_WORD));  
-			wordPhonetic = cur.getString(cur.getColumnIndex(COLUMN_PHONETIC));  
-			wordDefinition = cur.getString(cur.getColumnIndex(COLUMN_DEFINITION));  
-			wordDefinitionEN = cur.getString(cur.getColumnIndex(COLUMN_DEFINITION_EN));  
-			wordDefinitionCN = cur.getString(cur.getColumnIndex(COLUMN_DEFINITION_CN));  
-			wordAudioURLUS = cur.getString(cur.getColumnIndex(COLUMN_AUDIO_URL_US));  
-			isRemembered = cur.getInt(cur.getColumnIndex(COLUMN_IS_REMEMBERED));  
-			isLoaded = cur.getInt(cur.getColumnIndex(COLUMN_IS_LOADED));  
-			wordCls = new WordCls(wordWord, wordPhonetic, wordDefinition, wordDefinitionEN,
-					wordDefinitionCN, wordAudioURLUS,isRemembered, isLoaded);  
-			break;
-		default:
-			break;
+			
+			sql = "select * from " + NAME_MAIN_TABLE + " where " + COLUMN_WORD + "=?";
+			db = wordsDbHelper.getReadableDatabase();
+			cursorMainTable = db.rawQuery(sql, new String[]{ wordWord });
+			
+			if ( cursorMainTable.moveToNext() ) {
+				switch (type) {
+				case 0:
+					wordPhonetic = cursorMainTable.getString(cursorMainTable.getColumnIndex(COLUMN_PHONETIC));  
+					wordDefinition = cursorMainTable.getString(cursorMainTable.getColumnIndex(COLUMN_DEFINITION));  
+					wordCls = new WordCls(wordWord, wordPhonetic, wordDefinition);
+					break;
+				case 1:
+					wordPhonetic = cursorMainTable.getString(cursorMainTable.getColumnIndex(COLUMN_PHONETIC));  
+					wordDefinition = cursorMainTable.getString(cursorMainTable.getColumnIndex(COLUMN_DEFINITION));  
+					wordDefinitionEN = cursorMainTable.getString(cursorMainTable.getColumnIndex(COLUMN_DEFINITION_EN));  
+					wordDefinitionCN = cursorMainTable.getString(cursorMainTable.getColumnIndex(COLUMN_DEFINITION_CN));  
+					wordAudioURLUS = cursorMainTable.getString(cursorMainTable.getColumnIndex(COLUMN_AUDIO_URL_US));  
+					isRemembered = cursorMainTable.getInt(cursorMainTable.getColumnIndex(COLUMN_IS_REMEMBERED));  
+					isLoaded = cursorMainTable.getInt(cursorMainTable.getColumnIndex(COLUMN_IS_LOADED));  
+					wordCls = new WordCls(wordWord, wordPhonetic, wordDefinition, wordDefinitionEN,
+							wordDefinitionCN, wordAudioURLUS,isRemembered, isLoaded);
+					break;
+				default:
+					break;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if ( cursorMainTable != null )
+				cursorMainTable.close();
+			if ( db != null )
+				db.close();
 		}
+	}
+	
+	/**
+	 * <p>Title: setWordCls</p>
+	 * <p>Description: </p>
+	 * @param type 0: 简洁释义; 1: 完整释义
+	 * @author bubble
+	 * @date 2015-10-7 上午2:35:02
+	 */
+	public static WordCls getWordCls(String wordWord, int type){
+		WordCls wordCls = null;
+		try {
+			sql = "select * from " + NAME_MAIN_TABLE + " where " + COLUMN_WORD + "=?";
+			db = wordsDbHelper.getReadableDatabase();
+			cursorMainTable = db.rawQuery(sql, new String[]{ wordWord });
+			
+			if ( cursorMainTable.moveToNext() ) {
+				switch (type) {
+				case 0:
+					wordPhonetic = cursorMainTable.getString(cursorMainTable.getColumnIndex(COLUMN_PHONETIC));  
+					wordDefinition = cursorMainTable.getString(cursorMainTable.getColumnIndex(COLUMN_DEFINITION));  
+					wordCls = new WordCls(wordWord, wordPhonetic, wordDefinition);
+					break;
+				case 1:
+					wordPhonetic = cursorMainTable.getString(cursorMainTable.getColumnIndex(COLUMN_PHONETIC));  
+					wordDefinition = cursorMainTable.getString(cursorMainTable.getColumnIndex(COLUMN_DEFINITION));  
+					wordDefinitionEN = cursorMainTable.getString(cursorMainTable.getColumnIndex(COLUMN_DEFINITION_EN));  
+					wordDefinitionCN = cursorMainTable.getString(cursorMainTable.getColumnIndex(COLUMN_DEFINITION_CN));  
+					wordAudioURLUS = cursorMainTable.getString(cursorMainTable.getColumnIndex(COLUMN_AUDIO_URL_US));  
+					isRemembered = cursorMainTable.getInt(cursorMainTable.getColumnIndex(COLUMN_IS_REMEMBERED));  
+					isLoaded = cursorMainTable.getInt(cursorMainTable.getColumnIndex(COLUMN_IS_LOADED));  
+					wordCls = new WordCls(wordWord, wordPhonetic, wordDefinition, wordDefinitionEN,
+							wordDefinitionCN, wordAudioURLUS,isRemembered, isLoaded);
+					break;
+				default:
+					break;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if ( cursorMainTable != null )
+				cursorMainTable.close();
+			if ( db != null )
+				db.close();
+		}
+		return wordCls;
 	}
 	 
 	/**

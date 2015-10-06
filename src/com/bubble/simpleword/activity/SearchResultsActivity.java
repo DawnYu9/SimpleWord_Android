@@ -165,7 +165,7 @@ public class SearchResultsActivity extends Activity implements OnClickListener{
         query = bundle.getString("query");
         //use the query to search your data somehow
         if ( query.matches("[a-zA-Z]+") ) {
-        	wordCls = WordsManager.queryWordEn("GraduateWords", query);
+        	wordCls = WordsManager.queryWordEn(query);
         	if ( wordCls != null ) {
         		tvBigHint.setVisibility(View.INVISIBLE);
             	tvWord.setText(wordCls.getWord());
@@ -178,7 +178,7 @@ public class SearchResultsActivity extends Activity implements OnClickListener{
         		tvBigHint.setText("本地未搜索到该单词。请点击联网查询");
         	}
         } else if ( query.matches("[\u4e00-\u9fa5]+") ) {
-        	wordClsList = WordsManager.queryWordCh("GraduateWords", query);
+        	wordClsList = WordsManager.queryWordCh(query);
         	if ( wordClsList != null) {
         		tvBigHint.setVisibility(View.INVISIBLE);
         		tvSmallHint.setVisibility(View.INVISIBLE);

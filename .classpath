@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="F:/bubble/Coding/Android/res/SimpleWord/lib/baidu_translate_openapi_lite_v1.0.15.jar"/>
 	<classpathentry exported="true" kind="lib" path="D:/coding/Android/lib/volley.jar"/>
 	<classpathentry exported="true" kind="lib" path="D:/coding/Android/lib/jericho-html-3.1.jar" sourcepath="D:/coding/Android/lib/jericho-html-3.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="/recyclerview_lib_v7/libs/android-support-v7-recyclerview.jar" sourcepath="D:/coding/Android/lib/platform_frameworks_support-master/v7/recyclerview/src"/>
