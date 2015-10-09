@@ -11,6 +11,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.drawable.Drawable;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.Html.ImageGetter;
@@ -45,6 +47,8 @@ import com.bubble.simpleword.util.Util;
  * @date 2015-8-2
  */
 public class HomeFragment extends Fragment implements OnClickListener{
+	private static boolean isCurrent = false;
+	
 	private View view;
 	private TextView tvWord;
 	private TextView tvDefinition;
@@ -64,7 +68,11 @@ public class HomeFragment extends Fragment implements OnClickListener{
 	
 	private String engSentence;
 	private String chSentence;
+	
 	private String audioURL;
+	private static Uri uri;
+	private static MediaPlayer playerSentence;
+	
 	private String imgURL;
 	private ImageRequest imageRequest;
 	private ImageGetter imageGetterPlay;
@@ -77,6 +85,29 @@ public class HomeFragment extends Fragment implements OnClickListener{
 	 */
 	public HomeFragment(Context context) {
 	}
+	
+	/**
+	 * <p>Title: isInit</p>
+	 * <p>Description: </p>
+	 * @return
+	 * @author bubble
+	 * @date 2015-10-9 下午9:14:50
+	 */
+	public static boolean isCurrent() {
+		return isCurrent;
+	}
+	
+	/**
+	 * <p>Title: setIsCurrent</p>
+	 * <p>Description: </p>
+	 * @param b
+	 * @author bubble
+	 * @date 2015-10-9 下午9:17:36
+	 */
+	public static void setIsCurrent(boolean b) {
+		isCurrent = b;
+	}
+	
 	/**
 	 * @author bubble
 	 * @date 2015-8-2
@@ -140,7 +171,15 @@ public class HomeFragment extends Fragment implements OnClickListener{
 					public void onResponse(JSONObject response) {
 						try {
 							imgURL = response.getString("picture");
+							
 							audioURL = response.getString("tts");
+							try {
+								uri = Uri.parse(audioURL);
+								playerSentence = new MediaPlayer().create(getActivity(), uri);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							
 							engSentence = response.getString("content");
 							chSentence = response.getString("note");
 							
@@ -163,7 +202,7 @@ public class HomeFragment extends Fragment implements OnClickListener{
 					public void onErrorResponse(VolleyError error) {
 						progressBarBig.setVisibility(View.INVISIBLE);
 						tvBigHint.setVisibility(View.VISIBLE);
-						tvBigHint.setText("获取数据失败，请重试");
+						tvBigHint.setText(Util.ERROR);
 					}
 				});
 		MainActivity.mQueue.add(jsonObjectRequest);
@@ -227,7 +266,15 @@ public class HomeFragment extends Fragment implements OnClickListener{
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.home_tv_english:
-			Util.pronounceSentence(getActivity(), audioURL);
+//			Util.pronounceSentence(getActivity(), audioURL);
+			if ( playerSentence != null ) {
+				if ( playerSentence.isPlaying() ) {
+					playerSentence.seekTo(0);
+				} else {
+					playerSentence.start();
+				}
+			}
+			
 			break;
 		case R.id.home_tv_small_hint:
 			progressBarSmall.setVisibility(View.VISIBLE);
@@ -242,4 +289,16 @@ public class HomeFragment extends Fragment implements OnClickListener{
 			break;
 		}
 	}
+	
+	/**
+	 * <p>Title: stopPlayerSentence</p>
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-10-9 下午8:41:28
+	 */
+	public static void stopPlayerSentence() {
+		if ( playerSentence.isPlaying() )
+			playerSentence.stop();
+	}
+	
 }

@@ -34,7 +34,7 @@ public class WordsManager {
 	/**
 	 * the table to store all words's information
 	 */
-	public final static String NAME_MAIN_TABLE = "main_table";
+	public final static String NAME_MAIN_TABLE = "全部单词";
 	
 	/**
 	 * the table to store the "wordbook tables" 's information, such as : name and create time 
@@ -255,6 +255,8 @@ public class WordsManager {
 	 */
 	public static void createInfoTable() {
 		try {
+			createMainTable();
+			
 			db = wordsDbHelper.getReadableDatabase();
 			sql = "CREATE TABLE IF NOT EXISTS " + NAME_INFO_TABLE + " (" +
 					COLUMN_TABLE_NAME + " TEXT NOT NULL," +
@@ -268,6 +270,7 @@ public class WordsManager {
 				if ( ! cursor.getString(0).matches(NAME_INFO_TABLE) ) {
 					cValue.put(COLUMN_TABLE_NAME, cursor.getString(0));  
 			    	db.insert(NAME_INFO_TABLE, null, cValue); 
+			    	insert2MainTable(cursor.getString(0));
 				}
 			}
 		} catch (SQLException e) {
@@ -304,25 +307,6 @@ public class WordsManager {
 					"PRIMARY KEY (\"" + COLUMN_WORD + "\" ASC)" +
 							");";    
 			db.execSQL(sql);
-			
-			getTableList();
-			db = wordsDbHelper.getWritableDatabase();
-			for ( int i = 0; i < tableList.size(); i++ ) {
-				sql = "insert into " + NAME_MAIN_TABLE +" select * from " + tableList.get(i);
-				db.execSQL(sql);
-				
-				sql = "CREATE TABLE IF NOT EXISTS " + tableList.get(i) + tableList.get(i) + 
-						" as select " + COLUMN_WORD +
-						" from " + tableList.get(i);
-				db.execSQL(sql);
-				
-				sql = "drop table if exists " + tableList.get(i);
-				db.execSQL(sql);
-				
-				sql = "alter table " + tableList.get(i) + tableList.get(i) + " rename to " + tableList.get(i);
-				db.execSQL(sql);
-			}
-			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally{
@@ -330,6 +314,29 @@ public class WordsManager {
 				db.close();
 			}
 		}
+	}
+
+	/**
+	 * <p>Title: insert2MainTable</p>
+	 * <p>Description: </p>
+	 * @param i
+	 * @author bubble
+	 * @date 2015-10-9 下午7:40:51
+	 */
+	private static void insert2MainTable(String tableName) {
+		sql = "insert into " + NAME_MAIN_TABLE +" select * from " + tableName;
+		db.execSQL(sql);
+		
+		sql = "CREATE TABLE IF NOT EXISTS " + tableName + tableName + 
+				" as select " + COLUMN_WORD +
+				" from " + tableName;
+		db.execSQL(sql);
+		
+		sql = "drop table if exists " + tableName;
+		db.execSQL(sql);
+		
+		sql = "alter table " + tableName + tableName + " rename to " + tableName;
+		db.execSQL(sql);
 	}
 	
 	/**

@@ -60,7 +60,7 @@ public class MainActivity extends SlidingFragmentActivity {
 	private FragmentTransaction transaction;
 	private int spinnerWordSortSelection;
 //	static final String KEY_FILE_NAME_SETTINGS = SettingsFragment.KEY_FILE_NAME_SETTINGS;
-	private Fragment contentFragment;
+	public static Fragment contentFragment;
 	public static SlidingMenu sm;
 	private Point size;
 	private WindowManager wm;
@@ -134,7 +134,7 @@ public class MainActivity extends SlidingFragmentActivity {
 		
 		if ( isFirstStart ) {
 			WordsManager.createInfoTable();
-			WordsManager.createMainTable();
+//			WordsManager.createMainTable();
 		}
 		
 		if ( WordsManager.getTableList().size() > 0) {
@@ -319,8 +319,10 @@ public class MainActivity extends SlidingFragmentActivity {
 	private void initSlidingMenu(Bundle savedInstanceState){	
 		if (savedInstanceState != null)
 			contentFragment = getFragmentManager().getFragment(savedInstanceState, "contentFragment");
-		if (contentFragment == null)
+		if (contentFragment == null) {
 			contentFragment = new HomeFragment(this);	
+			HomeFragment.setIsCurrent(true);
+		}
 		
 		setContentView(R.layout.main_frame_content);
 		getFragmentManager().beginTransaction().replace(R.id.frame_content, contentFragment).commit();
@@ -677,5 +679,16 @@ public class MainActivity extends SlidingFragmentActivity {
 	 * @date 2015-9-17 下午11:24:27
 	 */
 	private void onOptionsItemSelected() {
+	}
+	
+	/**
+	 * <p>Title: getContentFragment</p>
+	 * <p>Description: </p>
+	 * @return
+	 * @author bubble
+	 * @date 2015-10-9 下午8:57:55
+	 */
+	public static Fragment getContentFragment() {
+		return contentFragment;
 	}
 }

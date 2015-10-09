@@ -265,7 +265,7 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 //									if (msg.what == position)
 //										horizonViewHolder.tvHint.setVisibility(View.INVISIBLE);
 //									else
-//										horizonViewHolder.tvHint.setText("数据获取失败，请重试");
+//										horizonViewHolder.tvHint.setText(Util.ERROR);
 //								}
 //								
 //							};
@@ -283,7 +283,7 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 						                // the response is already constructed as a JSONObject!
 						                try {
 						                    
-						                	Util.parseJsonPartData(wordCls, response);
+						                	Util.getJsonPartData(wordCls, response);
 						                	WordsManager.addWordLoadInfo(tableName, wordCls);
 						                	updateItem(position, wordCls);
 						                	
@@ -298,7 +298,7 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 						            @Override
 						            public void onErrorResponse(VolleyError error) {
 						            	horizonViewHolder.progressBar.setVisibility(View.INVISIBLE);
-						            	horizonViewHolder.tvHint.setText("数据获取失败，请重试");
+						            	horizonViewHolder.tvHint.setText(Util.ERROR);
 						                error.printStackTrace();
 						            }
 						        });
@@ -375,7 +375,7 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 //            	msg.what = position;
 //            }else {
 //            	msg.what = 0;
-//            	Log.i(wordCls.getWord(), "获取失败");
+//            	Log.i(wordCls.getWord(), Util.ERROR);
 //            }
 //            
 //            handler.sendMessage(msg);
@@ -405,7 +405,7 @@ public class WordRecyclerViewAdapter extends RecyclerView.Adapter<WordRecyclerVi
 //                 
 //                return true;
 //            } catch (Exception e) {
-//            	Toast.makeText(context, "获取数据失败", Toast.LENGTH_SHORT).show();
+//            	Toast.makeText(context, Util.ERROR, Toast.LENGTH_SHORT).show();
 //                return false;
 //            }
 //    	}

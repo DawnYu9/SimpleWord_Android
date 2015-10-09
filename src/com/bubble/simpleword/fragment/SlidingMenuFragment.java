@@ -67,15 +67,23 @@ public class SlidingMenuFragment extends ListFragment {
 		setListAdapter(menuAdapter);
 	}
 
+	@SuppressWarnings("static-access")
 	@Override
 	public void onListItemClick(ListView lv, View v, int position, long id) {
+		
+		if ( HomeFragment.isCurrent() ) {
+   	    	HomeFragment.stopPlayerSentence();
+   	    }
+		
 		newContentFragment = null;
 		
 		object = lv.getItemAtPosition(position);
-		str=(String)object;
+		str = (String) object;
 		
 		getActivity().setTitle(str);
 		actionBar.setDisplayShowCustomEnabled(false);
+		
+		HomeFragment.setIsCurrent(false);
 		
 		if (str.matches(getResources().getString(R.string.center))){
 			if (centerFragment == null)
@@ -85,6 +93,7 @@ public class SlidingMenuFragment extends ListFragment {
 			if (homeFragment == null)
 				homeFragment = new HomeFragment(getActivity());
 			newContentFragment = homeFragment;
+			HomeFragment.setIsCurrent(true);
 		} else if (str.matches(getResources().getString(R.string.wordbook))){
 			if (wordBookFragment == null)
 				wordBookFragment = new WordBookFragment();
@@ -100,7 +109,6 @@ public class SlidingMenuFragment extends ListFragment {
 			newContentFragment = settingsFragment;
 		}
 
-		
 		if (newContentFragment != null){
 			switchFragment(newContentFragment);
 		}

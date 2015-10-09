@@ -58,7 +58,7 @@ public class Util {
 	private static String definitionEN; 
 	private static JSONObject defCN;
 	private static String definitionCN; 
-	private static String audioUrlUS;
+	private static String audioUrlUS = "";
 
 	private static Uri uri;
 
@@ -74,7 +74,7 @@ public class Util {
 
 	private static DisplayMetrics mDisplayMetrics2;
 
-	private static String audioUrlUS2;
+	public static final String ERROR = "数据获取失败，请重试";
 	
 	/**
 	 * <p>Title: </p>
@@ -232,10 +232,31 @@ public class Util {
 	 */
 	public static void pronounceWord(final WordCls wordCls, final Context context) {
 		if ( wordCls.isLoaded() ) {
-			audioUrlUS2 = wordCls.getAudioUrlUS();   
-            uri = Uri.parse(audioUrlUS2);
-            player = new MediaPlayer().create(context, uri);
-            player.start();
+			if ( ! isStringEmpty(wordCls.getAudioUrlUS()) ) {
+				if ( audioUrlUS != wordCls.getAudioUrlUS() ) {   
+					audioUrlUS = wordCls.getAudioUrlUS();
+					uri = Uri.parse(audioUrlUS);
+					player = new MediaPlayer().create(context, uri);
+					player.start();
+				} else {
+					if ( ! isStringEmpty(audioUrlUS) ) {
+					   if ( player != null ) {
+					        if ( player.isPlaying() ) {
+					            player.seekTo(0);
+					        } else {
+					            player.start();
+					        }
+					    } else {
+					    	uri = Uri.parse(audioUrlUS);
+					    	player = new MediaPlayer().create(context, uri);
+					    	player.start();
+					    }
+					}
+				}
+				
+			} else {
+				Toast.makeText(context, ERROR, Toast.LENGTH_SHORT);
+			}
 		} else {
 			url = MainActivity.URL_SHANBAY + wordCls.getWord(); 
 			  
@@ -246,7 +267,7 @@ public class Util {
 			                // the response is already constructed as a JSONObject!
 			                try {
 			                    
-			                	Util.parseJsonPartData(wordCls, response);
+			                	Util.getJsonPartData(wordCls, response);
 			                	pronounceWord(wordCls, context);
 //			                	WordsManager.addWordLoadInfo(tableName, wordCls);
 //			                	updateItem(position, wordCls);
@@ -261,7 +282,7 @@ public class Util {
 			  
 			            @Override
 			            public void onErrorResponse(VolleyError error) {
-			            	Toast.makeText(context, "数据获取失败，请重试", Toast.LENGTH_SHORT).show();
+			            	Toast.makeText(context, ERROR, Toast.LENGTH_SHORT).show();
 			                error.printStackTrace();
 			            }
 			        });
@@ -293,7 +314,7 @@ public class Util {
 	 * @author bubble
 	 * @date 2015-9-24 下午8:57:32
 	 */
-	public static WordCls parseJsonPartData(final WordCls wordCls, JSONObject response)
+	public static WordCls getJsonPartData(final WordCls wordCls, JSONObject response)
 			throws JSONException {
 		data = response.getJSONObject("data");
 		 
@@ -303,13 +324,28 @@ public class Util {
 		defCN = data.getJSONObject("cn_definition");
 		definitionCN = defCN.getString("pos") + defCN.getString("defn"); 
 		 
-		audioUrlUS = data.getString("us_audio");
+//		audioUrlUS = data.getString("us_audio");
 		
 		wordCls.setDefinitionEN(definitionEN);
 		wordCls.setDefinitionCN(definitionCN);
-		wordCls.setAudioUrlUS(audioUrlUS);
+		wordCls.setAudioUrlUS(data.getString("us_audio"));
 		wordCls.setLoaded(true);
 		
 		return wordCls;
+	}
+	
+	/**
+	 * <p>Title: isStringEmpty</p>
+	 * <p>Description: </p>
+	 * @param s
+	 * @return
+	 * @author bubble
+	 * @date 2015-10-9 下午8:05:39
+	 */
+	public static boolean isStringEmpty(String s) {
+		if ( s == "" || s == null )
+			return true;
+		
+		return false;
 	}
 }
