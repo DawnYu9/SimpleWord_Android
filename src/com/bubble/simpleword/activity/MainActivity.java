@@ -1,6 +1,12 @@
 package com.bubble.simpleword.activity;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
 
 import android.app.ActionBar;
 import android.app.AlarmManager;
@@ -31,7 +37,11 @@ import android.view.WindowManager;
 import android.widget.SearchView;
 import android.widget.SearchView.OnQueryTextListener;
 
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.Response.ErrorListener;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.Volley;
 import com.bubble.simpleword.R;
 import com.bubble.simpleword.db.MyDbHelper;
@@ -41,6 +51,8 @@ import com.bubble.simpleword.fragment.HomeFragment;
 import com.bubble.simpleword.fragment.SettingsFragment;
 import com.bubble.simpleword.fragment.SlidingMenuFragment;
 import com.bubble.simpleword.fragment.WordBookFragment;
+import com.bubble.simpleword.network.InputStreamVolleyRequest;
+import com.bubble.simpleword.network.StringTokenizer;
 import com.bubble.simpleword.service.ServicePopNotiWord;
 import com.bubble.simpleword.service.ServiceUpdateWord;
 import com.bubble.simpleword.util.SearchViewFormatter;
@@ -54,7 +66,7 @@ import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
  * @author bubble
  * @date 2015-8-2
  */
-public class MainActivity extends SlidingFragmentActivity {
+public class MainActivity extends SlidingFragmentActivity implements Response.Listener<byte[]>, ErrorListener{
 	public static RequestQueue mQueue; 
 	
 	private FragmentTransaction transaction;
@@ -119,6 +131,9 @@ public class MainActivity extends SlidingFragmentActivity {
 
 	private AlarmManager am;
     
+	private static InputStreamVolleyRequest request;
+    private int count;
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -691,4 +706,83 @@ public class MainActivity extends SlidingFragmentActivity {
 	public static Fragment getContentFragment() {
 		return contentFragment;
 	}
+
+	/**
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-10-9 下午11:25:24
+	 */
+	@Override
+	public void onErrorResponse(VolleyError error) {
+		Log.d("KEY_ERROR", "UNABLE TO DOWNLOAD FILE. ERROR:: "+error.getMessage());
+	}
+
+	/**
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-10-9 下午11:25:24
+	 */
+	@Override
+	public void onResponse(byte[] response) {
+		HashMap<String, Object> map = new HashMap<String, Object>();
+        try {
+            if (response!=null) {
+
+                //Read file name from headers
+                String content =request.responseHeaders.get("Content-Disposition")
+                        .toString();
+				StringTokenizer st = new StringTokenizer(content, "=");
+				String[] arrTag = st.toArray();
+
+                String filename = arrTag[1];
+                filename = filename.replace(":", ".");
+                Log.d("DEBUG::RESUME FILE NAME", filename);
+
+                try{
+                    long lenghtOfFile = response.length;
+
+                    //covert reponse to input stream
+                    InputStream input = new ByteArrayInputStream(response);
+                    File path = Environment.getExternalStorageDirectory();
+                    File file = new File(path, filename);
+                    map.put("resume_path", file.toString());
+                    BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(file));
+                    byte data[] = new byte[1024];
+
+                    long total = 0;
+
+                    while ((count = input.read(data)) != -1) {
+                        total += count;
+                        output.write(data, 0, count);
+                    }
+
+                    output.flush();
+
+                    output.close();
+                    input.close();
+                }catch(IOException e){
+                    e.printStackTrace();
+
+                }
+            }
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            Log.d("KEY_ERROR", "UNABLE TO DOWNLOAD FILE");
+            e.printStackTrace();
+        }
+	}
+	
+	/**
+	 * <p>Title: download</p>
+	 * <p>Description: </p>
+	 * @param url
+	 * @author bubble
+	 * @date 2015-10-9 下午11:17:47
+	 */
+	public void download(String url) {
+		request = new InputStreamVolleyRequest(Request.Method.GET, url, this, this, null);
+//		mQueue = Volley.newRequestQueue(getApplicationContext(), new HurlStack());
+		mQueue.add(request);
+	}
+	
 }

@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.bubble.simpleword"
     android:versionCode="1"
-    android:versionName="1.0.0.20150927" >
+    android:versionName="1.1.0.20151009" >
 
     <uses-sdk
         android:minSdkVersion="17"
@@ -17,10 +17,12 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/CustomMainActionBarTheme" >
+        android:theme="@style/CustomMainActionBarTheme"
+         >
         <activity
             android:name="com.bubble.simpleword.activity.MainActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name" 
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -37,8 +39,9 @@
         <activity 
             android:parentActivityName=".activity.MainActivity"
             android:name="com.bubble.simpleword.activity.SearchResultsActivity"
-            android:theme="@style/CustomSearchActivityActionBarTheme" >
-            android:launchMode="singleTop" >
+            android:theme="@style/CustomSearchActivityActionBarTheme" 
+            android:launchMode="singleTop" 
+            android:screenOrientation="portrait">
 		    <intent-filter>
 		        <action android:name="android.intent.action.SEARCH" />
 		    </intent-filter>
