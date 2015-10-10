@@ -1,0 +1,12 @@
+[submodule "lib/cardview_lib_v7"]
+	path = lib/cardview_lib_v7
+	url = git://github.com/codingbubble/cardview_lib_v7.git
+[submodule "lib/recyclerview_lib_v7"]
+	path = lib/recyclerview_lib_v7
+	url = git://github.com/codingbubble/recyclerview_lib_v7.git
+[submodule "lib/android-support-v7-appcompat"]
+	path = lib/android-support-v7-appcompat
+	url = git://github.com/codingbubble/android-support-v7-appcompat.git
+[submodule "lib/SlidingMenu"]
+	path = lib/SlidingMenu
+	url = git://github.com/codingbubble/SlidingMenu.git
