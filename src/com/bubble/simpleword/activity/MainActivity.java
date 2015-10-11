@@ -79,7 +79,25 @@ public class MainActivity extends SlidingFragmentActivity {
 	public static final String DB_DIRECTORY = BASE_DIRECTORY + File.separator + DB_FOLDER_NAME ;  //the path to save database
     
 	public static final String DOWNLOAD_FOLDER_NAME = "download";
-    public static final String DOWNLOAD_DIRECTORY = BASE_DIRECTORY + File.separator + DOWNLOAD_FOLDER_NAME ;  //the path to save database
+    public static final String DOWNLOAD_DIRECTORY = BASE_DIRECTORY + File.separator + DOWNLOAD_FOLDER_NAME ;  //the path to save download files
+    
+    public static final String CACHE_FOLDER_NAME = "cache";
+    public static final String CACHE_DIRECTORY = BASE_DIRECTORY + File.separator + CACHE_FOLDER_NAME ;  //the path to save cache files
+    
+    public static final String DAILYSENTENCE_URL = "http://open.iciba.com/dsapi/?date=";
+    public static final String CACHE_WORD_FOLDER_NAME = "word";
+    public static final String CACHE_WORD_DIRECTORY = MainActivity.CACHE_DIRECTORY 
+    		+ File.separator + CACHE_WORD_FOLDER_NAME ;  //the path to save words's audio files
+    
+    public static final String CACHE_SENTENCE_FOLDER_NAME = "sentence";
+    public static final String CACHE_SENTENCE_DIRECTORY = MainActivity.CACHE_DIRECTORY 
+    		+ File.separator + CACHE_SENTENCE_FOLDER_NAME ;  //the path to save sentences's audio files
+    
+    public static final String CACHE_IMG_FOLDER_NAME = "img";
+    public static final String CACHE_IMG_DIRECTORY = MainActivity.CACHE_DIRECTORY 
+    		+ File.separator + CACHE_IMG_FOLDER_NAME ;  //the path to save pictures
+    
+    public static final String CACHE_DATA_FILE_NAME_IN_PREFS = "cache_data" ;  //the file to save cache_data
     
     public static WordCls word ;
     
@@ -129,6 +147,8 @@ public class MainActivity extends SlidingFragmentActivity {
 		pref = Util.getSharedPreferences(this);
 		editor = pref.edit();
 		
+		createDataDirs();
+		
 		isFirstStart = pref.getBoolean(IS_FIRST_START, true);
 		
 		loadDatabase();	//load SDcard's database
@@ -160,6 +180,18 @@ public class MainActivity extends SlidingFragmentActivity {
 		Log.i("onCreate", "结束");
 	}
 
+	/**
+	 * <p>Title: createDataDirs</p>
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-10-11 下午10:20:36
+	 */
+	private void createDataDirs() {
+		Util.createDir(CACHE_IMG_DIRECTORY);
+		Util.createDir(CACHE_SENTENCE_DIRECTORY);
+		Util.createDir(CACHE_WORD_DIRECTORY);
+	}
+	
 	/**
 	 * <p>Description: </p>
 	 * @author bubble
@@ -512,6 +544,7 @@ public class MainActivity extends SlidingFragmentActivity {
 		super.onDestroy();
 		Log.i("onDestroy", "开始");
 		Log.i("onDestroy", "结束");
+		Util.releaseMediaPlayer();
 	}
 	
 	/**

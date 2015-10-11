@@ -1,6 +1,13 @@
 package com.bubble.simpleword.util;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -8,7 +15,10 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.util.DisplayMetrics;
@@ -23,8 +33,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.bubble.simpleword.activity.MainActivity;
 import com.bubble.simpleword.db.WordCls;
-import com.bubble.simpleword.db.WordsManager;
-import com.bubble.simpleword.fragment.SettingsFragment;
 
 /**
  * <p>Title: UtilOnView</p>
@@ -75,7 +83,27 @@ public class Util {
 	private static DisplayMetrics mDisplayMetrics2;
 
 	public static final String ERROR = "数据获取失败，请重试";
+
+	private static File dir;
+	private static File file;
 	
+	private static String cachePath;
+	
+	
+	private static String currentDate = "";
+	private static final String CURRENT_DATE = "current_date";
+
+	private static SimpleDateFormat dateFormat;
+
+	private static Date date;
+
+	private static File delFolder;
+
+	private static FileWriter fileWriter;
+
+	private static SharedPreferences cachePref;
+
+	private static Editor cacheEditor;
 	/**
 	 * <p>Title: </p>
 	 * <p>Description: </p>
@@ -213,6 +241,31 @@ public class Util {
     }
     
     /**
+     * <p>Title: getSharedPreferences</p>
+     * <p>Description: </p>
+     * @param context
+     * @param name
+     * @return
+     * @author bubble
+     * @date 2015-10-11 下午11:39:44
+     */
+    public static SharedPreferences getSharedPreferences(Context context, String name) {
+    	return context.getSharedPreferences(name, Context.MODE_PRIVATE);
+    }
+    
+    /**
+     * <p>Title: getCacheSharedPreferences</p>
+     * <p>Description: </p>
+     * @param context
+     * @return
+     * @author bubble
+     * @date 2015-10-11 下午11:43:19
+     */
+    public static SharedPreferences getCacheSharedPreferences(Context context) {
+    	return context.getSharedPreferences(MainActivity.CACHE_DATA_FILE_NAME_IN_PREFS, Context.MODE_PRIVATE);
+    }
+    
+    /**
      * <p>Title: getSharedPreferencesEditor</p>
      * <p>Description: </p>
      * @param context
@@ -228,10 +281,22 @@ public class Util {
 	 * <p>Title: pronounce</p>
 	 * <p>Description: </p>
 	 * @author bubble
+	 * @throws IOException 
+	 * @throws IllegalStateException 
+	 * @throws SecurityException 
+	 * @throws IllegalArgumentException 
 	 * @date 2015-9-24 上午11:41:30
 	 */
 	public static void pronounceWord(final WordCls wordCls, final Context context) {
-		if ( wordCls.isLoaded() ) {
+		cachePath = MainActivity.CACHE_WORD_DIRECTORY + File.separator + wordCls.getWord() + ".mp3";
+		file = new File(cachePath);
+		if ( file.exists() ) {
+			try {
+				playAudio(cachePath);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else if ( wordCls.isLoaded() ) {
 			if ( ! isStringEmpty(wordCls.getAudioUrlUS()) ) {
 				if ( audioUrlUS != wordCls.getAudioUrlUS() ) {   
 					audioUrlUS = wordCls.getAudioUrlUS();
@@ -276,7 +341,13 @@ public class Util {
 //			                	horizonViewHolder.tvHint.setVisibility(View.INVISIBLE);
 			                } catch (JSONException e) {
 			                    e.printStackTrace();
-			                }
+			                } catch (IllegalArgumentException e) {
+								e.printStackTrace();
+							} catch (SecurityException e) {
+								e.printStackTrace();
+							} catch (IllegalStateException e) {
+								e.printStackTrace();
+							}
 			            }
 			        }, new Response.ErrorListener() {
 			  
@@ -291,18 +362,47 @@ public class Util {
 			MainActivity.mQueue.add(jsonRequest);  
 		}
 	}
+
+	/**
+	 * <p>Title: playAudio</p>
+	 * <p>Description: </p>
+	 * @throws IOException
+	 * @author bubble
+	 * @date 2015-10-11 下午8:31:42
+	 */
+	private static void playAudio(String path) throws IOException {
+		try {
+			player = new MediaPlayer();
+			player.setDataSource(path);
+			player.prepare();
+			player.start();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	/**
 	 * <p>Title: pronounceSentence</p>
 	 * <p>Description: </p>
 	 * @param url
 	 * @author bubble
+	 * @throws IOException 
 	 * @date 2015-9-26 下午10:47:46
 	 */
-	public static void pronounceSentence(Context context, String url) {
-        uri = Uri.parse(url);
-        player = new MediaPlayer().create(context, uri);
-        player.start();
+	public static void pronounceSentence(Context context, String url) throws IOException {
+		cachePath = MainActivity.CACHE_SENTENCE_DIRECTORY + File.separator + getCurrentDate() + "-day.mp3";
+		file = new File(cachePath);
+		if ( file.exists() ) {
+			playAudio(cachePath);
+		} else {
+	        uri = Uri.parse(url);
+	        player = new MediaPlayer().create(context, uri);
+	        player.start();
+		}
 	}
 	
 	/**
@@ -331,6 +431,8 @@ public class Util {
 		wordCls.setAudioUrlUS(data.getString("us_audio"));
 		wordCls.setLoaded(true);
 		
+		download(data.getString("us_audio"), MainActivity.CACHE_WORD_DIRECTORY);
+		
 		return wordCls;
 	}
 	
@@ -347,5 +449,172 @@ public class Util {
 			return true;
 		
 		return false;
+	}
+	
+	/**
+	 * <p>Title: downloadAudio</p>
+	 * <p>Description: </p>
+	 * @param url
+	 * @param path
+	 * @author bubble
+	 * @date 2015-10-11 下午7:41:28
+	 */
+	public static void download(String url, String path) {
+//		dir = new File(path);
+//		if ( ! dir.isDirectory() ) 
+//			dir.mkdirs();
+		dir = createDir(path);
+		if ( url.isEmpty() )
+			return;
+		
+		OkHttpClientManager.getDownloadDelegate().downloadAsyn(
+				url,
+				path,
+				new OkHttpClientManager.ResultCallback<String>() {
+			
+					@Override
+					public void onResponse(String response) {
+					}
+	
+					@Override
+					public void onError(com.squareup.okhttp.Request request,
+							Exception e) {
+					}
+				});
+	}
+	
+	/**
+	 * <p>Title: clearCache</p>
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-10-11 下午7:59:59
+	 */
+	public static void clearCache(Context context) {
+		clearFolder(MainActivity.CACHE_IMG_DIRECTORY);
+		clearFolder(MainActivity.CACHE_SENTENCE_DIRECTORY);
+		clearFolder(MainActivity.CACHE_WORD_DIRECTORY);
+		
+//		file = new File(MainActivity.BASE_DIRECTORY + File.separator 
+//				+ "shared_prefs" + File.separator + MainActivity.CACHE_DATA_FILE_NAME_IN_PREFS + ".xml");
+//		if ( file.exists() ) {
+			cachePref = getCacheSharedPreferences(context);
+			cacheEditor = cachePref.edit();
+			cacheEditor.clear();
+			cacheEditor.commit();
+//			try {
+//				fileWriter = new FileWriter(file, false);
+//				fileWriter.write("");
+//				fileWriter.flush();
+//				fileWriter.close();
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+//		}
+	}
+	
+	/**
+	 * <p>Title: clearFolder</p>
+	 * <p>Description: </p>
+	 * @param dir
+	 * @author bubble
+	 * @date 2015-10-11 下午8:12:41
+	 */
+	public static void clearFolder(String dir) {
+		  delFolder = new File(dir); 
+		  File delFolderFiles[] = delFolder.listFiles();
+		  try  { 
+		     for (int i = 0; i < delFolderFiles.length; i++) {
+		        if(delFolderFiles[i].isDirectory()) {
+		           clearFolder(dir+delFolderFiles[i].getName()+File.separator); //递归清空子文件夹
+		        }
+		        delFolderFiles[i].delete();
+		     }
+		  } catch (Exception e) { 
+		    System.out.println("清空文件夹操作出错!"); 
+		    e.printStackTrace(); 
+		  }
+		}
+		 
+	/**
+	 * <p>Title: releaseMediaPlayer</p>
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-10-11 下午8:22:53
+	 */
+	public static void releaseMediaPlayer() {
+		 if ( player != null ) 
+			 player.release();
+	}
+	
+	/**
+	 * <p>Title: getLoacalBitmap</p>
+	 * <p>Description: </p>
+	 * @param url
+	 * @return
+	 * @author bubble
+	 * @date 2015-10-11 下午9:12:53
+	 */
+	public static Bitmap getLoacalBitmap(String url) {
+        try {
+             FileInputStream fis = new FileInputStream(url);
+             return BitmapFactory.decodeStream(fis);  ///把流转化为Bitmap图片        
+
+          } catch (FileNotFoundException e) {
+             e.printStackTrace();
+             return null;
+        }
+	}
+	
+	/**
+	 * <p>Title: createDir</p>
+	 * <p>Description: </p>
+	 * @param path
+	 * @author bubble
+	 * @date 2015-10-11 下午10:21:58
+	 */
+	public static File createDir(String path) {
+		dir = new File(path);
+		if ( ! dir.isDirectory() ) {
+			dir.mkdirs();
+		}
+		
+		return dir;
+	}
+	
+	/**
+	 * <p>Title: createFile</p>
+	 * <p>Description: </p>
+	 * @param path
+	 * @return
+	 * @author bubble
+	 * @date 2015-10-11 下午10:25:57
+	 */
+	public static File createFile(String path) {
+		file = new File(path);
+		if ( ! file.exists() ) {
+			createDir(file.getParent());
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return file;
+	}
+	
+	/**
+	 * <p>Title: getCurrentDate</p>
+	 * <p>Description: </p>
+	 * @return
+	 * @author bubble
+	 * @date 2015-10-11 下午10:50:37
+	 */
+	public static String getCurrentDate() {
+		if ( currentDate.isEmpty() ) {
+		    dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		    date = new Date();
+		    currentDate = dateFormat.format(date);
+		}
+	    return currentDate;
 	}
 }

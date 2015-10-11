@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="D:/coding/Android/lib/okhttp-2.5.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/coding/Android/lib/okio-1.6.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/coding/Android/lib/okhttp-utils-master/gson-2.2.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="F:/bubble/Coding/Android/res/SimpleWord/lib/baidu_translate_openapi_lite_v1.0.15.jar"/>
 	<classpathentry exported="true" kind="lib" path="D:/coding/Android/lib/volley.jar"/>
 	<classpathentry exported="true" kind="lib" path="D:/coding/Android/lib/jericho-html-3.1.jar" sourcepath="D:/coding/Android/lib/jericho-html-3.1.jar"/>

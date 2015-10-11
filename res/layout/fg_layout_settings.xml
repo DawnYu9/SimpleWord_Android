@@ -253,5 +253,27 @@
 	    </LinearLayout>
     </android.support.v7.widget.CardView>
 
+    <!-- 清空缓存 -->
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+	    <RelativeLayout 
+	        android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:layout_margin="7dp"
+		    >
+		    <TextView 
+		        android:id="@+id/setting_tv_clear_cache"
+		        android:text="清空缓存"
+		        android:layout_width="match_parent"
+		        android:layout_height="wrap_content"
+		        android:layout_alignParentLeft="true"
+		        android:textSize="16sp"
+		        android:layout_centerVertical="true"
+		        android:clickable="true"
+		        />
+		</RelativeLayout>
+	</android.support.v7.widget.CardView>
 
 </LinearLayout>

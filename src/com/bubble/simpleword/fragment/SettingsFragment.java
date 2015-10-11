@@ -31,6 +31,8 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bubble.simpleword.R;
 import com.bubble.simpleword.broadcast.BroadcastReceiverFloatWord;
@@ -160,6 +162,7 @@ public class SettingsFragment extends Fragment {
 	 */
 	private long alarmInterval;
 	private long alarmFirstWake;
+	private TextView tvClearCache;
 	
 	
 
@@ -207,6 +210,8 @@ public class SettingsFragment extends Fragment {
 		initSwitchFloatWord(mView);
 		
 		initSwitchUpdateWord(mView);
+		
+		initTvClearCache(mView);
 		
 	}
 	
@@ -803,4 +808,22 @@ public class SettingsFragment extends Fragment {
 		}
 	}
 
+	/**
+	 * <p>Title: initTvClearCache</p>
+	 * <p>Description: </p>
+	 * @param view
+	 * @author bubble
+	 * @date 2015-10-11 下午11:58:26
+	 */
+	private void initTvClearCache(View view) {
+		tvClearCache = (TextView) view.findViewById(R.id.setting_tv_clear_cache);
+		tvClearCache.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				Util.clearCache(mContext);
+				Toast.makeText(mContext, "缓存已清空", Toast.LENGTH_SHORT).show();
+			}
+		});
+	}
 }
