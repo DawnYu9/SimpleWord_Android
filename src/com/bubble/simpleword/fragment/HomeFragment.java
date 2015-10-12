@@ -1,6 +1,7 @@
 package com.bubble.simpleword.fragment;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -304,12 +305,19 @@ public class HomeFragment extends Fragment implements OnClickListener{
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.home_tv_english:
-			if ( playerSentence != null ) {
-				if ( playerSentence.isPlaying() ) {
-					playerSentence.seekTo(0);
-				} else {
-					playerSentence.start();
-				}
+//			if ( playerSentence != null ) {
+//				if ( playerSentence.isPlaying() ) {
+//					playerSentence.seekTo(0);
+//				} else {
+//					playerSentence.start();
+//				}
+//			} else {
+//				getDailySentenceJsonData();
+//			}
+			try {
+				Util.pronounceSentence(getActivity(), cachePref.getString(Util.getCurrentDate() + AUDIO_URL, audioURL));
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 			
 			break;
@@ -361,9 +369,23 @@ public class HomeFragment extends Fragment implements OnClickListener{
 	 * @author bubble
 	 * @date 2015-10-9 下午8:41:28
 	 */
-	public static void stopPlayerSentence() {
-		if ( playerSentence.isPlaying() )
-			playerSentence.stop();
-	}
+//	public static void stopPlayerSentence() {
+//		if ( playerSentence != null ) {
+//			if ( playerSentence.isPlaying() )
+//				playerSentence.stop();
+//		}
+//	}
 	
+	/**
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-10-12 下午10:22:15
+	 */
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		if ( playerSentence != null ) {
+			playerSentence.release();
+		}
+	}
 }

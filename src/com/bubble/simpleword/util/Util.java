@@ -70,7 +70,7 @@ public class Util {
 
 	private static Uri uri;
 
-	private static MediaPlayer player;
+	private static MediaPlayer player = null;
 
 	private static Class<?> cls;
 
@@ -104,6 +104,8 @@ public class Util {
 	private static SharedPreferences cachePref;
 
 	private static Editor cacheEditor;
+
+	private static String audioPath = "";
 	/**
 	 * <p>Title: </p>
 	 * <p>Description: </p>
@@ -262,7 +264,7 @@ public class Util {
      * @date 2015-10-11 下午11:43:19
      */
     public static SharedPreferences getCacheSharedPreferences(Context context) {
-    	return context.getSharedPreferences(MainActivity.CACHE_DATA_FILE_NAME_IN_PREFS, Context.MODE_PRIVATE);
+    	return context.getSharedPreferences(MainActivity.CACHE_PREFS_DATA_FILE_NAME, Context.MODE_PRIVATE);
     }
     
     /**
@@ -372,10 +374,30 @@ public class Util {
 	 */
 	private static void playAudio(String path) throws IOException {
 		try {
-			player = new MediaPlayer();
-			player.setDataSource(path);
-			player.prepare();
-			player.start();
+			if ( audioPath.equals(path) ) {
+				if ( ! isStringEmpty(audioPath) ) {
+					   if ( player != null ) {
+					        if ( player.isPlaying() ) {
+					            player.seekTo(0);
+					        } else {
+					            player.start();
+					        }
+					    } else {
+					    	player = new MediaPlayer();
+							player.setDataSource(path);
+							player.prepare();
+							player.start();
+					    }
+					}
+			} else {
+				audioPath = path;
+				if ( ! isStringEmpty(audioPath) ) {
+					player = new MediaPlayer();
+					player.setDataSource(path);
+					player.prepare();
+					player.start();
+				}
+			}
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
 		} catch (SecurityException e) {
@@ -460,9 +482,6 @@ public class Util {
 	 * @date 2015-10-11 下午7:41:28
 	 */
 	public static void download(String url, String path) {
-//		dir = new File(path);
-//		if ( ! dir.isDirectory() ) 
-//			dir.mkdirs();
 		dir = createDir(path);
 		if ( url.isEmpty() )
 			return;
@@ -494,22 +513,10 @@ public class Util {
 		clearFolder(MainActivity.CACHE_SENTENCE_DIRECTORY);
 		clearFolder(MainActivity.CACHE_WORD_DIRECTORY);
 		
-//		file = new File(MainActivity.BASE_DIRECTORY + File.separator 
-//				+ "shared_prefs" + File.separator + MainActivity.CACHE_DATA_FILE_NAME_IN_PREFS + ".xml");
-//		if ( file.exists() ) {
-			cachePref = getCacheSharedPreferences(context);
-			cacheEditor = cachePref.edit();
-			cacheEditor.clear();
-			cacheEditor.commit();
-//			try {
-//				fileWriter = new FileWriter(file, false);
-//				fileWriter.write("");
-//				fileWriter.flush();
-//				fileWriter.close();
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
-//		}
+		cachePref = getCacheSharedPreferences(context);
+		cacheEditor = cachePref.edit();
+		cacheEditor.clear();
+		cacheEditor.commit();
 	}
 	
 	/**
@@ -542,8 +549,11 @@ public class Util {
 	 * @date 2015-10-11 下午8:22:53
 	 */
 	public static void releaseMediaPlayer() {
-		 if ( player != null ) 
+		 if ( player != null ) {
 			 player.release();
+			 player = null;
+			 audioPath = "";
+		 }
 	}
 	
 	/**
@@ -616,5 +626,19 @@ public class Util {
 		    currentDate = dateFormat.format(date);
 		}
 	    return currentDate;
+	}
+	
+	/**
+	 * <p>Title: stopPlayerSentence</p>
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-10-13 上午1:03:41
+	 */
+	public static void stopMediaPlayer() {
+		if ( player != null ) {
+			if ( player.isPlaying() )
+				player.stop();
+				audioPath = "";
+		}
 	}
 }

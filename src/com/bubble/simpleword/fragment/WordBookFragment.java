@@ -490,7 +490,6 @@ public class WordBookFragment extends Fragment implements EditBookRecyclerViewAd
 					Log.i(tableName, "onItemClick——" + String.valueOf(position) + "——" + wordCls.getWord());
 					//水平为全屏卡片模式，单击发音
 					Util.pronounceWord(wordCls, activity);
-					Toast.makeText(activity, "发音" + wordCls.getWord(), Toast.LENGTH_SHORT).show();
 					break;
 				case VIEW_TYPE_VERTICAL:
 					//垂直为小卡片list模式，单击进入大卡片的该单词position，联网获取完整释义

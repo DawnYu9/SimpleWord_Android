@@ -76,28 +76,35 @@ public class MainActivity extends SlidingFragmentActivity {
 	
 	public static final String DB_NAME = "simpleword.db"; //the database file's name
 	public static final String DB_FOLDER_NAME = "databases";
-	public static final String DB_DIRECTORY = BASE_DIRECTORY + File.separator + DB_FOLDER_NAME ;  //the path to save database
+	public static final String DB_DIRECTORY = BASE_DIRECTORY + File.separator + DB_FOLDER_NAME ;  //the directory to save database
     
 	public static final String DOWNLOAD_FOLDER_NAME = "download";
-    public static final String DOWNLOAD_DIRECTORY = BASE_DIRECTORY + File.separator + DOWNLOAD_FOLDER_NAME ;  //the path to save download files
+    public static final String DOWNLOAD_DIRECTORY = BASE_DIRECTORY + File.separator + DOWNLOAD_FOLDER_NAME ;  //the directory to save download files
     
     public static final String CACHE_FOLDER_NAME = "cache";
-    public static final String CACHE_DIRECTORY = BASE_DIRECTORY + File.separator + CACHE_FOLDER_NAME ;  //the path to save cache files
-    
-    public static final String DAILYSENTENCE_URL = "http://open.iciba.com/dsapi/?date=";
-    public static final String CACHE_WORD_FOLDER_NAME = "word";
-    public static final String CACHE_WORD_DIRECTORY = MainActivity.CACHE_DIRECTORY 
-    		+ File.separator + CACHE_WORD_FOLDER_NAME ;  //the path to save words's audio files
-    
-    public static final String CACHE_SENTENCE_FOLDER_NAME = "sentence";
-    public static final String CACHE_SENTENCE_DIRECTORY = MainActivity.CACHE_DIRECTORY 
-    		+ File.separator + CACHE_SENTENCE_FOLDER_NAME ;  //the path to save sentences's audio files
+    public static final String CACHE_DIRECTORY = BASE_DIRECTORY + File.separator + CACHE_FOLDER_NAME ;  //the directory to save cache files
     
     public static final String CACHE_IMG_FOLDER_NAME = "img";
-    public static final String CACHE_IMG_DIRECTORY = MainActivity.CACHE_DIRECTORY 
-    		+ File.separator + CACHE_IMG_FOLDER_NAME ;  //the path to save pictures
+    public static final String CACHE_IMG_DIRECTORY = CACHE_DIRECTORY 
+    		+ File.separator + CACHE_IMG_FOLDER_NAME ;  //the directory to save pictures
     
-    public static final String CACHE_DATA_FILE_NAME_IN_PREFS = "cache_data" ;  //the file to save cache_data
+    public static final String CACHE_AUDIO_FOLDER_NAME = "audio";
+    public static final String CACHE_AUDIO_DIRECTORY = CACHE_DIRECTORY 
+    		+ File.separator + CACHE_AUDIO_FOLDER_NAME ;  //the directory to save audio files
+    
+    public static final String DAILYSENTENCE_URL = "http://open.iciba.com/dsapi/?date=";
+    
+    public static final String CACHE_WORD_FOLDER_NAME = "word";
+    public static final String CACHE_WORD_DIRECTORY = CACHE_AUDIO_DIRECTORY 
+    		+ File.separator + CACHE_WORD_FOLDER_NAME ;  //the directory to save words's audio files
+    
+    public static final String CACHE_SENTENCE_FOLDER_NAME = "sentence";
+    public static final String CACHE_SENTENCE_DIRECTORY = CACHE_AUDIO_DIRECTORY 
+    		+ File.separator + CACHE_SENTENCE_FOLDER_NAME ;  //the directory to save sentences's audio files
+    
+    
+    
+    public static final String CACHE_PREFS_DATA_FILE_NAME = "cache_data" ;  //the file to save cache_data
     
     public static WordCls word ;
     
@@ -171,6 +178,7 @@ public class MainActivity extends SlidingFragmentActivity {
 		mActionBar.setDisplayShowHomeEnabled(false);//don't show app's img
 		
 		sm = getSlidingMenu();
+		contentFragment = null;
 		initSlidingMenu(savedInstanceState);
 		
 //		initSwitch();
@@ -188,6 +196,7 @@ public class MainActivity extends SlidingFragmentActivity {
 	 */
 	private void createDataDirs() {
 		Util.createDir(CACHE_IMG_DIRECTORY);
+		Util.createDir(CACHE_AUDIO_DIRECTORY);
 		Util.createDir(CACHE_SENTENCE_DIRECTORY);
 		Util.createDir(CACHE_WORD_DIRECTORY);
 	}
@@ -204,19 +213,6 @@ public class MainActivity extends SlidingFragmentActivity {
 		Log.i("onStart", "结束");
 	}
 	
-	/**
-	 * <p>Description: </p>
-	 * @author bubble
-	 * @date 2015-8-20 上午10:34:12
-	 */
-	@Override
-	protected void onResume() {
-		super.onResume();
-		Log.i("onResume", "开始");
-//		initSettings();
-		
-		Log.i("onResume", "结束");
-	}
 	
 	/**
 	 * <p>Title: initWordClass</p>
@@ -242,17 +238,6 @@ public class MainActivity extends SlidingFragmentActivity {
 		Log.i("onPause", "结束");
 	}
 	
-	/**
-	 * <p>Description: </p>
-	 * @author bubble
-	 * @date 2015-8-20 上午10:35:16
-	 */
-	@Override
-	protected void onRestart() {
-		super.onRestart();
-		Log.i("onRestart", "开始");
-		Log.i("onRestart", "结束");
-	}
 	
 	/**
 	 * <p>Title: initSettings</p>
@@ -351,8 +336,8 @@ public class MainActivity extends SlidingFragmentActivity {
 	 * @date 2015-8-2
 	 */
 	private void initSlidingMenu(Bundle savedInstanceState){	
-		if (savedInstanceState != null)
-			contentFragment = getFragmentManager().getFragment(savedInstanceState, "contentFragment");
+//		if (savedInstanceState != null)
+//			contentFragment = getFragmentManager().getFragment(savedInstanceState, "contentFragment");
 		if (contentFragment == null) {
 			contentFragment = new HomeFragment(this);	
 			HomeFragment.setIsCurrent(true);
@@ -658,9 +643,13 @@ public class MainActivity extends SlidingFragmentActivity {
 	@Override
 	public void onBackPressed() {
 		if ( searchView != null ) {
-            if ( ! closeSearchView() ) {
-                super.onBackPressed();
-            }
+			if ( ! searchView.isIconified() ) {
+				searchView.setIconified(true);
+			} else {
+        		finish();
+			}
+        } else {
+        	finish();
         }
 	}
 

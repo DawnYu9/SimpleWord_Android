@@ -13,6 +13,7 @@ import android.widget.ListView;
 
 import com.bubble.simpleword.R;
 import com.bubble.simpleword.activity.MainActivity;
+import com.bubble.simpleword.util.Util;
 
 /**
  * <p>Title: MenuFragment</p>
@@ -72,7 +73,8 @@ public class SlidingMenuFragment extends ListFragment {
 	public void onListItemClick(ListView lv, View v, int position, long id) {
 		
 		if ( HomeFragment.isCurrent() ) {
-   	    	HomeFragment.stopPlayerSentence();
+//   	    	Util.stopPlayerSentence();
+			Util.releaseMediaPlayer();
    	    }
 		
 		newContentFragment = null;

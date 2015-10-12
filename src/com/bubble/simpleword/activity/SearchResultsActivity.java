@@ -407,4 +407,15 @@ public class SearchResultsActivity extends Activity implements OnClickListener{
 			} 
 		}
 	}
+	
+	/**
+	 * <p>Description: </p>
+	 * @author bubble
+	 * @date 2015-10-13 上午12:00:54
+	 */
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		finish();
+	}
 }
