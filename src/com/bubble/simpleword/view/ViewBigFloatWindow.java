@@ -40,6 +40,8 @@ public class ViewBigFloatWindow extends LinearLayout {
     private ImageButton btnPronounce;
     private TextView tvClose;  
     private TextView tvBack;  
+    
+    private Intent intent;
   
     public ViewBigFloatWindow(final Context context) {  
         super(context);  
@@ -66,22 +68,24 @@ public class ViewBigFloatWindow extends LinearLayout {
         
         tvClose = (TextView) findViewById(R.id.close);  
         tvBack = (TextView) findViewById(R.id.back);  
+        
         tvClose.setOnClickListener(new OnClickListener() {  
-            @Override  
+
+			@Override  
             public void onClick(View v) {  
                 // 点击关闭悬浮窗的时候，移除所有悬浮窗，并停止Service  
                 MyWindowManager.removeBigFloatWord(context);  
                 MyWindowManager.removeSmallFloatWord(context);  
-                Intent intent = new Intent(getContext(), ServiceFloatWord.class);  
-                context.stopService(intent);  
+                SettingsFragment.closeSwitch(SettingsFragment.KEY_SWITCH_FLOAT_WORD, context);
             }  
         });  
+        
         tvBack.setOnClickListener(new OnClickListener() {  
             @Override  
             public void onClick(View v) {  
                 // 点击返回的时候，移除大悬浮窗，创建小悬浮窗  
                 MyWindowManager.removeBigFloatWord(context);  
-                MyWindowManager.createSmallFloatWord(context,Util.getSharedPreferences(context).getInt(SettingsFragment.KEY_SEEKBAR_WIDTH_FLOAT_WORD, SettingsFragment.WIDTH_FLOAT_WORD));  
+                MyWindowManager.createSmallFloatWord(context,Util.getSharedPreferences(context).getInt(SettingsFragment.KEY_SEEKBAR_WIDTH_FLOAT_WORD, SettingsFragment.FLOAT_WORD_DEFAULT_WIDTH));  
             }  
         });  
     }  
@@ -96,7 +100,7 @@ public class ViewBigFloatWindow extends LinearLayout {
     	switch (event.getKeyCode()) {
         case KeyEvent.KEYCODE_BACK:
         	MyWindowManager.removeBigFloatWord(getContext());
-    		MyWindowManager.createSmallFloatWord(getContext(),Util.getSharedPreferences(getContext()).getInt(SettingsFragment.KEY_SEEKBAR_WIDTH_FLOAT_WORD, SettingsFragment.WIDTH_FLOAT_WORD));
+    		MyWindowManager.createSmallFloatWord(getContext(),Util.getSharedPreferences(getContext()).getInt(SettingsFragment.KEY_SEEKBAR_WIDTH_FLOAT_WORD, SettingsFragment.FLOAT_WORD_DEFAULT_WIDTH));
             return true;
         default:
         	return super.dispatchKeyEvent(event); 
@@ -116,7 +120,7 @@ public class ViewBigFloatWindow extends LinearLayout {
         this.getGlobalVisibleRect(rect);	//获取视图在屏幕坐标中的可视区域
         if ( ! rect.contains(x, y) ) {
         	MyWindowManager.removeBigFloatWord(getContext());
-    		MyWindowManager.createSmallFloatWord(getContext(),Util.getSharedPreferences(getContext()).getInt(SettingsFragment.KEY_SEEKBAR_WIDTH_FLOAT_WORD, SettingsFragment.WIDTH_FLOAT_WORD));
+    		MyWindowManager.createSmallFloatWord(getContext(),Util.getSharedPreferences(getContext()).getInt(SettingsFragment.KEY_SEEKBAR_WIDTH_FLOAT_WORD, SettingsFragment.FLOAT_WORD_DEFAULT_WIDTH));
         }
     	return super.onTouchEvent(event);
     }

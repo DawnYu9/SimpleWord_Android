@@ -50,7 +50,7 @@ public class ServiceFloatWord extends Service {
             		  MyWindowManager.removeAllFloatWord(getApplicationContext());
             	  }
             	  MyWindowManager.createSmallFloatWord(getApplicationContext()
-            			  ,Util.getSharedPreferences(getApplicationContext()).getInt(SettingsFragment.KEY_SEEKBAR_WIDTH_FLOAT_WORD, SettingsFragment.WIDTH_FLOAT_WORD));  
+            			  ,Util.getSharedPreferences(getApplicationContext()).getInt(SettingsFragment.KEY_SEEKBAR_WIDTH_FLOAT_WORD, SettingsFragment.FLOAT_WORD_DEFAULT_WIDTH));  
               }  
           }); 
     	}
