@@ -2120,7 +2120,7 @@ containing a value of this type.
  Default text size for action bar title.
          */
         public static final int abc_text_size_title_material_toolbar=0x7f090028;
-        public static final int actionbar_height=0x7f09005b;
+        public static final int actionbar_height=0x7f09005c;
         /**  Default screen margins, per the Android Design guidelines. 
 
          Example customization of dimensions originally defined in res/values/dimens.xml
@@ -2131,6 +2131,7 @@ containing a value of this type.
         public static final int activity_horizontal_margin=0x7f090049;
         public static final int activity_vertical_margin=0x7f09004a;
         public static final int btn_padding=0x7f090052;
+        public static final int card_margin=0x7f09005b;
         /**  Inset shadow for RoundRectDrawableWithShadow. It is used to avoid gaps between the card
      and the shadow. 
          */

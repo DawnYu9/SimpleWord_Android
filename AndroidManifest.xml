@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.bubble.simpleword"
     android:versionCode="1"
-    android:versionName="1.1.0.20151009" >
+    android:versionName="1.2.0.160228" >
 
     <uses-sdk
         android:minSdkVersion="17"

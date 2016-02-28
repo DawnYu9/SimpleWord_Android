@@ -395,10 +395,11 @@ int dimen abc_text_size_subhead_material 0x7f09003d
 int dimen abc_text_size_subtitle_material_toolbar 0x7f090029
 int dimen abc_text_size_title_material 0x7f09003c
 int dimen abc_text_size_title_material_toolbar 0x7f090028
-int dimen actionbar_height 0x7f09005b
+int dimen actionbar_height 0x7f09005c
 int dimen activity_horizontal_margin 0x7f090049
 int dimen activity_vertical_margin 0x7f09004a
 int dimen btn_padding 0x7f090052
+int dimen card_margin 0x7f09005b
 int dimen cardview_compat_inset_shadow 0x7f090002
 int dimen cardview_default_elevation 0x7f090001
 int dimen cardview_default_radius 0x7f090000

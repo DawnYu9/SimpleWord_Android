@@ -24,6 +24,8 @@
 	<dimen name="text_title_hint">16sp</dimen>
 	<dimen name="text_hint">18sp</dimen>
 	
+	<dimen name="card_margin">0dp</dimen>
+	
 	<dimen name="actionbar_height">40dp</dimen>
 	
 	
